@@ -1,0 +1,52 @@
+@import url("https://fonts.googleapis.com/css2?family=Anuphan&display=swap");
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Anuphan", sans-serif;
+}
+
+.bg-green {
+  background-color: #06693a;
+}
+/* .btn-primary {
+  background-color: #365486;
+  border: 1px solid #365486;
+  color: #fff;
+}
+.btn-primary:hover {
+  background-color: #dcf2f1;
+  border: 1px solid #365486;
+  color: #365486;
+  transition: ease-in-out 0.2s;
+} */
+<style>
+    #success th, #success td {
+        text-align: left;
+    }
+
+    #success th:nth-child(1), #success td:nth-child(1) {
+        width: 10%;
+    }
+
+    #success th:nth-child(2), #success td:nth-child(2) {
+        width: 15%;
+    }
+
+    #success th:nth-child(3), #success td:nth-child(3) {
+        width: 35%;
+    }
+
+    #success th:nth-child(4), #success td:nth-child(4) {
+        width: 20%;
+    }
+
+    #success th:nth-child(5), #success td:nth-child(5) {
+        width: 10%;
+    }
+
+    #success th:nth-child(6), #success td:nth-child(6) {
+        width: 10%;
+    }
+</style>
