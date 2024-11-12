@@ -45,6 +45,40 @@ if (!isset($_SESSION["admin_log"])) {
         // Set timeout to refresh the page every 1 minute (60000 milliseconds)
         setTimeout(refreshPage, 30000);
     </script>
+    <style>
+        body{
+            background-color: #F9FDFF;
+        }
+        #dataAll tbody tr td {
+            background-color: #fff4f5;
+            color: #000;
+        }
+
+        #inTime tbody tr td {
+            background-color: #fffbf0;
+            color: #000;
+        }
+
+        #dataAllNOTTAKE tbody tr td {
+            background-color: #fff4f5;
+            color: #000;
+        }
+
+        #clam tbody tr td {
+            background-color: #fff4f5;
+            color: #000;
+        }
+
+        #wait tbody tr td {
+            background-color: #f2f7ff;
+            color: #000;
+        }
+
+        #success tbody tr td {
+            background-color: #f3fffa;
+            color: #000;
+        }
+    </style>
 </head>
 
 <body>
@@ -78,8 +112,7 @@ if (!isset($_SESSION["admin_log"])) {
         <?php } ?>
         <div class="row">
             <div class="col-sm-12 col-lg-12 col-md-12">
-                <h1 class="text-center mt-5 mb-3">สรุปยอดจำนวนงาน</h1>
-                <hr>
+                <h1 class="text-center my-4">สรุปยอดจำนวนงาน</h1>
                 <div class="row d-flex justify-content-center">
                     <?php
                     $sql = "SELECT status, COUNT(*) as count FROM data_report GROUP BY status";
@@ -90,19 +123,19 @@ if (!isset($_SESSION["admin_log"])) {
                     $statusOptions = array(
                         0 => array(
                             'text' => "งานที่ยังไม่ได้รับ",
-                            'color' => "#F17380"
+                            'color' => "#FF7575"
                         ),
                         2 => array(
                             'text' => "กำลังดำเนินงาน",
-                            'color' => "#F1C559"
+                            'color' => "#F8BF24"
                         ),
                         3 => array(
                             'text' => "รออะไหล่",
-                            'color' => "#59AEF1"
+                            'color' => "#659BFF"
                         ),
                         4 => array(
                             'text' => "เสร็จงาน",
-                            'color' => "#59F199"
+                            'color' => "#6CC668"
                         ),
                         5 => array(
                             'text' => "ส่งเคลม",
@@ -119,21 +152,23 @@ if (!isset($_SESSION["admin_log"])) {
 
                     ?>
                         <div class="col-sm-2">
-                            <div class="card text-white me-3 mb-3" style="max-width: 18rem; background-color: <?= $color ?>">
+                            <div class="rounded-3 text-white ps-3 pb-2" style="max-width: 18rem; background-color: <?= $color ?>">
                                 <div class="card-header">
                                     <ion-icon name="people-outline"></ion-icon>
-                                    <?= $textS ?> <br>จำนวน : <b><?= $count ?></b> งาน
+                                    <div class="d-flex align-items-end">
+                                        <p style="font-size: 45px; margin: 0px;"><?= $count ?></p>
+                                        <p class="ms-2" style="font-size: 32px; margin: 0px; margin-bottom:.4rem;">งาน</p>
+                                    </div>
+                                    <p style="font-size: 20px; margin: 0px;"><?= $textS ?> </p>
+
                                 </div>
                             </div>
                         </div>
                     <?php } ?>
                     <!-- </div> -->
                 </div>
-                <hr>
-                <div class="col-sm-12 col-lg-12 col-md-12">
-                    <h1 class="mb-3 mt-3">งานวันนี้</h1>
-                    <hr>
-
+                <div class="card rounded-4 shadow-sm p-3 mt-5 col-sm-12 col-lg-12 col-md-12">
+                    <h1>งานวันนี้</h1>
                     <div class="table-responsive">
                         <table id="dataAll" class="table table-danger">
                             <thead>
@@ -257,9 +292,9 @@ if (!isset($_SESSION["admin_log"])) {
                         </table>
                     </div>
                 </div>
-                <div class="col-sm-12 col-lg-12 col-md-12">
+                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
                     <div class="table-responsive">
-                        <h1 class="mb-3 mt-3">กำลังดำเนินการ</h1>
+                        <h1>กำลังดำเนินการ</h1>
                         <table id="inTime" class="table table-warning">
                             <thead>
                                 <tr>
@@ -304,9 +339,9 @@ if (!isset($_SESSION["admin_log"])) {
                         </table>
                     </div>
                 </div>
-                
-                <div class="col-sm-12 col-lg-12 col-md-12">
-                    <h1 class="mb-3 mt-3">งานที่ถูกบันทึกไว้</h1>
+
+                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
+                    <h1>งานที่ถูกบันทึกไว้</h1>
                     <hr>
 
                     <div class="table-responsive">
@@ -434,9 +469,9 @@ if (!isset($_SESSION["admin_log"])) {
                 </div>
 
 
-                <div class="col-sm-12 col-lg-12 col-md-12">
+                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
                     <div class="table-responsive">
-                        <h1 class="mb-3 mt-3">ส่งเคลม</h1>
+                        <h1>ส่งเคลม</h1>
                         <hr>
                         <table id="clam" class="table table-danger">
                             <thead>
@@ -497,9 +532,9 @@ if (!isset($_SESSION["admin_log"])) {
                 </div>
 
 
-                <div class="col-sm-12 col-lg-12 col-md-12">
+                <div class="card rounded-4 shadow-sm p-3 mt-4col-sm-12 col-lg-12 col-md-12">
                     <div class="table-responsive">
-                        <h1 class="mb-3 mt-3">รออะไหล่</h1>
+                        <h1>รออะไหล่</h1>
                         <hr>
                         <table id="wait" class="table table-primary">
                             <thead>
@@ -559,202 +594,202 @@ if (!isset($_SESSION["admin_log"])) {
                     <hr>
                 </div>
 
-               
-                <div class="col-sm-12 col-lg-12 col-md-12">
-    <div class="table-responsive">
-        <h1 class="mb-3 mt-3">งานที่เสร็จ</h1>
-        <form method="post" action="export.php">
-            <button name="actAll" class="btn btn-primary" type="submit">Export->Excel</button>
-        </form>
-        <hr>
-        <table id="success" class="table table-success">
-            <thead>
-                <tr>
-                    <th scope="col" style="text-align: left; width: 10%;">หมายเลขงาน</th>
-                    <th scope="col" style="text-align: left; width: 10%;">ผู้ซ่อม</th>
-                    <th scope="col" style="text-align: left; width: 50%;">อาการที่ได้รับแจ้ง</th>
-                    <th scope="col" style="text-align: left; width: 10%;">หน่วยงาน</th>
-                    <th scope="col" style="text-align: left; width: 10%;">เวลารับงาน</th>
-                    <th scope="col" style="text-align: left; width: 10%;">เวลาปิดงาน</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $sql = "SELECT dp.*,dt.depart_name 
+
+                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
+                    <div class="table-responsive">
+                        <h1>งานที่เสร็จ</h1>
+                        <form method="post" action="export.php">
+                            <button name="actAll" class="btn btn-primary" type="submit">Export->Excel</button>
+                        </form>
+                        <hr>
+                        <table id="success" class="table table-success">
+                            <thead>
+                                <tr>
+                                    <th scope="col" style="text-align: left; width: 10%;">หมายเลขงาน</th>
+                                    <th scope="col" style="text-align: left; width: 10%;">ผู้ซ่อม</th>
+                                    <th scope="col" style="text-align: left; width: 50%;">อาการที่ได้รับแจ้ง</th>
+                                    <th scope="col" style="text-align: left; width: 10%;">หน่วยงาน</th>
+                                    <th scope="col" style="text-align: left; width: 10%;">เวลารับงาน</th>
+                                    <th scope="col" style="text-align: left; width: 10%;">เวลาปิดงาน</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $sql = "SELECT dp.*,dt.depart_name 
                         FROM data_report as dp
                         INNER JOIN depart as dt ON dp.department = dt.depart_id";
-                $stmt = $conn->prepare($sql);
-                $stmt->execute();
-                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                foreach ($result as $row) {
-                    if ($row['status'] == 4) {
-                ?>
-                        <tr class="text-left">
-                            <td><?= $row['id'] ?></td>
-                            <td>
-                                <?php
-                                $sql = "SELECT * FROM admin";
                                 $stmt = $conn->prepare($sql);
                                 $stmt->execute();
                                 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                                foreach ($result as $row2) {
-                                    if ($row['username'] == $row2['username']) {
-                                        echo $row2['fname'] . ' ' . $row2['lname'];
-                                    }
+                                foreach ($result as $row) {
+                                    if ($row['status'] == 4) {
+                                ?>
+                                        <tr class="text-left">
+                                            <td><?= $row['id'] ?></td>
+                                            <td>
+                                                <?php
+                                                $sql = "SELECT * FROM admin";
+                                                $stmt = $conn->prepare($sql);
+                                                $stmt->execute();
+                                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                                foreach ($result as $row2) {
+                                                    if ($row['username'] == $row2['username']) {
+                                                        echo $row2['fname'] . ' ' . $row2['lname'];
+                                                    }
+                                                }
+                                                ?>
+                                            </td>
+                                            <td><?= $row['report'] ?></td>
+                                            <td><?= $row['depart_name'] ?></td>
+                                            <td><?= $row['take'] ?></td>
+                                            <td><?= $row['close_date'] ?></td>
+                                        </tr>
+                                <?php }
                                 }
                                 ?>
-                            </td>
-                            <td><?= $row['report'] ?></td>
-                            <td><?= $row['depart_name'] ?></td>
-                            <td><?= $row['take'] ?></td>
-                            <td><?= $row['close_date'] ?></td>
-                        </tr>
-                <?php }
-                }
-                ?>
-            </tbody>
-        </table>
-    </div>
-</div>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
 
 
 
 
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const ctx = document.getElementById('myChart');
-                    <?php
-                    $sql_statuses = "SELECT status, COUNT(*) as count FROM data_report GROUP BY status";
-                    $stmt_statuses = $conn->prepare($sql_statuses);
-                    $stmt_statuses->execute();
-                    $statuses = $stmt_statuses->fetchAll(PDO::FETCH_ASSOC);
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const ctx = document.getElementById('myChart');
+                        <?php
+                        $sql_statuses = "SELECT status, COUNT(*) as count FROM data_report GROUP BY status";
+                        $stmt_statuses = $conn->prepare($sql_statuses);
+                        $stmt_statuses->execute();
+                        $statuses = $stmt_statuses->fetchAll(PDO::FETCH_ASSOC);
 
-                    // แปลง labels และ counts จาก status
-                    $status_labels = ['งานที่ยังไม่ได้รับ', 'กำลังดำเนินการ', 'รออะไหล่', 'งานที่เสร็จ'];
-                    $status_counts = ['0', '0', '0', '0'];
-                    foreach ($statuses as $status) {
-                        $status_code = $status['status'];
-                        $count = $status['count'];
+                        // แปลง labels และ counts จาก status
+                        $status_labels = ['งานที่ยังไม่ได้รับ', 'กำลังดำเนินการ', 'รออะไหล่', 'งานที่เสร็จ'];
+                        $status_counts = ['0', '0', '0', '0'];
+                        foreach ($statuses as $status) {
+                            $status_code = $status['status'];
+                            $count = $status['count'];
 
-                        $status_counts[$status_code - 1] = $count;
-                    }
-
-                    // แปลงอาร์เรย์ counts เป็นสตริงที่คั่นด้วยเครื่องหมายจุลภาค
-                    $status_counts_str = implode(', ', $status_counts);
-
-                    ?>
-                    // Data from PHP
-                    const data = {
-                        labels: <?= json_encode($status_labels) ?>,
-                        datasets: [{
-                            label: 'จำนวนงาน',
-                            data: [<?= $status_counts_str ?>],
-
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.2)',
-                                'rgba(255, 206, 86, 0.2)',
-                                'rgba(54, 162, 235, 0.2)',
-                                'rgba(75, 192, 192, 0.2)',
-                            ],
-                            borderColor: [
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(75, 192, 192, 1)',
-                            ],
-                            borderWidth: 1
-                        }]
-                    };
-
-                    const options = {
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
+                            $status_counts[$status_code - 1] = $count;
                         }
-                    };
 
-                    new Chart(ctx, {
-                        type: 'bar',
-                        data: data,
-                        options: options
+                        // แปลงอาร์เรย์ counts เป็นสตริงที่คั่นด้วยเครื่องหมายจุลภาค
+                        $status_counts_str = implode(', ', $status_counts);
+
+                        ?>
+                        // Data from PHP
+                        const data = {
+                            labels: <?= json_encode($status_labels) ?>,
+                            datasets: [{
+                                label: 'จำนวนงาน',
+                                data: [<?= $status_counts_str ?>],
+
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(255, 206, 86, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                ],
+                                borderWidth: 1
+                            }]
+                        };
+
+                        const options = {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        };
+
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: data,
+                            options: options
+                        });
+                        console.log('Labels:', data.labels);
+                        console.log('Data:', data.datasets[0].data);
                     });
-                    console.log('Labels:', data.labels);
-                    console.log('Data:', data.datasets[0].data);
+                </script>
+                <hr>
+            </div>
+            <br>
+            <script>
+                // Get the current date and time
+                const now = new Date();
+
+                // Format the time as HH:mm
+                const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+                // Set the current time as the default value for the input fields
+                const timeReportInputs = document.querySelectorAll('.time_report');
+                timeReportInputs.forEach(input => input.value = currentTime);
+            </script>
+            <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+            <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+            <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+            <script>
+                $(document).ready(function() {
+                    $('#dataAll').DataTable({
+                        order: [
+                            [0, 'asc']
+                        ] // assuming you want to sort the first column in ascending order
+                    });
+                    $('#dataAllNOTTAKE').DataTable({
+                        order: [
+                            [0, 'asc']
+                        ] // assuming you want to sort the first column in ascending order
+                    });
+
+                    $('#dataAllTAKE').DataTable({
+                        order: [
+                            [0, 'desc']
+                        ] // adjust the column index as needed
+                    });
+
+                    $('#inTime').DataTable({
+                        order: [
+                            [0, 'desc']
+                        ] // adjust the column index as needed
+                    });
+
+                    $('#wait').DataTable({
+                        order: [
+                            [0, 'desc']
+                        ] // adjust the column index as needed
+                    });
+
+                    $('#success').DataTable({
+                        order: [
+                            [0, 'desc']
+                        ] // adjust the column index as needed
+                    });
+                    $('#clam').DataTable({
+                        order: [
+                            [0, 'desc']
+                        ] // adjust the column index as needed
+                    });
                 });
             </script>
-            <hr>
-        </div>
-        <br>
-        <script>
-            // Get the current date and time
-            const now = new Date();
+            <footer class="mt-5 footer mt-auto py-3" style="background: #fff;">
 
-            // Format the time as HH:mm
-            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                <marquee class="font-thai" style="font-weight: bold; font-size: 1rem"><span class="text-muted text-center">Design website by นายอภิชน ประสาทศรี , พุฒิพงศ์ ใหญ่แก้ว &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Coding โดย นายอานุภาพ ศรเทียน &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ควบคุมโดย นนท์ บรรณวัฒน์ นักวิชาการคอมพิวเตอร์ ปฏิบัติการ</span>
+                </marquee>
 
-            // Set the current time as the default value for the input fields
-            const timeReportInputs = document.querySelectorAll('.time_report');
-            timeReportInputs.forEach(input => input.value = currentTime);
-        </script>
-        <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-        <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-        <script>
-            $(document).ready(function() {
-                $('#dataAll').DataTable({
-                    order: [
-                        [0, 'asc']
-                    ] // assuming you want to sort the first column in ascending order
-                });
-                $('#dataAllNOTTAKE').DataTable({
-                    order: [
-                        [0, 'asc']
-                    ] // assuming you want to sort the first column in ascending order
-                });
-
-                $('#dataAllTAKE').DataTable({
-                    order: [
-                        [0, 'desc']
-                    ] // adjust the column index as needed
-                });
-
-                $('#inTime').DataTable({
-                    order: [
-                        [0, 'desc']
-                    ] // adjust the column index as needed
-                });
-
-                $('#wait').DataTable({
-                    order: [
-                        [0, 'desc']
-                    ] // adjust the column index as needed
-                });
-
-                $('#success').DataTable({
-                    order: [
-                        [0, 'desc']
-                    ] // adjust the column index as needed
-                });
-                $('#clam').DataTable({
-                    order: [
-                        [0, 'desc']
-                    ] // adjust the column index as needed
-                });
-            });
-        </script>
-        <footer class="mt-5 footer mt-auto py-3" style="background: #fff;">
-
-            <marquee class="font-thai" style="font-weight: bold; font-size: 1rem"><span class="text-muted text-center">Design website by นายอภิชน ประสาทศรี , พุฒิพงศ์ ใหญ่แก้ว &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Coding โดย นายอานุภาพ ศรเทียน &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ควบคุมโดย นนท์ บรรณวัฒน์ นักวิชาการคอมพิวเตอร์ ปฏิบัติการ</span>
-            </marquee>
-
-        </footer>
-        <?php SC5() ?>
+            </footer>
+            <?php SC5() ?>
 
 
 </body>

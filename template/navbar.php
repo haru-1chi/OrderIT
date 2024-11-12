@@ -63,7 +63,6 @@ function navbar()
                     <li class="nav-item">
                         <a class="nav-link" href="insertData.php">หลังบ้าน</a>
                     </li>
-
                     <li class="nav-item ms-5">
                         <a class="nav-link" href="system/logout.php">ออกจากระบบ</a>
                     </li>
