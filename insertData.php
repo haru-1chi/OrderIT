@@ -832,6 +832,180 @@ if (!isset($_SESSION["admin_log"])) {
 
             </div>
 
+            <div class="col-sm-6"> <!-- ปัญหาใน SLA -->
+                <h1>ปัญหาใน SLA</h1>
+                <hr>
+                <form action="system/insert.php" method="post">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" name="sla_name" id="floatingPassword" placeholder="Password">
+                        <label for="floatingPassword">ปัญหาใน SLA</label>
+                    </div>
+                    <div class="d-flex justify-content-center mb-3">
+                        <button type="submit" name="addSLA" class="btn btn-primary">เพิ่มข้อมูล</button>
+                    </div>
+                </form>
+                <?php
+                $sql = 'SELECT * FROM sla';
+                $stmt = $conn->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                ?>
+                <table id="sla" class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">ชื่อรายการ</th>
+                            <th scope="col">แก้ไข</th>
+                            <th scope="col">ลบ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($result as $row) { ?>
+                            <tr>
+                                <th scope="row"><?= $row['sla_name'] ?></th>
+                                <td>
+                                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#sla<?= $row['sla_id'] ?>">แก้ไข</button>
+                                </td>
+
+                                <div class="modal fade" id="sla<?= $row['sla_id'] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">ปัญหาใน SLA</h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form action="system/update.php" method="post">
+                                                    <div class="form-floating mb-3">
+                                                        <input type="text" class="form-control" value="<?= $row['sla_name'] ?>" name="sla_name" placeholder="Password">
+                                                        <input type="hidden" class="form-control" value="<?= $row['sla_id'] ?>" name="sla_id" placeholder="Password">
+                                                        <label for="floatingPassword">ปัญหาใน SLA</label>
+                                                    </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" name="sla" class="btn btn-primary">บันทึก</button>
+                                                </form>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <td>
+
+
+                                    <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#w<?= $row['sla_id'] ?>">ลบ</a>
+
+                                    <div class="modal fade" id="w<?= $row['sla_id'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="confirmationModalLabel">ยืนยันการลบ</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    คุณแน่ใจหรือไม่ที่ต้องการลบรายการนี้?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                                                    <a id="confirmDelete" href="system/delete.php?sla=<?= $row['sla_id'] ?>" class="btn btn-danger">ลบ</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php  } ?>
+                    </tbody>
+                </table>
+                <hr>
+            </div>
+
+            <div class="col-sm-6"> <!-- ตัวชี้วัด -->
+                <h1>ตัวชี้วัด</h1>
+                <hr>
+                <form action="system/insert.php" method="post">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" name="kpi_name" id="floatingPassword" placeholder="Password">
+                        <label for="floatingPassword">ตัวชี้วัด</label>
+                    </div>
+                    <div class="d-flex justify-content-center mb-3">
+                        <button type="submit" name="addKPI" class="btn btn-primary">เพิ่มข้อมูล</button>
+                    </div>
+                </form>
+                <?php
+                $sql = 'SELECT * FROM kpi';
+                $stmt = $conn->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                ?>
+                <table id="kpi" class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">ชื่อรายการ</th>
+                            <th scope="col">แก้ไข</th>
+                            <th scope="col">ลบ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($result as $row) { ?>
+                            <tr>
+                                <th scope="row"><?= $row['kpi_name'] ?></th>
+                                <td>
+                                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#kpi<?= $row['kpi_id'] ?>">แก้ไข</button>
+                                </td>
+
+                                <div class="modal fade" id="kpi<?= $row['kpi_id'] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">ตัวชี้วัด</h1>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form action="system/update.php" method="post">
+                                                    <div class="form-floating mb-3">
+                                                        <input type="text" class="form-control" value="<?= $row['kpi_name'] ?>" name="kpi_name" placeholder="Password">
+                                                        <input type="hidden" class="form-control" value="<?= $row['kpi_id'] ?>" name="kpi_id" placeholder="Password">
+                                                        <label for="floatingPassword">ตัวชี้วัด</label>
+                                                    </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" name="kpi" class="btn btn-primary">บันทึก</button>
+                                                </form>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <td>
+
+
+                                    <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#w<?= $row['kpi_id'] ?>">ลบ</a>
+
+                                    <div class="modal fade" id="w<?= $row['kpi_id'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="confirmationModalLabel">ยืนยันการลบ</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    คุณแน่ใจหรือไม่ที่ต้องการลบรายการนี้?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                                                    <a id="confirmDelete" href="system/delete.php?kpi=<?= $row['kpi_id'] ?>" class="btn btn-danger">ลบ</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php  } ?>
+                    </tbody>
+                </table>
+                <hr>
+            </div>
+
             <div class="col-sm-12">
                 <h1>เพิ่มผู้ใช้งาน</h1>
                 <hr>

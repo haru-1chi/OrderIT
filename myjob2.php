@@ -33,162 +33,108 @@ if (!isset($_SESSION["admin_log"])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    <style>
+        body {
+            background-color: #F9FDFF;
+        }
+    </style>
 </head>
 
 <body>
     <?php navbar() ?>
-    <div class="container-fluid">
+    <div class="container" style="width: 50%;">
+        <h1 class="text-center my-4">สร้างงาน</h1>
 
-        <div class="table-responsive">
-            <?php if (isset($_SESSION['error'])) { ?>
-                <div class="alert alert-danger" role="alert">
-                    <?php
-                    echo $_SESSION['error'];
-                    unset($_SESSION['error']);
-                    ?>
-                </div>
-            <?php } ?>
-
-            <?php if (isset($_SESSION['warning'])) { ?>
-                <div class="alert alert-warning" role="alert">
-                    <?php
-                    echo $_SESSION['warning'];
-                    unset($_SESSION['warning']);
-                    ?>
-                </div>
-            <?php } ?>
-
-            <?php if (isset($_SESSION['success'])) { ?>
-                <div class="alert alert-success" role="alert">
-                    <?php
-                    echo $_SESSION['success'];
-                    unset($_SESSION['success']);
-                    ?>
-                </div>
-            <?php } ?>
-            <div style="border: none;" class="card card-body">
-                <form action="system/insert.php" method="POST">
-                    <div class="row">
-                        <div class="col-sm-4 mb-3">
-                            <label class="form-label" for="timeInput">วันที่ได้รับแจ้ง</label>
-                            <input required type="date" name="date_report" class="form-control thaiDateInput">
-                        </div>
-                        <div class="col-4 mb-3">
-                            <input value="<?= $admin ?>" type="hidden" name="username" class="form-control">
-                            <label class="form-label" for="timeInput">เวลาที่ได้รับแจ้ง</label>
-                            <input type="time" name="time_report" class="time_report form-control">
-                        </div>
-                        <!-- <div class="col-4 mb-3"> -->
-                        <!-- <label class="form-label">อุปกรณ์</label> -->
-                        <!-- <input class="form-control" type="text" name="deviceName" required> -->
-                        <input type="hidden" value="" name="deviceName">
-                        <!-- </div> -->
-                        <div class="col-4 mb-3">
-                            <!-- <label class="form-label" for="deviceInput">อุปกรณ์</label>
-                                <input class="form-control" type="text" id="deviceInput" name="device" required> -->
-                            <label class="form-label" for="deviceInput">รูปแบบการทำงาน</label>
-                            <select required class="form-select" name="device" aria-label="Default select example">
-                                <option value="" disabled selected>เลือกรูปแบบการทำงาน</option>
-                                <?php
-                                $sql = "SELECT * FROM workinglist";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->execute();
-                                $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                foreach ($row as $d) { ?>
-                                    <option value="<?= $d['workingName'] ?>"><?= $d['workingName'] ?></option>
-                                <?php  }
-                                ?>
-
-                            </select>
-                        </div>
-                        <div class="col-4 mb-3">
-                            <label class="form-label" for="assetInput">หมายเลขครุภัณฑ์ (ถ้ามี)</label>
-                            <input class="form-control" value="-" type="text" id="assetInput" name="number_device" required>
-                        </div>
-
-                        <div class="col-4 mb-3">
-                            <label class="form-label" for="ipInput">หมายเลข IP address</label>
-                            <input class="form-control" value="-" type="text" id="ipInput" name="ip_address" required>
-                        </div>
-                        <div class="col-4 mb-3">
-                            <label class="form-label" for="issueInput">อาการที่ได้รับแจ้ง</label>
-                            <input class="form-control" type="text" id="issueInput" name="report" required>
-                        </div>
-                        <div class="col-4 mb-3">
-                            <label class="form-label" for="issueInput">ผู้แจ้ง</label>
-                            <input class="form-control" value="-" type="text" name="reporter" required>
-                        </div>
-                        <div class="col-4 mb-3">
-                            <label class="form-label" for="departInput">หน่วยงาน</label>
-                            <input type="text" class="form-control" id="departInput" name="ref_depart" required>
-                            <input type="hidden" id="departId" name="depart_id">
-                        </div>
-
-
-                        <div class="col-4 mb-3">
-                            <label class="form-label" for="contactInput">เบอร์โทร</label>
-                            <input class="form-control" value="-" type="text" id="contactInput" name="tel" required>
-                        </div>
-                        <div class="col-4 mb-3">
-                            <label class="form-label" for="receiveTimeInput">เวลารับงาน</label>
-                            <input class="form-control" type="time" id="receiveTimeInput" name="take">
-                        </div>
-                        <div class="col-4 mb-3">
-                            <label class="form-label" for="problemInput">ปัญหาที่พบ</label>
-                            <!-- <input type="text" class="form-control" id="problemInput" name="problem"> -->
-                            <select class="form-select" name="problem" aria-label="Default select example">
-                                <option value="" disabled selected>เลือก ปัญหาที่พบ</option>
-
-                                <?php
-                                $sql = "SELECT * FROM problemlist";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->execute();
-                                $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                foreach ($row as $d) { ?>
-                                    <option value="<?= $d['problemName'] ?>"><?= $d['problemName'] ?></option>
-                                <?php  }
-                                ?>
-
-                            </select>
-                        </div>
-
-                        <div class="col-4 mb-3">
-                            <label class="form-label" for="descriptionInput">รายละเอียด</label>
-                            <input type="text" class="form-control" id="descriptionInput" name="description">
-                        </div>
-                        <!-- <div class="col-4 mb-3">
-                                <label class="form-label" for="withdrawInput">หมายเลขใบเบิก</label> -->
-                        <input type="hidden" class="form-control" id="withdrawInput" name="withdraw">
-                        <!-- </div> -->
-                        <div class="col-4 mb-3">
-                            <label class="form-label" for="closeTimeInput">เวลาปิดงาน (ถ้ามี)</label>
-                            <input type="time" class="form-control" id="closeTimeInput" name="close_date">
-                        </div>
-                        <div class="col-4 mb-3">
-                            <label class="form-label" for="closeTimeInput">จำนวน</label>
-                            <input type="number" value="1" class="form-control" name="countList">
-                        </div>
-                        <div class="d-grid gap-3">
-                            <button type="submit" name="saveWork" class="btn p-3 btn-primary">บันทึก</button>
-                            <button type="submit" name="saveWorkSuccess" class="btn p-3 btn-success">ปิดงาน</button>
-                        </div>
-                    </div>
-                </form>
+        <?php if (isset($_SESSION['error'])) { ?>
+            <div class="alert alert-danger" role="alert">
+                <?php
+                echo $_SESSION['error'];
+                unset($_SESSION['error']);
+                ?>
             </div>
+        <?php } ?>
 
-            <?php
-            ?>
-            </tbody>
-            </table>
+        <?php if (isset($_SESSION['warning'])) { ?>
+            <div class="alert alert-warning" role="alert">
+                <?php
+                echo $_SESSION['warning'];
+                unset($_SESSION['warning']);
+                ?>
+            </div>
+        <?php } ?>
 
+        <?php if (isset($_SESSION['success'])) { ?>
+            <div class="alert alert-success" role="alert">
+                <?php
+                echo $_SESSION['success'];
+                unset($_SESSION['success']);
+                ?>
+            </div>
+        <?php } ?>
+        <div class="card card-body rounded-4 mt-5 shadow-sm">
+            <form action="system/insert.php" method="POST">
+                <div class="row">
+                    <input required type="hidden" name="date_report" class="form-control thaiDateInput">
+                    <input value="<?= $admin ?>" type="hidden" name="username" class="form-control">
+                    <input type="hidden" name="time_report" class="time_report form-control">
+                    <input type="hidden" value="" name="device">
+                    <input class="form-control" type="hidden" id="receiveTimeInput" name="take">
+                    <!-- !!!!!!!!!! (ถ้าไม่ป้อนจะเป็น null) ให้ gen เป็นเวลาปัจจุบัน -->
+                    <input class="form-control" type="hidden" name="problem">
+                    <!-- !!!!!!!!!! บังคับไม่เป็นค่าว่าง -->
+                    <input type="hidden" class="form-control" id="descriptionInput" name="description">
+                    <!-- !!!!!!!!!! เป็นค่าว่างได้ -->
+                    <input type="hidden" class="form-control" id="closeTimeInput" name="close_date">
+                    <!-- !!!!!!!!!! เป็นค่าว่างได้ -->
+                    <input type="hidden" value="1" class="form-control" name="countList">
+                    <!-- !!!!!!!!! บังคับไม่เป็นค่าว่าง ให้มีค่าเริ่มต้นเป็น 1 -->
+                    <div class="col-4 mb-3">
+                        <label class="form-label" for="issueInput">ผู้แจ้ง</label>
+                        <input class="form-control" value="-" type="text" name="reporter" required>
+                    </div>
+                    <div class="col-4 mb-3">
+                        <label class="form-label" for="departInput">หน่วยงาน</label>
+                        <input type="text" class="form-control" id="departInput" name="ref_depart" required>
+                        <input type="hidden" id="departId" name="depart_id">
+                    </div>
+                    <div class="col-4 mb-3">
+                        <label class="form-label" for="contactInput">เบอร์โทร</label>
+                        <input class="form-control" value="-" type="text" id="contactInput" name="tel" required>
+                    </div>
 
+                    <div class="col-4 mb-3">
+                        <label class="form-label" for="deviceInput">อุปกรณ์</label>
+                        <input class="form-control" type="text" id="deviceInput" name="deviceName" required>
+                    </div>
 
+                    <div class="col-4 mb-3">
+                        <label class="form-label" for="assetInput">หมายเลขครุภัณฑ์ (ถ้ามี)</label>
+                        <input class="form-control" value="-" type="text" id="assetInput" name="number_device" required>
+                    </div>
+                    <div class="col-4 mb-3">
+                        <label class="form-label" for="ipInput">หมายเลข IP address</label>
+                        <input class="form-control" value="-" type="text" id="ipInput" name="ip_address" required>
+                    </div>
 
+                    <div class="mb-3">
+                        <label class="form-label" for="issueInput">อาการที่ได้รับแจ้ง</label>
+                        <textarea class="form-control " id="issueInput" name="report" rows="2" required></textarea>
 
+                    </div>
+                    <input type="hidden" class="form-control" id="withdrawInput" name="withdraw">
+                    <input type="hidden" name="create_by" value="<?= $admin ?>">
+                    <div class="d-grid gap-3 my-3">
+                        <button type="submit" name="saveWork" class="btn p-3 btn-primary">บันทึก</button>
+                        <!-- <button type="submit" name="saveWorkSuccess" class="btn p-3 btn-success">ปิดงาน</button> -->
+                    </div>
+                </div>
+            </form>
         </div>
+
+        <?php
+        ?>
+        </tbody>
+        </table>
     </div>
     <br>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
@@ -206,7 +152,7 @@ if (!isset($_SESSION["admin_log"])) {
     </script>
     <script>
         $(function() {
-            var inputChanged = false; // สร้างตัวแปรเช็คสถานะสำหรับตรวจสอบการเปลี่ยนแปลงในช่อง input
+            var inputChanged = false; // Create a variable to check for input changes
 
             $("#departInput").autocomplete({
                     source: function(request, response) {
@@ -217,43 +163,47 @@ if (!isset($_SESSION["admin_log"])) {
                                 term: request.term
                             },
                             success: function(data) {
-                                response(data);
+                                response(data); // Show suggestions in the dropdown
                             }
                         });
                     },
-                    minLength: 2,
+                    minLength: 1,
+                    autoFocus: true,
+                    // Use the select function to fill in the input and hidden field
                     select: function(event, ui) {
+                        // Fill the input field with the selected suggestion's label
                         $("#departInput").val(ui.item.label);
+                        // Fill the hidden input field with the selected suggestion's value (ID)
                         $("#departId").val(ui.item.value);
-                        return false;
-                    },
-                    autoFocus: true
+                        return false; // Allow the select action to proceed
+                    }
                 })
                 .data("ui-autocomplete")._renderItem = function(ul, item) {
                     return $("<li>")
-                        .append("<div>" + item.label + "</div>")
+                        .append("<div>" + item.label + "</div>") // Show the suggestion list
                         .appendTo(ul);
                 };
 
             // Trigger select event when an item is highlighted
             $("#departInput").on("autocompletefocus", function(event, ui) {
-                $("#departInput").val(ui.item.label);
-                $("#departId").val(ui.item.value);
+                // You can log or do something here but won't change the input value
+                console.log("Item highlighted: ", ui.item.label);
                 return false;
             });
 
             // Check if the entered value is not in autocomplete
             $("#departInput").on("keyup", function() {
-                inputChanged = true; // เมื่อมีการพิมพ์ในช่อง input เปลี่ยนสถานะเป็น true
+                inputChanged = true; // When there's input, change status to true
             });
 
             // Check if the input field loses focus
             $("#departInput").on("blur", function() {
-                if (inputChanged) { // ตรวจสอบเฉพาะเมื่อมีการเปลี่ยนแปลงในช่อง input เท่านั้น
+                if (inputChanged) {
                     var userInput = $(this).val();
                     if (userInput.trim() === "") {
-                        return; // ไม่มีข้อมูลถูกป้อน ออกจากฟังก์ชัน
+                        return; // Do nothing if there's no input
                     }
+
                     var found = false;
                     $(this).autocomplete("instance").menu.element.find("div").each(function() {
                         if ($(this).text() === userInput) {
@@ -261,6 +211,7 @@ if (!isset($_SESSION["admin_log"])) {
                             return false;
                         }
                     });
+
                     if (!found) {
                         Swal.fire({
                             title: "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?",
@@ -271,39 +222,35 @@ if (!isset($_SESSION["admin_log"])) {
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 $.ajax({
-                                    url: "insertDepart.php", // เปลี่ยนเป็น URL ของไฟล์ที่ใช้ในการ insert ข้อมูล
+                                    url: "insertDepart.php",
                                     method: "POST",
                                     data: {
-                                        dataToInsert: userInput // ส่งข้อมูลที่ต้องการ insert
+                                        dataToInsert: userInput // Send the input data to be inserted
                                     },
                                     success: function(response) {
-                                        // ทำสิ่งที่ต้องการหลังจาก insert เสร็จสมบูรณ์
                                         console.log("Data inserted successfully!");
-                                        $("#departId").val(response); // ใช้ค่าที่ได้จากการ insert ในการกำหนดค่าของ input hidden
-
+                                        $("#departId").val(response); // Use the inserted data for hidden input
                                     },
                                     error: function(xhr, status, error) {
-                                        // กรณีเกิดข้อผิดพลาดในการ insert
                                         console.error("Error inserting data:", error);
                                     }
                                 });
                             } else {
-                                // Don't add the data
-                                // For example, clear the input field
+                                // Do not add the data, clear the input
                                 $("#departInput").val("");
                                 $("#departId").val("");
                             }
                         });
                     }
                 }
-                inputChanged = false; // รีเซ็ตค่าตรวจสอบเมื่อสูญเสียการโฟกัส
+                inputChanged = false; // Reset the flag when the input loses focus
             });
         });
     </script>
     <script>
         // ฟังก์ชันสำหรับแปลงปีคริสต์ศักราชเป็นปีพุทธศักราช
         function convertToBuddhistYear(englishYear) {
-            return englishYear +543 ;
+            return englishYear + 543;
         }
 
         // ดึงอินพุทธศักราชปัจจุบัน

@@ -446,3 +446,63 @@ if (isset($_POST['updateStatus5'])) {
     header("location: ../checkAll.php");
     exit();
 }
+if (isset($_POST['sla'])) {
+    $sla_name = $_POST['sla_name'];
+    $sla_id = $_POST['sla_id'];
+    try {
+        $sql = "SELECT * FROM sla WHERE sla_name = :sla_name";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":sla_name", $sla_name);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($stmt->rowCount() > 0) {
+            if ($result['sla_name'] == $sla_name) {
+                $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
+                header('location: ../insertData.php');
+            }
+        } else if (!isset($_SESSION['error'])) {
+            $sql = "UPDATE sla SET sla_name = :sla_name WHERE sla_id = :sla_id";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(":sla_id", $sla_id);
+            $stmt->bindParam(":sla_name", $sla_name);
+
+            if ($stmt->execute()) {
+                $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
+                header("location: ../insertData.php");
+            }
+        }
+    } catch (PDOException $e) {
+        echo '' . $e->getMessage() . '';
+    }
+}
+if (isset($_POST['kpi'])) {
+    $kpi_name = $_POST['kpi_name'];
+    $kpi_id = $_POST['kpi_id'];
+    try {
+        $sql = "SELECT * FROM kpi WHERE kpi_name = :kpi_name";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":kpi_name", $kpi_name);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($stmt->rowCount() > 0) {
+            if ($result['kpi_name'] == $kpi_name) {
+                $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
+                header('location: ../insertData.php');
+            }
+        } else if (!isset($_SESSION['error'])) {
+            $sql = "UPDATE kpi SET kpi_name = :kpi_name WHERE kpi_id = :kpi_id";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(":kpi_id", $kpi_id);
+            $stmt->bindParam(":kpi_name", $kpi_name);
+
+            if ($stmt->execute()) {
+                $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
+                header("location: ../insertData.php");
+            }
+        }
+    } catch (PDOException $e) {
+        echo '' . $e->getMessage() . '';
+    }
+}

@@ -7,7 +7,6 @@ $dateNow->modify("+543 years");
 
 $dateThai = $dateNow->format("Y/m/d");
 
-
 if (isset($_SESSION['admin_log'])) {
     $admin = $_SESSION['admin_log'];
     $sql = "SELECT * FROM admin WHERE username = :admin";
@@ -36,7 +35,7 @@ if (!isset($_SESSION["admin_log"])) {
     <?php bs5() ?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-    <script>
+    <!-- <script>
         // Function to reload the page
         function refreshPage() {
             location.reload();
@@ -44,7 +43,7 @@ if (!isset($_SESSION["admin_log"])) {
 
         // Set timeout to refresh the page every 1 minute (60000 milliseconds)
         setTimeout(refreshPage, 30000);
-    </script>
+    </script> -->
     <style>
         body{
             background-color: #F9FDFF;
@@ -138,8 +137,12 @@ if (!isset($_SESSION["admin_log"])) {
                             'color' => "#6CC668"
                         ),
                         5 => array(
-                            'text' => "ส่งเคลม",
+                            'text' => "ส่งซ่อม",
                             'color' => "#D673D3"
+                        ),
+                        6 => array(
+                            'text' => "รอกรอกรายละเอียด",
+                            'color' => "#6CC668"
                         ),
 
                     );
@@ -181,6 +184,7 @@ if (!isset($_SESSION["admin_log"])) {
                                     <th scope="col">ผู้แจ้ง</th>
                                     <th scope="col">หน่วยงาน</th>
                                     <th scope="col">เบอร์ติดต่อกลับ</th>
+                                    <th scope="col">สร้างโดย</th>
                                     <th scope="col">ปุ่มรับงาน</th>
                                 </tr>
                             </thead>
@@ -265,6 +269,7 @@ if (!isset($_SESSION["admin_log"])) {
                                             <td><?= $row['reporter'] ?></td>
                                             <td><?= $row['depart_name'] ?></td>
                                             <td><?= $row['tel'] ?></td>
+                                            <td><?= $row['create_by'] ?></td>
                                             <td>
                                                 <?php
                                                 if (!$row['username']) { ?>
@@ -471,7 +476,7 @@ if (!isset($_SESSION["admin_log"])) {
 
                 <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
                     <div class="table-responsive">
-                        <h1>ส่งเคลม</h1>
+                        <h1>ส่งซ่อม</h1>
                         <hr>
                         <table id="clam" class="table table-danger">
                             <thead>
@@ -532,7 +537,7 @@ if (!isset($_SESSION["admin_log"])) {
                 </div>
 
 
-                <div class="card rounded-4 shadow-sm p-3 mt-4col-sm-12 col-lg-12 col-md-12">
+                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
                     <div class="table-responsive">
                         <h1>รออะไหล่</h1>
                         <hr>

@@ -67,6 +67,32 @@ if (isset($_GET['withdraw'])) {
         header("location: ../insertData.php");
     }
 }
+if (isset($_GET['sla'])) {
+    $id = $_GET['sla'];
+    $sql = "DELETE FROM sla WHERE sla_id = :id";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(":id", $id);
+    if ($stmt->execute()) {
+        $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
+        header("location: ../insertData.php");
+    } else {
+        $_SESSION['error'] = "พบข้อผิดพลาด";
+        header("location: ../insertData.php");
+    }
+}
+if (isset($_GET['kpi'])) {
+    $id = $_GET['kpi'];
+    $sql = "DELETE FROM kpi WHERE kpi_id = :id";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(":id", $id);
+    if ($stmt->execute()) {
+        $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
+        header("location: ../insertData.php");
+    } else {
+        $_SESSION['error'] = "พบข้อผิดพลาด";
+        header("location: ../insertData.php");
+    }
+}
 if (isset($_GET['offer'])) {
     $id = $_GET['offer'];
     $sql = "DELETE FROM offer WHERE offer_id = :id";

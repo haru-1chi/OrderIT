@@ -248,7 +248,7 @@ if (!isset($_SESSION["admin_log"])) {
                             } else if ($row['status'] == 4) {
                                 $statusText = "เสร็จสิ้น" . ' ' . $row['withdraw'];
                             } else if ($row['status'] == 5) {
-                                $statusText = "ส่งเคลม";
+                                $statusText = "ส่งซ่อม";
                             }
                             ?>
 
@@ -463,7 +463,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     <div class="d-flex justify-content-end">
                                                         <button type="submit" class="btn me-3 btn-secondary" name="Bantext">บันทึก</button>
                                                         <button disabled type="submit" name="withdrawSubmit" class="btn btn-primary me-3 withdrawButton" id="withdrawButton<?= $i ?>">เบิกอะไหล่</button>
-                                                        <button type="submit" name="clam" class="btn btn-primary me-3">ส่งเคลม</button>
+                                                        <button type="submit" name="clam" class="btn btn-primary me-3">ส่งซ่อม</button>
                                                         <button type="submit" name="CloseSubmit" class="btn btn-success">ปิดงาน</button>
                                                     </div>
                                                 </div>

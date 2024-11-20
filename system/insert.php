@@ -145,7 +145,7 @@ if (isset($_POST['addmodels'])) { // เพิ่ม รายการอุป
             $stmt->bindParam(":quality", $quality);
             $stmt->bindParam(":price", $price);
             $stmt->bindParam(":unit", $unit);
-            
+
             if ($stmt->execute()) {
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
                 header("location: ../insertData.php");
@@ -267,11 +267,101 @@ if (isset($_POST['addproblemName'])) { // เพิ่ม ร้านที่�
         echo '' . $e->getMessage() . '';
     }
 }
+if (isset($_POST['addSLA'])) { // เพิ่ม ปัญหาใน SLA
+    $sla_name = $_POST['sla_name'];
+    try {
+        $sql = "SELECT * FROM sla WHERE sla_name = :sla_name";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":sla_name", $sla_name);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($stmt->rowCount() > 0) {
+            if ($result['sla_name'] == $sla_name) {
+                $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
+                header('location: ../insertData.php');
+            }
+        } else if (!isset($_SESSION['error'])) {
+            $sql = "INSERT INTO sla(sla_name) VALUES(:sla_name)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(":sla_name", $sla_name);
+
+            if ($stmt->execute()) {
+                $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
+                header("location: ../insertData.php");
+            }
+        }
+    } catch (PDOException $e) {
+        echo '' . $e->getMessage() . '';
+    }
+}
+if (isset($_POST['addKPI'])) { // เพิ่ม ตัวชี้วัด
+    $kpi_name = $_POST['kpi_name'];
+    try {
+        $sql = "SELECT * FROM kpi WHERE kpi_name = :kpi_name";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":kpi_name", $kpi_name);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($stmt->rowCount() > 0) {
+            if ($result['kpi_name'] == $kpi_name) {
+                $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
+                header('location: ../insertData.php');
+            }
+        } else if (!isset($_SESSION['error'])) {
+            $sql = "INSERT INTO kpi(kpi_name) VALUES(:kpi_name)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(":kpi_name", $kpi_name);
+
+            if ($stmt->execute()) {
+                $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
+                header("location: ../insertData.php");
+            }
+        }
+    } catch (PDOException $e) {
+        echo '' . $e->getMessage() . '';
+    }
+}
+
+function generateNumberWork($conn) {
+    // Fetch the latest numberWork from the database
+    $sql = "SELECT numberWork FROM orderdata ORDER BY id DESC LIMIT 1";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($result) {
+        $latestNumberWork = $result['numberWork'];
+        list($numerator, $denominator) = explode('/', $latestNumberWork);
+    } else {
+        // Default if no numberWork exists
+        $numerator = 0;
+        $denominator = 67; // Starting year or any default value
+    }
+
+    $currentDate = new DateTime();
+    $october10 = new DateTime(($currentDate->format('Y') + 1) . '-10-10');
+
+    if ($currentDate > $october10) {
+        // Add 1 to the numerator and increment the denominator for the new year
+        $newNumerator = intval($numerator) + 1;
+        $newDenominator = intval($denominator) + 1;
+    } else {
+        // Increment only the numerator
+        $newNumerator = intval($numerator) + 1;
+        $newDenominator = intval($denominator);
+    }
+
+    return $newNumerator . '/' . $newDenominator;
+}
 
 // ตรวจสอบว่ามีการส่งข้อมูลมาจากฟอร์มหรือไม่
 if (isset($_POST['submit'])) {
     // รับข้อมูลจากฟอร์ม
-    $numberWork = $_POST["numberWork"];
+    // $numberWork = $_POST["numberWork"];
+
+    $numberWork = generateNumberWork($conn);
     $dateWithdraw = $_POST["dateWithdraw"];
     $refWithdraw = $_POST["ref_withdraw"];
     $refWork = $_POST["ref_work"];
@@ -638,6 +728,9 @@ if (isset($_POST['withdrawSubmit'])) { // เพิ่ม รายการอ�
     $description = $_POST['description'];
     $withdraw = $_POST['withdraw'];
     $note = $_POST['note'];
+    $device = $_POST['device'];
+    $sla = $_POST['sla'];
+    $kpi = $_POST['kpi'];
     $status = 3;
     try {
         $select = "SELECT * FROM orderdata WHERE id_ref = :id";
@@ -659,12 +752,15 @@ if (isset($_POST['withdrawSubmit'])) { // เพิ่ม รายการอ�
             $stmt2->bindParam(":numberWork", $withdraw);
             $stmt2->execute();
         }
-        $sql = "UPDATE data_report SET problem = :problem, description = :description , withdraw = :withdraw, status = :status , note = :note WHERE id = :id";
+        $sql = "UPDATE data_report SET problem = :problem, description = :description , withdraw = :withdraw, status = :status , device = :device,sla = :sla,kpi = :kpi,note = :note WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":status", $status);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":withdraw", $withdraw);
+        $stmt->bindParam(":device", $device);
+        $stmt->bindParam(":sla", $sla);
+        $stmt->bindParam(":kpi", $kpi);
         $stmt->bindParam(":note", $note);
         $stmt->bindParam(":id", $id);
 
@@ -689,15 +785,21 @@ if (isset($_POST['disWork'])) {
         $withdraw = $_POST['withdraw2'];
     }
     $note = $_POST['note'];
+    $device = $_POST['device'];
+    $sla = $_POST['sla'];
+    $kpi = $_POST['kpi'];
     $username = "";
     $status = 0;
     try {
-        $sql = "UPDATE data_report SET problem = :problem, description = :description , withdraw = :withdraw, status = :status , note = :note, username = :username WHERE id = :id";
+        $sql = "UPDATE data_report SET problem = :problem, description = :description , withdraw = :withdraw, status = :status , device = :device,sla = :sla,kpi = :kpi,note = :note, username = :username WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":status", $status);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":withdraw", $withdraw);
+        $stmt->bindParam(":device", $device);
+        $stmt->bindParam(":sla", $sla);
+        $stmt->bindParam(":kpi", $kpi);
         $stmt->bindParam(":username", $username);
         $stmt->bindParam(":note", $note);
         $stmt->bindParam(":id", $id);
@@ -720,13 +822,25 @@ if (isset($_POST['CloseSubmit'])) {
     $close_date = $_POST['close_date'];
     $note = $_POST['note'];
     $department = $_POST['department'];
-    $status = 4;
+    $device = $_POST['device'];
+    $sla = $_POST['sla'];
+    $kpi = $_POST['kpi'];
+
+    if (empty($device) || empty($problem) || empty($sla) || empty($kpi)) {
+        $status = 6;
+    } else {
+        $status = 4;
+    }
+
     try {
-        $sql = "UPDATE data_report SET problem = :problem, description = :description , close_date = :close_date , note = :note , status = :status,department = :department WHERE id = :id";
+        $sql = "UPDATE data_report SET problem = :problem, description = :description, device = :device, sla = :sla, kpi = :kpi, close_date = :close_date, note = :note, status = :status, department = :department WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":status", $status);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
+        $stmt->bindParam(":device", $device);
+        $stmt->bindParam(":sla", $sla);
+        $stmt->bindParam(":kpi", $kpi);
         $stmt->bindParam(":close_date", $close_date);
         $stmt->bindParam(":note", $note);
         $stmt->bindParam(":department", $department);
@@ -748,13 +862,19 @@ if (isset($_POST['clam'])) {
     $problem = $_POST['problem'];
     $description = $_POST['description'];
     $note = $_POST['note'];
+    $device = $_POST['device'];
+    $sla = $_POST['sla'];
+    $kpi = $_POST['kpi'];
     $status = 5;
     try {
-        $sql = "UPDATE data_report SET problem = :problem, description = :description , note = :note , status = :status WHERE id = :id";
+        $sql = "UPDATE data_report SET problem = :problem, description = :description , device = :device, sla = :sla, kpi = :kpi, note = :note , status = :status WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":status", $status);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
+        $stmt->bindParam(":device", $device);
+        $stmt->bindParam(":sla", $sla);
+        $stmt->bindParam(":kpi", $kpi);
         $stmt->bindParam(":note", $note);
         $stmt->bindParam(":id", $id);
 
@@ -782,14 +902,20 @@ if (isset($_POST['Bantext'])) {
     $note = $_POST['note'];
     $department = $_POST['department'];
     $number_device = $_POST['number_device'];
+    $device = $_POST['device'];
+    $sla = $_POST['sla'];
+    $kpi = $_POST['kpi'];
     try {
-        $sql = "UPDATE data_report SET problem = :problem, description = :description, note = :note,withdraw = :withdraw,number_device = :number_device,department = :department WHERE id = :id";
+        $sql = "UPDATE data_report SET problem = :problem, description = :description, note = :note,withdraw = :withdraw,number_device = :number_device,device = :device,sla = :sla,kpi = :kpi,department = :department WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":note", $note);
         $stmt->bindParam(":withdraw", $withdraw);
         $stmt->bindParam(":number_device", $number_device);
+        $stmt->bindParam(":device", $device);
+        $stmt->bindParam(":sla", $sla);
+        $stmt->bindParam(":kpi", $kpi);
         $stmt->bindParam(":department", $department);
         $stmt->bindParam(":id", $id);
 
@@ -822,7 +948,7 @@ if (isset($_POST['saveWork'])) {
     $close_date = $_POST['close_date'];
     $countList = $_POST['countList'];
     $status = 0;
-
+    $create_by = $_POST['create_by'];
     // if ($department == "" || $department = null) {
     //     $_SESSION['error'] = "หน่วยงานมีค่าว่าง กรุณากรอกใหม่อีกครั้ง";
     //     header("location: ../myjob.php");
@@ -832,12 +958,12 @@ if (isset($_POST['saveWork'])) {
     try {
         if (empty($department)) {
             $_SESSION['error'] = "หน่วยงานมีค่าว่าง กรุณากรอกใหม่อีกครั้ง";
-            header("location: ../myjob.php");
+            header("location: ../myjob.php"); //validate ให้ alert ดีกว่า
             exit();
         }
 
-        $sql = "INSERT INTO data_report(time_report, date_report, device, number_device, ip_address, report, reporter, department, tel, take, problem, description, withdraw, close_date, status,deviceName) 
-                VALUES (:time_report, :date_report, :device, :number_device, :ip_address, :report, :reporter, :department, :tel, :take, :problem, :description, :withdraw, :close_date, :status,:deviceName)";
+        $sql = "INSERT INTO data_report(time_report, date_report, device, number_device, ip_address, report, reporter, department, tel, take, problem, description, withdraw, close_date, status,deviceName ,create_by) 
+                VALUES (:time_report, :date_report, :device, :number_device, :ip_address, :report, :reporter, :department, :tel, :take, :problem, :description, :withdraw, :close_date, :status,:deviceName,:create_by)";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":time_report", $time_report);
@@ -856,6 +982,7 @@ if (isset($_POST['saveWork'])) {
         $stmt->bindParam(":close_date", $close_date);
         $stmt->bindParam(":status", $status);
         $stmt->bindParam(":deviceName", $deviceName);
+        $stmt->bindParam(":create_by", $create_by);
         for ($i = 1; $i <= $countList; $i++) {
             if ($stmt->execute()) {
                 $_SESSION['success'] = "เพิ่มงานเรียบร้อยแล้ว";
