@@ -324,9 +324,10 @@ if (isset($_POST['addKPI'])) { // เพิ่ม ตัวชี้วัด
     }
 }
 
-function generateNumberWork($conn) {
+function generateNumberWork($conn)
+{
     // Fetch the latest numberWork from the database
-    $sql = "SELECT numberWork FROM orderdata ORDER BY id DESC LIMIT 1";
+    $sql = "SELECT numberWork FROM orderdata_new ORDER BY id DESC LIMIT 1";
     $stmt = $conn->prepare($sql);
     $stmt->execute();
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -359,118 +360,316 @@ function generateNumberWork($conn) {
 // ตรวจสอบว่ามีการส่งข้อมูลมาจากฟอร์มหรือไม่
 if (isset($_POST['submit'])) {
     // รับข้อมูลจากฟอร์ม
-    // $numberWork = $_POST["numberWork"];
-
     $numberWork = generateNumberWork($conn);
     $dateWithdraw = $_POST["dateWithdraw"];
     $refWithdraw = $_POST["ref_withdraw"];
     $refWork = $_POST["ref_work"];
     $refDevice = $_POST["ref_device"];
-    $numberDevice1 = $_POST["number_device_1"];
-    $numberDevice2 = $_POST["number_device_2"];
-    $numberDevice3 = $_POST["number_device_3"];
     $reason = $_POST["reason"];
     $report = $_POST["report"];
     $refDepart = $_POST["depart_id"];
     $refUsername = $_POST["ref_username"];
     $refOffer = $_POST["ref_offer"];
     $quotation = $_POST["quotation"];
-    // $receiptDate = $_POST["receipt_date"];
-    // $deliveryDate = $_POST["delivery_date"];
-    // $closeDate = $_POST["close_date"];
     $note = $_POST["note"];
     $status = $_POST["status"];
+    $numberDevices = $_POST["number_device"];
 
-    $list1 = $_POST["list1"];
+    // รับข้อมูลจากตารางในฟอร์ม
+    $lists = $_POST['list'];
+    $qualities = $_POST['quality'];
+    $amounts = $_POST['amount'];
+    $prices = $_POST['price'];
+    $units = $_POST['unit'];
 
-
-
-    // ตรวจสอบว่า list1 มีค่าว่างหรือไม่
-    if (empty($list1)) {
-        $_SESSION["error"] = "กรุณาเลือกรายการ";
-        header("Location: ../create.php");
-    } else if ($list1 == "") {
-        $_SESSION["error"] = "กรุณาเลือกรายการ";
-        header("Location: ../create.php");
-    }
-    if ($refDepart == 0 || $refDepart == "" || $refDepart == "0" || $refDepart == null) {
+    if (empty($refDepart)) {
         $_SESSION["error"] = "บันทีกข้อไม่สำเร็จ";
         $_SESSION["warning"] = "กรุณากดเลือกหน่วยงานหลังพิมพ์";
         header("Location: ../create.php");
     } else if (!$_SESSION['error'] && !$_SESSION['warning']) {
 
-
-        for ($i = 1; $i <= 15; $i++) {
-            ${"list$i"} = $_POST["list$i"];
-            ${"quality$i"} = $_POST["quality$i"];
-            ${"amount$i"} = $_POST["amount$i"];
-            ${"price$i"} = $_POST["price$i"];
-            ${"unit$i"} = $_POST["unit$i"];
-        }
-
-
         try {
-            $sql = "INSERT INTO orderdata (numberWork, dateWithdraw, refWithdraw, refWork, refDevice, ";
-            for ($i = 1; $i <= 15; $i++) {
-                $sql .= "list$i, quality$i, amount$i, price$i, unit$i";
-                if ($i < 15) {
-                    $sql .= ", ";
-                }
-            }
-            $sql .= ", reason, report, refDepart, refUsername, refOffer, quotation, note, status,numberDevice1,numberDevice2,numberDevice3)
-                VALUES (:numberWork, :dateWithdraw, :refWithdraw, :refWork, :refDevice, ";
-            for ($i = 1; $i <= 15; $i++) {
-                $sql .= ":list$i, :quality$i, :amount$i, :price$i, :unit$i";
-                if ($i < 15) {
-                    $sql .= ", ";
-                }
-            }
-            $sql .= ", :reason, :report, :refDepart, :refUsername, :refOffer, :quotation, :note, :status,:numberDevice1,:numberDevice2,:numberDevice3)";
+            // Begin transaction
+            $conn->beginTransaction();
 
-            // เตรียมและสร้าง statement
+            // Insert into orderdata_new table
+            $sql = "INSERT INTO orderdata_new (numberWork, dateWithdraw, refWithdraw, refWork, refDevice, reason, report, refDepart, refUsername, refOffer, quotation, note, status) 
+                    VALUES (:numberWork, :dateWithdraw, :refWithdraw, :refWork, :refDevice, :reason, :report, :refDepart, :refUsername, :refOffer, :quotation, :note, :status)";
             $stmt = $conn->prepare($sql);
 
-            // ผูกค่าข้อมูล
             $stmt->bindParam(':numberWork', $numberWork);
             $stmt->bindParam(':dateWithdraw', $dateWithdraw);
             $stmt->bindParam(':refWithdraw', $refWithdraw);
             $stmt->bindParam(':refWork', $refWork);
             $stmt->bindParam(':refDevice', $refDevice);
-            for ($i = 1; $i <= 15; $i++) {
-                $stmt->bindParam(":list$i", ${"list$i"});
-                $stmt->bindParam(":quality$i", ${"quality$i"});
-                $stmt->bindParam(":amount$i", ${"amount$i"});
-                $stmt->bindParam(":price$i", ${"price$i"});
-                $stmt->bindParam(":unit$i", ${"unit$i"});
-            }
             $stmt->bindParam(':reason', $reason);
             $stmt->bindParam(':report', $report);
             $stmt->bindParam(':refDepart', $refDepart);
             $stmt->bindParam(':refUsername', $refUsername);
             $stmt->bindParam(':refOffer', $refOffer);
             $stmt->bindParam(':quotation', $quotation);
-            // $stmt->bindParam(':receiptDate', $receiptDate);
-            // $stmt->bindParam(':deliveryDate', $deliveryDate);
-            // $stmt->bindParam(':closeDate', $closeDate);
             $stmt->bindParam(':note', $note);
             $stmt->bindParam(':status', $status);
-            $stmt->bindParam(':numberDevice1', $numberDevice1);
-            $stmt->bindParam(':numberDevice2', $numberDevice2);
-            $stmt->bindParam(':numberDevice3', $numberDevice3);
 
-            // ทำการเพิ่มข้อมูล
             if ($stmt->execute()) {
+                $orderId = $conn->lastInsertId();
+
+                // Insert into order_items table
+                $itemSql = "INSERT INTO order_items (order_id, list, quality, amount, price, unit) 
+                            VALUES (:order_id, :list, :quality, :amount, :price, :unit)";
+                $itemStmt = $conn->prepare($itemSql);
+
+                foreach ($lists as $index => $list) {
+                    $itemStmt->bindParam(':order_id', $orderId);
+                    $itemStmt->bindParam(':list', $list);
+                    $itemStmt->bindParam(':quality', $qualities[$index]);
+                    $itemStmt->bindParam(':amount', $amounts[$index]);
+                    $itemStmt->bindParam(':price', $prices[$index]);
+                    $itemStmt->bindParam(':unit', $units[$index]);
+                    $itemStmt->execute();
+                }
+
+                // Insert into order_numberdevice table
+                $deviceSql = "INSERT INTO order_numberdevice (order_item, numberDevice) VALUES (:order_item, :numberDevice)";
+                $deviceStmt = $conn->prepare($deviceSql);
+
+                foreach ($numberDevices as $numberDevice) {
+                    $deviceStmt->bindParam(':order_item', $orderId); // Assuming `order_item` links to `order_id`
+                    $deviceStmt->bindParam(':numberDevice', $numberDevice);
+                    $deviceStmt->execute();
+                }
+
+                // Commit transaction
+                $conn->commit();
+
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
                 header("location: ../create.php");
             } else {
-                $_SESSION["error"] = "พบข้อผิดพลาด";
-                header("location: ../create.php");
+                throw new Exception("Insert into orderdata_new failed.");
             }
-        } catch (PDOException $e) {
-            echo "" . $e->getMessage() . "";
+        } catch (Exception $e) {
+            // Rollback on error
+            $conn->rollBack();
+            $_SESSION["error"] = "พบข้อผิดพลาด: " . $e->getMessage();
+            header("location: ../create.php");
         }
     }
 }
+if (isset($_POST['submit_with_work'])) {
+    // รับข้อมูลจากฟอร์ม
+    $numberWork = generateNumberWork($conn);
+    $dateWithdraw = $_POST["dateWithdraw"];
+    $refWithdraw = $_POST["ref_withdraw"];
+    $refWork = $_POST["ref_work"];
+    $refDevice = $_POST["ref_device"];
+    $reason = $_POST["reason"];
+    $report = $_POST["report"];
+    $refDepart = $_POST["depart_id"];
+    $refUsername = $_POST["ref_username"];
+    $refOffer = $_POST["ref_offer"];
+    $quotation = $_POST["quotation"];
+    $note = $_POST["note"];
+    $status = $_POST["status"];
+    $id_ref = $_POST["id_ref"];
+
+    $numberDevices = $_POST["number_device"];
+
+    // รับข้อมูลจากตารางในฟอร์ม
+    $lists = $_POST['list'];
+    $qualities = $_POST['quality'];
+    $amounts = $_POST['amount'];
+    $prices = $_POST['price'];
+    $units = $_POST['unit'];
+
+    if (empty($refDepart)) {
+        $_SESSION["error"] = "บันทีกข้อไม่สำเร็จ";
+        $_SESSION["warning"] = "กรุณากดเลือกหน่วยงานหลังพิมพ์";
+        header("Location: ../create.php");
+    } else if (!$_SESSION['error'] && !$_SESSION['warning']) {
+
+        try {
+            // Begin transaction
+            $conn->beginTransaction();
+
+            // Insert into orderdata_new table
+            $sql = "INSERT INTO orderdata_new (numberWork, dateWithdraw, refWithdraw, refWork, refDevice, reason, report, refDepart, refUsername, refOffer, quotation, note, status, id_ref) 
+                    VALUES (:numberWork, :dateWithdraw, :refWithdraw, :refWork, :refDevice, :reason, :report, :refDepart, :refUsername, :refOffer, :quotation, :note, :status, :id_ref)";
+            $stmt = $conn->prepare($sql);
+
+            $stmt->bindParam(':numberWork', $numberWork);
+            $stmt->bindParam(':dateWithdraw', $dateWithdraw);
+            $stmt->bindParam(':refWithdraw', $refWithdraw);
+            $stmt->bindParam(':refWork', $refWork);
+            $stmt->bindParam(':refDevice', $refDevice);
+            $stmt->bindParam(':reason', $reason);
+            $stmt->bindParam(':report', $report);
+            $stmt->bindParam(':refDepart', $refDepart);
+            $stmt->bindParam(':refUsername', $refUsername);
+            $stmt->bindParam(':refOffer', $refOffer);
+            $stmt->bindParam(':quotation', $quotation);
+            $stmt->bindParam(':note', $note);
+            $stmt->bindParam(':status', $status);
+            $stmt->bindParam(':id_ref', $id_ref);
+
+            if ($stmt->execute()) {
+                $orderId = $conn->lastInsertId();
+
+                // Insert into order_items table
+                $itemSql = "INSERT INTO order_items (order_id, list, quality, amount, price, unit) 
+                            VALUES (:order_id, :list, :quality, :amount, :price, :unit)";
+                $itemStmt = $conn->prepare($itemSql);
+
+                foreach ($lists as $index => $list) {
+                    $itemStmt->bindParam(':order_id', $orderId);
+                    $itemStmt->bindParam(':list', $list);
+                    $itemStmt->bindParam(':quality', $qualities[$index]);
+                    $itemStmt->bindParam(':amount', $amounts[$index]);
+                    $itemStmt->bindParam(':price', $prices[$index]);
+                    $itemStmt->bindParam(':unit', $units[$index]);
+                    $itemStmt->execute();
+                }
+
+                // Insert into order_numberdevice table
+                $deviceSql = "INSERT INTO order_numberdevice (order_item, numberDevice) VALUES (:order_item, :numberDevice)";
+                $deviceStmt = $conn->prepare($deviceSql);
+
+                foreach ($numberDevices as $numberDevice) {
+                    $deviceStmt->bindParam(':order_item', $orderId); // Assuming `order_item` links to `order_id`
+                    $deviceStmt->bindParam(':numberDevice', $numberDevice);
+                    $deviceStmt->execute();
+                }
+
+                // Commit transaction
+                $conn->commit();
+
+                $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
+                header("location: ../create.php");
+            } else {
+                throw new Exception("Insert into orderdata_new failed.");
+            }
+        } catch (Exception $e) {
+            // Rollback on error
+            $conn->rollBack();
+            $_SESSION["error"] = "พบข้อผิดพลาด: " . $e->getMessage();
+            header("location: ../create.php");
+        }
+    }
+}
+// if (isset($_POST['submit'])) { //OLD CODE
+//     // รับข้อมูลจากฟอร์ม
+//     // $numberWork = $_POST["numberWork"];
+
+//     $numberWork = generateNumberWork($conn);
+//     $dateWithdraw = $_POST["dateWithdraw"];
+//     $refWithdraw = $_POST["ref_withdraw"];
+//     $refWork = $_POST["ref_work"];
+//     $refDevice = $_POST["ref_device"];
+//     $numberDevice1 = $_POST["number_device_1"];
+//     $numberDevice2 = $_POST["number_device_2"];
+//     $numberDevice3 = $_POST["number_device_3"];
+//     $reason = $_POST["reason"];
+//     $report = $_POST["report"];
+//     $refDepart = $_POST["depart_id"];
+//     $refUsername = $_POST["ref_username"];
+//     $refOffer = $_POST["ref_offer"];
+//     $quotation = $_POST["quotation"];
+//     // $receiptDate = $_POST["receipt_date"];
+//     // $deliveryDate = $_POST["delivery_date"];
+//     // $closeDate = $_POST["close_date"];
+//     $note = $_POST["note"];
+//     $status = $_POST["status"];
+
+//     $list1 = $_POST["list1"];
+
+
+
+//     // ตรวจสอบว่า list1 มีค่าว่างหรือไม่
+//     if (empty($list1)) {
+//         $_SESSION["error"] = "กรุณาเลือกรายการ";
+//         header("Location: ../create.php");
+//     } else if ($list1 == "") {
+//         $_SESSION["error"] = "กรุณาเลือกรายการ";
+//         header("Location: ../create.php");
+//     }
+//     if ($refDepart == 0 || $refDepart == "" || $refDepart == "0" || $refDepart == null) {
+//         $_SESSION["error"] = "บันทีกข้อไม่สำเร็จ";
+//         $_SESSION["warning"] = "กรุณากดเลือกหน่วยงานหลังพิมพ์";
+//         header("Location: ../create.php");
+//     } else if (!$_SESSION['error'] && !$_SESSION['warning']) {
+
+
+//         for ($i = 1; $i <= 15; $i++) {
+//             ${"list$i"} = $_POST["list$i"];
+//             ${"quality$i"} = $_POST["quality$i"];
+//             ${"amount$i"} = $_POST["amount$i"];
+//             ${"price$i"} = $_POST["price$i"];
+//             ${"unit$i"} = $_POST["unit$i"];
+//         }
+
+
+//         try {
+//             $sql = "INSERT INTO orderdata (numberWork, dateWithdraw, refWithdraw, refWork, refDevice, ";
+//             for ($i = 1; $i <= 15; $i++) {
+//                 $sql .= "list$i, quality$i, amount$i, price$i, unit$i";
+//                 if ($i < 15) {
+//                     $sql .= ", ";
+//                 }
+//             }
+//             $sql .= ", reason, report, refDepart, refUsername, refOffer, quotation, note, status,numberDevice1,numberDevice2,numberDevice3)
+//                 VALUES (:numberWork, :dateWithdraw, :refWithdraw, :refWork, :refDevice, ";
+//             for ($i = 1; $i <= 15; $i++) {
+//                 $sql .= ":list$i, :quality$i, :amount$i, :price$i, :unit$i";
+//                 if ($i < 15) {
+//                     $sql .= ", ";
+//                 }
+//             }
+//             $sql .= ", :reason, :report, :refDepart, :refUsername, :refOffer, :quotation, :note, :status,:numberDevice1,:numberDevice2,:numberDevice3)";
+
+//             // เตรียมและสร้าง statement
+//             $stmt = $conn->prepare($sql);
+
+//             // ผูกค่าข้อมูล
+//             $stmt->bindParam(':numberWork', $numberWork);
+//             $stmt->bindParam(':dateWithdraw', $dateWithdraw);
+//             $stmt->bindParam(':refWithdraw', $refWithdraw);
+//             $stmt->bindParam(':refWork', $refWork);
+//             $stmt->bindParam(':refDevice', $refDevice);
+//             for ($i = 1; $i <= 15; $i++) {
+//                 $stmt->bindParam(":list$i", ${"list$i"});
+//                 $stmt->bindParam(":quality$i", ${"quality$i"});
+//                 $stmt->bindParam(":amount$i", ${"amount$i"});
+//                 $stmt->bindParam(":price$i", ${"price$i"});
+//                 $stmt->bindParam(":unit$i", ${"unit$i"});
+//             }
+//             $stmt->bindParam(':reason', $reason);
+//             $stmt->bindParam(':report', $report);
+//             $stmt->bindParam(':refDepart', $refDepart);
+//             $stmt->bindParam(':refUsername', $refUsername);
+//             $stmt->bindParam(':refOffer', $refOffer);
+//             $stmt->bindParam(':quotation', $quotation);
+//             // $stmt->bindParam(':receiptDate', $receiptDate);
+//             // $stmt->bindParam(':deliveryDate', $deliveryDate);
+//             // $stmt->bindParam(':closeDate', $closeDate);
+//             $stmt->bindParam(':note', $note);
+//             $stmt->bindParam(':status', $status);
+//             $stmt->bindParam(':numberDevice1', $numberDevice1);
+//             $stmt->bindParam(':numberDevice2', $numberDevice2);
+//             $stmt->bindParam(':numberDevice3', $numberDevice3);
+
+//             // ทำการเพิ่มข้อมูล
+//             if ($stmt->execute()) {
+//                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
+//                 header("location: ../create.php");
+//             } else {
+//                 $_SESSION["error"] = "พบข้อผิดพลาด";
+//                 header("location: ../create.php");
+//             }
+//         } catch (PDOException $e) {
+//             echo "" . $e->getMessage() . "";
+//         }
+//     }
+// }
+
 if (isset($_POST['submitW'])) {
     // รับข้อมูลจากฟอร์ม
     $numberWork = $_POST["numberWork"];
@@ -729,6 +928,7 @@ if (isset($_POST['withdrawSubmit'])) { // เพิ่ม รายการอ�
     $withdraw = $_POST['withdraw'];
     $note = $_POST['note'];
     $device = $_POST['device'];
+    $deviceName = $_POST['deviceName'];
     $sla = $_POST['sla'];
     $kpi = $_POST['kpi'];
     $status = 3;
@@ -752,13 +952,14 @@ if (isset($_POST['withdrawSubmit'])) { // เพิ่ม รายการอ�
             $stmt2->bindParam(":numberWork", $withdraw);
             $stmt2->execute();
         }
-        $sql = "UPDATE data_report SET problem = :problem, description = :description , withdraw = :withdraw, status = :status , device = :device,sla = :sla,kpi = :kpi,note = :note WHERE id = :id";
+        $sql = "UPDATE data_report SET problem = :problem, description = :description , withdraw = :withdraw, status = :status , device = :device, deviceName = :deviceName,sla = :sla,kpi = :kpi,note = :note WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":status", $status);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":withdraw", $withdraw);
         $stmt->bindParam(":device", $device);
+        $stmt->bindParam(":deviceName", $deviceName);
         $stmt->bindParam(":sla", $sla);
         $stmt->bindParam(":kpi", $kpi);
         $stmt->bindParam(":note", $note);
@@ -786,18 +987,20 @@ if (isset($_POST['disWork'])) {
     }
     $note = $_POST['note'];
     $device = $_POST['device'];
+    $deviceName = $_POST['deviceName'];
     $sla = $_POST['sla'];
     $kpi = $_POST['kpi'];
     $username = "";
     $status = 0;
     try {
-        $sql = "UPDATE data_report SET problem = :problem, description = :description , withdraw = :withdraw, status = :status , device = :device,sla = :sla,kpi = :kpi,note = :note, username = :username WHERE id = :id";
+        $sql = "UPDATE data_report SET problem = :problem, description = :description , withdraw = :withdraw, status = :status , device = :device, deviceName = :deviceName,sla = :sla,kpi = :kpi,note = :note, username = :username WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":status", $status);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":withdraw", $withdraw);
         $stmt->bindParam(":device", $device);
+        $stmt->bindParam(":deviceName", $deviceName);
         $stmt->bindParam(":sla", $sla);
         $stmt->bindParam(":kpi", $kpi);
         $stmt->bindParam(":username", $username);
@@ -819,12 +1022,15 @@ if (isset($_POST['CloseSubmit'])) {
     $id = $_POST['id'];
     $problem = $_POST['problem'];
     $description = $_POST['description'];
-    $close_date = $_POST['close_date'];
     $note = $_POST['note'];
     $department = $_POST['department'];
     $device = $_POST['device'];
+    $deviceName = $_POST['deviceName'];
     $sla = $_POST['sla'];
     $kpi = $_POST['kpi'];
+
+    // Get current date and time
+    $close_date = date('Y-m-d H:i:s'); // Save as current DateTime in MySQL format
 
     if (empty($device) || empty($problem) || empty($sla) || empty($kpi)) {
         $status = 6;
@@ -833,12 +1039,24 @@ if (isset($_POST['CloseSubmit'])) {
     }
 
     try {
-        $sql = "UPDATE data_report SET problem = :problem, description = :description, device = :device, sla = :sla, kpi = :kpi, close_date = :close_date, note = :note, status = :status, department = :department WHERE id = :id";
+        $sql = "UPDATE data_report 
+                SET problem = :problem, 
+                    description = :description, 
+                    device = :device, 
+                    deviceName = :deviceName, 
+                    sla = :sla, 
+                    kpi = :kpi, 
+                    close_date = :close_date, 
+                    note = :note, 
+                    status = :status, 
+                    department = :department 
+                WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":status", $status);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":device", $device);
+        $stmt->bindParam(":deviceName", $deviceName);
         $stmt->bindParam(":sla", $sla);
         $stmt->bindParam(":kpi", $kpi);
         $stmt->bindParam(":close_date", $close_date);
@@ -863,16 +1081,18 @@ if (isset($_POST['clam'])) {
     $description = $_POST['description'];
     $note = $_POST['note'];
     $device = $_POST['device'];
+    $deviceName = $_POST['deviceName'];
     $sla = $_POST['sla'];
     $kpi = $_POST['kpi'];
     $status = 5;
     try {
-        $sql = "UPDATE data_report SET problem = :problem, description = :description , device = :device, sla = :sla, kpi = :kpi, note = :note , status = :status WHERE id = :id";
+        $sql = "UPDATE data_report SET problem = :problem, description = :description , device = :device, deviceName = :deviceName, sla = :sla, kpi = :kpi, note = :note , status = :status WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":status", $status);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":device", $device);
+        $stmt->bindParam(":deviceName", $deviceName);
         $stmt->bindParam(":sla", $sla);
         $stmt->bindParam(":kpi", $kpi);
         $stmt->bindParam(":note", $note);
@@ -903,10 +1123,36 @@ if (isset($_POST['Bantext'])) {
     $department = $_POST['department'];
     $number_device = $_POST['number_device'];
     $device = $_POST['device'];
+    $deviceName = $_POST['deviceName'];
     $sla = $_POST['sla'];
     $kpi = $_POST['kpi'];
+
     try {
-        $sql = "UPDATE data_report SET problem = :problem, description = :description, note = :note,withdraw = :withdraw,number_device = :number_device,device = :device,sla = :sla,kpi = :kpi,department = :department WHERE id = :id";
+        // Check if id_ref exists in orderdata_new and get the corresponding numberWork
+        $checkSql = "SELECT numberWork FROM orderdata_new WHERE id_ref = :id_ref";
+        $checkStmt = $conn->prepare($checkSql);
+        $checkStmt->bindParam(":id_ref", $id);
+        $checkStmt->execute();
+
+        // If a record is found, fetch the numberWork and set it to the withdraw field
+        if ($checkStmt->rowCount() > 0) {
+            $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
+            $withdraw = $result['numberWork'];
+        }
+
+        // Update the data_report table
+        $sql = "UPDATE data_report 
+                SET problem = :problem, 
+                    description = :description, 
+                    note = :note, 
+                    withdraw = :withdraw, 
+                    number_device = :number_device, 
+                    device = :device, 
+                    deviceName = :deviceName, 
+                    sla = :sla, 
+                    kpi = :kpi, 
+                    department = :department 
+                WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
@@ -914,6 +1160,7 @@ if (isset($_POST['Bantext'])) {
         $stmt->bindParam(":withdraw", $withdraw);
         $stmt->bindParam(":number_device", $number_device);
         $stmt->bindParam(":device", $device);
+        $stmt->bindParam(":deviceName", $deviceName);
         $stmt->bindParam(":sla", $sla);
         $stmt->bindParam(":kpi", $kpi);
         $stmt->bindParam(":department", $department);

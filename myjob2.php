@@ -6,11 +6,12 @@ date_default_timezone_set("Asia/Bangkok");
 
 if (isset($_SESSION['admin_log'])) {
     $admin = $_SESSION['admin_log'];
-    $sql = "SELECT * FROM admin WHERE username = :admin";
+    $sql = "SELECT CONCAT(fname, ' ', lname) AS full_name FROM admin WHERE username = :admin";
     $stmt = $conn->prepare($sql);
     $stmt->bindParam(":admin", $admin);
     $stmt->execute();
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $name = $result['full_name'];
 }
 if (!isset($_SESSION["admin_log"])) {
     $_SESSION["warning"] = "กรุณาเข้าสู่ระบบ";
@@ -105,6 +106,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <div class="col-4 mb-3">
                         <label class="form-label" for="deviceInput">อุปกรณ์</label>
                         <input class="form-control" type="text" id="deviceInput" name="deviceName" required>
+                        <input type="hidden" id="deviceId" name="device_id">
                     </div>
 
                     <div class="col-4 mb-3">
@@ -122,7 +124,7 @@ if (!isset($_SESSION["admin_log"])) {
 
                     </div>
                     <input type="hidden" class="form-control" id="withdrawInput" name="withdraw">
-                    <input type="hidden" name="create_by" value="<?= $admin ?>">
+                    <input type="hidden" name="create_by" value="<?= htmlspecialchars($name) ?>">
                     <div class="d-grid gap-3 my-3">
                         <button type="submit" name="saveWork" class="btn p-3 btn-primary">บันทึก</button>
                         <!-- <button type="submit" name="saveWorkSuccess" class="btn p-3 btn-success">ปิดงาน</button> -->
@@ -152,99 +154,113 @@ if (!isset($_SESSION["admin_log"])) {
     </script>
     <script>
         $(function() {
-            var inputChanged = false; // Create a variable to check for input changes
+            function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
+                let inputChanged = false;
 
-            $("#departInput").autocomplete({
-                    source: function(request, response) {
-                        $.ajax({
-                            url: "autocomplete.php",
-                            dataType: "json",
-                            data: {
-                                term: request.term
-                            },
-                            success: function(data) {
-                                response(data); // Show suggestions in the dropdown
-                            }
-                        });
-                    },
-                    minLength: 1,
-                    autoFocus: true,
-                    // Use the select function to fill in the input and hidden field
-                    select: function(event, ui) {
-                        // Fill the input field with the selected suggestion's label
-                        $("#departInput").val(ui.item.label);
-                        // Fill the hidden input field with the selected suggestion's value (ID)
-                        $("#departId").val(ui.item.value);
-                        return false; // Allow the select action to proceed
-                    }
-                })
-                .data("ui-autocomplete")._renderItem = function(ul, item) {
-                    return $("<li>")
-                        .append("<div>" + item.label + "</div>") // Show the suggestion list
-                        .appendTo(ul);
-                };
-
-            // Trigger select event when an item is highlighted
-            $("#departInput").on("autocompletefocus", function(event, ui) {
-                // You can log or do something here but won't change the input value
-                console.log("Item highlighted: ", ui.item.label);
-                return false;
-            });
-
-            // Check if the entered value is not in autocomplete
-            $("#departInput").on("keyup", function() {
-                inputChanged = true; // When there's input, change status to true
-            });
-
-            // Check if the input field loses focus
-            $("#departInput").on("blur", function() {
-                if (inputChanged) {
-                    var userInput = $(this).val();
-                    if (userInput.trim() === "") {
-                        return; // Do nothing if there's no input
-                    }
-
-                    var found = false;
-                    $(this).autocomplete("instance").menu.element.find("div").each(function() {
-                        if ($(this).text() === userInput) {
-                            found = true;
-                            return false;
+                $(inputId).autocomplete({
+                        source: function(request, response) {
+                            $.ajax({
+                                url: url,
+                                dataType: "json",
+                                data: {
+                                    term: request.term,
+                                    type: type
+                                },
+                                success: function(data) {
+                                    response(data); // Show suggestions
+                                }
+                            });
+                        },
+                        minLength: 1,
+                        autoFocus: true,
+                        select: function(event, ui) {
+                            $(inputId).val(ui.item.label); // Fill input with label
+                            $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
+                            return false; // Prevent default behavior
                         }
-                    });
+                    })
+                    .data("ui-autocomplete")._renderItem = function(ul, item) {
+                        return $("<li>")
+                            .append("<div>" + item.label + "</div>")
+                            .appendTo(ul);
+                    };
 
-                    if (!found) {
-                        Swal.fire({
-                            title: "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?",
-                            icon: "info",
-                            showCancelButton: true,
-                            confirmButtonText: "ใช่",
-                            cancelButtonText: "ไม่"
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                $.ajax({
-                                    url: "insertDepart.php",
-                                    method: "POST",
-                                    data: {
-                                        dataToInsert: userInput // Send the input data to be inserted
-                                    },
-                                    success: function(response) {
-                                        console.log("Data inserted successfully!");
-                                        $("#departId").val(response); // Use the inserted data for hidden input
-                                    },
-                                    error: function(xhr, status, error) {
-                                        console.error("Error inserting data:", error);
-                                    }
-                                });
-                            } else {
-                                // Do not add the data, clear the input
-                                $("#departInput").val("");
-                                $("#departId").val("");
+                $(inputId).on("autocompletefocus", function(event, ui) {
+                    // You can log or do something here but won't change the input value
+                    console.log("Item highlighted: ", ui.item.label);
+                    return false;
+                });
+
+                $(inputId).on("keyup", function() {
+                    inputChanged = true;
+                });
+
+                $(inputId).on("blur", function() {
+                    if (inputChanged) {
+                        const userInput = $(this).val().trim();
+                        if (userInput === "") return;
+
+                        let found = false;
+                        $(this).autocomplete("instance").menu.element.find("div").each(function() {
+                            if ($(this).text() === userInput) {
+                                found = true;
+                                return false;
                             }
                         });
+
+                        if (!found) {
+                            Swal.fire({
+                                title: confirmMessage,
+                                icon: "info",
+                                showCancelButton: true,
+                                confirmButtonText: "ใช่",
+                                cancelButtonText: "ไม่"
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    $.ajax({
+                                        url: addDataUrl,
+                                        method: "POST",
+                                        data: {
+                                            dataToInsert: userInput
+                                        },
+                                        success: function(response) {
+                                            console.log("Data inserted successfully!");
+                                            $(hiddenInputId).val(response); // Set inserted ID
+                                        },
+                                        error: function(xhr, status, error) {
+                                            console.error("Error inserting data:", error);
+                                        }
+                                    });
+                                } else {
+                                    $(inputId).val(""); // Clear input
+                                    $(hiddenInputId).val("");
+                                }
+                            });
+                        }
                     }
-                }
-                inputChanged = false; // Reset the flag when the input loses focus
-            });
+                    inputChanged = false; // Reset the flag
+                });
+            }
+
+            // Setup autocomplete for "หน่วยงาน" (departInput)
+            setupAutocomplete(
+                "depart",
+                "#departInput",
+                "#departId",
+                "autocomplete.php",
+                "insertDepart.php",
+                "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
+            );
+
+            // Setup autocomplete for "อุปกรณ์" (deviceInput)
+            setupAutocomplete(
+                "device",
+                "#deviceInput",
+                "#deviceId",
+                "autocomplete.php",
+                "insertDevice.php",
+                "คุณต้องการเพิ่มข้อมูลอุปกรณ์นี้หรือไม่?"
+            );
         });
     </script>
     <script>
