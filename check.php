@@ -36,8 +36,8 @@ if (!isset($_SESSION["admin_log"])) {
   ?>
 
   <?php if (!isset($_GET['numberWork'])) { ?>
-    <div class="container mt-5">
-      <div class="container mt-5">
+    <div class="container mt-4">
+      <div class="container mt-4">
         <?php if (isset($_SESSION['error'])) { ?>
           <div class="alert alert-danger" role="alert">
             <?php
@@ -64,61 +64,63 @@ if (!isset($_SESSION["admin_log"])) {
             ?>
           </div>
         <?php } ?>
+        <h1 class="text-center my-5">ตรวจสอบใบเบิก</h1>
         <form action="" method="GET">
           <div class="row">
             <div class="col-sm-12 col-md-12 col-lg-6">
               <div class="row">
-                <div class="col-sm-12">
-                  <div class="mb-3">
+                <div class="card col-sm-12">
+                  <div class="d-flex flex-row justify-content-between p-3 mb-2">
+                    <div>
+                      <label class="form-label" for="assetInput">ค้นหาหมายเลขครุภัณฑ์</label>
+                      <input class="form-control" type="text" id="assetInput">
+                      <input type="hidden" id="assetInputName" name="">
+                    </div>
 
-                    <label class="form-label" for="assetInput">ค้นหาหมายเลขครุภัณฑ์</label>
-                    <input class="form-control" type="text" id="assetInput">
-                    <input type="hidden" id="assetInputName" name="">
-
-
-
-                    <label class="form-label" for="inputGroupSelect01">หมายเลขออกงาน</label>
-                    <?php
-                    $sql = "SELECT * FROM orderdata ORDER BY id DESC";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->execute();
-                    $d = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-
-                    ?>
-                    <select class="form-select" id="numberWork" name="numberWork">
-                      <?php foreach ($d as $row) {
-                        $statusTxt = $row['status'];
-
-                        switch ($statusTxt) {
-                          case 1:
-                            $statusTxtSlect = "รอรับเอกสารจากหน่วยงาน";
-                            break;
-                          case 2:
-                            $statusTxtSlect = "รอส่งเอกสารไปพัสดุ";
-                            break;
-                          case 3:
-                            $statusTxtSlect = "รอพัสดุสั่งของ";
-                            break;
-                          case 4:
-                            $statusTxtSlect = "รอหมายเลขครุภัณฑ์";
-                            break;
-                          case 5:
-                            $statusTxtSlect = "ปิดงาน";
-                            break;
-                          case 6:
-                            $statusTxtSlect = "ยกเลิก";
-                            break;
-                          default:
-                            $statusTxtSlect = "ไม่พบสถานะ";
-                            break;
-                        }
+                    <div>
+                      <label class="form-label" for="inputGroupSelect01">หมายเลขออกงาน</label>
+                      <?php
+                      $sql = "SELECT * FROM orderdata ORDER BY id DESC";
+                      $stmt = $conn->prepare($sql);
+                      $stmt->execute();
+                      $d = $stmt->fetchAll(PDO::FETCH_ASSOC);
                       ?>
-                        <option value="<?= $row['id'] ?>">
-                          <?= $row['numberWork'] . ' ' . "( " . $statusTxtSlect . " )" ?>
-                        </option>
-                      <?php } ?>
-                    </select>
+                      <select class="form-select" id="numberWork" name="numberWork">
+                        <?php foreach ($d as $row) {
+                          $statusTxt = $row['status'];
+
+                          switch ($statusTxt) {
+                            case 1:
+                              $statusTxtSlect = "รอรับเอกสารจากหน่วยงาน";
+                              break;
+                            case 2:
+                              $statusTxtSlect = "รอส่งเอกสารไปพัสดุ";
+                              break;
+                            case 3:
+                              $statusTxtSlect = "รอพัสดุสั่งของ";
+                              break;
+                            case 4:
+                              $statusTxtSlect = "รอหมายเลขครุภัณฑ์";
+                              break;
+                            case 5:
+                              $statusTxtSlect = "ปิดงาน";
+                              break;
+                            case 6:
+                              $statusTxtSlect = "ยกเลิก";
+                              break;
+                            default:
+                              $statusTxtSlect = "ไม่พบสถานะ";
+                              break;
+                          }
+                        ?>
+                          <option value="<?= $row['id'] ?>">
+                            <?= $row['numberWork'] . ' ' . "( " . $statusTxtSlect . " )" ?>
+                          </option>
+                        <?php } ?>
+                      </select>
+                    </div>
+
+
                   </div>
                   <script>
                     document.getElementById('numberWork').addEventListener('change', function() {
@@ -126,12 +128,14 @@ if (!isset($_SESSION["admin_log"])) {
                       window.location.href = '?numberWork=' + numberWork;
                     });
                   </script>
-                  <button type="submit" class="btn btn-primary mb-3 p-3">ดูข้อมูล</button>
-        </form>
-        <form action="export.php" method="post">
-          <button type="submit" name="DataAll" class="btn btn-secondary mb-3 p-3">Export to Excel</button>
+                  <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary p-2">ดูข้อมูล</button>
+                  </div>
         </form>
       </div>
+      <form action="export.php" method="post">
+        <button type="submit" name="DataAll" class="btn btn-secondary mb-3 p-3">Export to Excel</button>
+      </form>
       <?php
       $sql = "SELECT status, COUNT(*) as count FROM orderdata GROUP BY status";
       $stmt = $conn->prepare($sql);
@@ -141,27 +145,27 @@ if (!isset($_SESSION["admin_log"])) {
       $statusOptions = array(
         1 => array(
           'text' => "รอรับเอกสารจากหน่วยงาน",
-          'color' => "#FF5733"
+          'color' => "#FFAE2C"
         ),
         2 => array(
           'text' => "รอส่งเอกสารไปพัสดุ",
-          'color' => "#1CD23C"
+          'color' => "#6CB1FF"
         ),
         3 => array(
           'text' => "รอพัสดุสั่งของ",
-          'color' => "#5733FF"
+          'color' => "#7ECC7A"
         ),
         4 => array(
           'text' => "รอหมายเลขครุภัณฑ์",
-          'color' => "#FF33C7"
+          'color' => "#FF9359"
         ),
         5 => array(
           'text' => "ปิดงาน",
-          'color' => "#33C7FF"
+          'color' => "#51A075"
         ),
         6 => array(
           'text' => "ยกเลิก",
-          'color' => "#C733FF"
+          'color' => "#FF7575"
         )
       );
 
@@ -175,13 +179,12 @@ if (!isset($_SESSION["admin_log"])) {
       ?>
         <div class="col-sm-6">
           <div class="card text-white me-3 mb-3" style="max-width: 18rem; background-color: <?= $color ?>">
-            <div class="card-header">
-              <ion-icon name="people-outline"></ion-icon>
-              <?= $textS ?>
-            </div>
             <div class="card-body">
               <h5 class="card-title"><?= $count ?></h5>
-              <p class="card-text">
+              <?= $textS ?>
+            </div>
+            <div class="card-footer">
+              <p class="card-text text-end">
                 <a href="checkStatus.php?status=<?= $status ?>" class="text-white" style="text-decoration: none;"> รายละเอียดเพิ่มเติม</a>
               </p>
             </div>
@@ -192,7 +195,7 @@ if (!isset($_SESSION["admin_log"])) {
       ?>
     </div>
     </div>
-    <div class="col-sm-12 col-lg-6 col-md-12">
+    <div class="card col-sm-12 col-lg-6 col-md-12">
       <?php
       $columns = [];
 
@@ -327,30 +330,53 @@ if (!isset($_SESSION["admin_log"])) {
         $receiptThai = formatDateThai($receiptDateFromDB);
         $deliveryThai = formatDateThai($deliveryDateFromDB);
         $closeThai = formatDateThai($closeDateFromDB); ?>
-        <div class="d-flex justify-content-between">
-
-          <p style="text-align:right;line-height:16pt">
-            <?= $dateWithdrawThai ?>
-          </p>
-          <p style="text-align:left;line-height:16pt"><b>ผู้รับเรื่อง :</b> <?= $data['fname'] . ' ' . $data['lname'] ?></p>
+        <div class="row">
+          <div class="col-6">
+            <label>วันที่ออกใบเบิก</label>
+            <input type="text" class="form-control"
+              value="<?= $dateWithdrawThai ?>" disabled>
+          </div>
+          <div class="col-6">
+            <label>ผู้รับเรื่อง</label>
+            <input type="text" class="form-control"
+              value="<?= $data['fname'] . ' ' . $data['lname'] ?>" disabled>
+          </div>
         </div>
-        <div class="d-flex justify-content-between">
 
-          <p style="text-align:left;line-height:16pt">
-            <b>ส่งซ่อมอุปกรณ์ คอมพิวเตอร์ :</b> <?= $data['device_name'] ?>
-          </p>
-
-          <p style="text-align:right;line-height:16pt">
-            <b>หมายเลขพัสดุ / ครุภัณฑ์ :</b> <?= $data['numberDevice1'] . $Device2 . $Device3 ?>
-          </p>
-
+        <div class="row">
+          <div class="col-6">
+            <label>ส่งซ่อมอุปกรณ์ คอมพิวเตอร์</label>
+            <input type="text" class="form-control"
+              value="<?= $data['device_name'] ?>" disabled>
+          </div>
+          <div class="col-6">
+            <label>หมายเลขพัสดุ / ครุภัณฑ์</label>
+            <input type="text" class="form-control"
+              value="<?= $data['numberDevice1'] . $Device2 . $Device3 ?>" disabled>
+          </div>
         </div>
-        <div class="d-flex justify-content-between">
 
-          <p style="text-align:left;line-height:16pt"><b>อาการที่รับแจ้ง :</b> <?= $data['report'] ?></p>
-          <p style="text-align:left; line-height:16pt"><b>รายละเอียด :</b> <?= $data['reason'] ?></p>
-          <p style="text-align:left; line-height:16pt"><b>หน่วยงานที่แจ้ง :</b> <?= $data['depart_name'] ?></p>
+        <div class="row">
+          <div class="col-12">
+            <label>อาการที่รับแจ้ง</label>
+            <input type="text" class="form-control"
+              value="<?= $data['report'] ?>" disabled>
+          </div>
         </div>
+
+        <div class="row">
+          <div class="col-6">
+            <label>รายละเอียด</label>
+            <input type="text" class="form-control"
+              value="<?= $data['reason'] ?>" disabled>
+          </div>
+          <div class="col-6">
+            <label>หน่วยงานที่แจ้ง</label>
+            <input type="text" class="form-control"
+              value="<?= $data['depart_name'] ?>" disabled>
+          </div>
+        </div>
+
         <?php
         $statusOptions = array(
           1 => "รอรับเอกสารจากหน่วยงาน",
@@ -421,8 +447,8 @@ if (!isset($_SESSION["admin_log"])) {
             ?>
           </select>
 
-          <table id="pdf" class="table table-hover mt-3 table-bordered border-secondary">
-            <thead>
+          <table id="pdf" style="width: 100%;" class="table">
+            <thead class="table-primary">
               <tr class="text-center">
                 <th scope="col">ลำดับ</th>
                 <th scope="col">รายการ</th>
@@ -493,11 +519,11 @@ if (!isset($_SESSION["admin_log"])) {
                     </select>
                   </td>
 
-                  <td><textarea disabled rows="2" maxlength="60" name="quality<?= $i ?>" class="limitedTextarea"><?= $quality ?></textarea></td>
-                  <td><input disabled value="<?= $amount ?>" style="width: 2rem;" type="text" name="amount<?= $i ?>"></td>
-                  <td><input disabled value="<?= $price ?>" style="width: 4rem;" type="text" name="price<?= $i ?>"></td>
-                  <td><input disabled readonly value="<?= $currentSum ?>" style="width: 4rem;"></td>
-                  <td><input disabled value="<?= $unit ?>" style="width: 4rem;" type="text" name="unit<?= $i ?>"></td>
+                  <td><textarea disabled rows="2" maxlength="60" name="quality<?= $i ?>" class="form-control limitedTextarea"><?= $quality ?></textarea></td>
+                  <td><input disabled value="<?= $amount ?>" style="width: 2rem;" type="text" name="amount<?= $i ?>" class="form-control"></td>
+                  <td><input disabled value="<?= $price ?>" style="width: 4rem;" type="text" name="price<?= $i ?>" class="form-control"></td>
+                  <td><input disabled readonly value="<?= $currentSum ?>" style="width: 4rem;" class="form-control"></td>
+                  <td><input disabled value="<?= $unit ?>" style="width: 4rem;" type="text" name="unit<?= $i ?>" class="form-control"></td>
                 </tr>
               <?php
               }

@@ -1175,7 +1175,7 @@ foreach ($result as $d) {
               }
 
               $(document).ready(function() {
-                $('.device-select').change(function() {
+                $('#table-body').on('change', '.device-select', function() {
                   var models_id = $(this).val();
                   var row = $(this).data('row');
 
@@ -1189,9 +1189,10 @@ foreach ($result as $d) {
                       success: function(response) {
                         var data = JSON.parse(response);
                         if (data.success) {
-                          $('#quality' + row).val(data.quality);
-                          $('#price' + row).val(data.price);
-                          $('#unit' + row).val(data.unit);
+                          // Update fields in the corresponding row
+                          $(`#table-body tr:nth-child(${row}) textarea[name="quality[]"]`).val(data.quality);
+                          $(`#table-body tr:nth-child(${row}) input[name="price[]"]`).val(data.price);
+                          $(`#table-body tr:nth-child(${row}) input[name="unit[]"]`).val(data.unit);
                         } else {
                           alert('ไม่สามารถดึงข้อมูลได้');
                         }

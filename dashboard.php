@@ -45,9 +45,10 @@ if (!isset($_SESSION["admin_log"])) {
         setTimeout(refreshPage, 30000);
     </script> -->
     <style>
-        body{
+        body {
             background-color: #F9FDFF;
         }
+
         #dataAll tbody tr td {
             background-color: #fff4f5;
             color: #000;
@@ -258,12 +259,15 @@ if (!isset($_SESSION["admin_log"])) {
                                     $dateString = $row['date_report'];
                                     $timestamp = strtotime($dateString);
                                     $dateFormatted = date('d/m/Y', $timestamp);
+
+                                    $timeString = $row['time_report'];
+                                    $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
                                     if ($row['status'] == 0) {
                                 ?>
                                         <tr>
                                             <td scope="row"><?= $row['id'] ?></td>
                                             <td scope="row"><?= $dateFormatted ?></td>
-                                            <td><?= $row['time_report'] ?> น.</td>
+                                            <td><?= $timeFormatted ?></td>
                                             <td><?= $row['deviceName'] ?></td>
                                             <td><?= $row['report'] ?></td>
                                             <td><?= $row['reporter'] ?></td>
@@ -326,6 +330,8 @@ if (!isset($_SESSION["admin_log"])) {
                                 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                                 foreach ($result as $row) {
+                                    $timeString = $row['time_report'];
+                                    $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
                                 ?>
                                     <tr class="text-center">
                                         <td><?= $row['id'] ?></td>
@@ -333,7 +339,7 @@ if (!isset($_SESSION["admin_log"])) {
                                         <td><?= $row['deviceName'] ?></td>
                                         <td><?= $row['report'] ?></td>
                                         <td><?= $row['depart_name'] ?></td>
-                                        <td><?= $row['time_report'] ?></td>
+                                        <td><?= $timeFormatted ?></td>
                                         <td><?= $row['take'] ?></td>
                                     </tr>
                                 <?php
@@ -434,12 +440,15 @@ if (!isset($_SESSION["admin_log"])) {
                                     $dateString = $row['date_report'];
                                     $timestamp = strtotime($dateString);
                                     $dateFormatted = date('d/m/Y', $timestamp);
+
                                     if ($row['status'] == 0) {
+                                        $timeString = $row['time_report'];
+                                        $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
                                 ?>
                                         <tr>
                                             <td scope="row"><?= $row['id'] ?></td>
                                             <td scope="row"><?= $dateFormatted ?></td>
-                                            <td><?= $row['time_report'] ?> น.</td>
+                                            <td><?= $timeFormatted ?></td>
                                             <td><?= $row['deviceName'] ?></td>
                                             <td><?= $row['report'] ?></td>
                                             <td><?= $row['reporter'] ?></td>
@@ -492,6 +501,7 @@ if (!isset($_SESSION["admin_log"])) {
                             </thead>
                             <tbody>
                                 <?php
+
                                 $sql = "SELECT dp.*,dt.depart_name 
                     FROM data_report as dp
                     INNER JOIN depart as dt ON dp.department = dt.depart_id
@@ -501,8 +511,10 @@ if (!isset($_SESSION["admin_log"])) {
                                 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                                 foreach ($result as $row) {
-
+                                    $timeString = $row['time_report'];
+                                    $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
                                     if ($row['status'] == 5) {
+
                                 ?>
                                         <tr class="text-center">
                                             <td><?= $row['id'] ?></td>
@@ -523,7 +535,7 @@ if (!isset($_SESSION["admin_log"])) {
                                             <td><?= $row['deviceName'] ?></td>
                                             <td><?= $row['report'] ?></td>
                                             <td><?= $row['depart_name'] ?></td>
-                                            <td><?= $row['time_report'] ?></td>
+                                            <td><?= $timeFormatted ?></td>
                                             <td><?= $row['take'] ?></td>
 
                                         </tr>
@@ -564,7 +576,8 @@ if (!isset($_SESSION["admin_log"])) {
                                 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                                 foreach ($result as $row) {
-
+                                    $timeString = $row['time_report'];
+                                    $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
                                     if ($row['status'] == 3) {
                                 ?>
                                         <tr class="text-center">
@@ -586,7 +599,7 @@ if (!isset($_SESSION["admin_log"])) {
                                             <td><?= $row['deviceName'] ?></td>
                                             <td><?= $row['report'] ?></td>
                                             <td><?= $row['depart_name'] ?></td>
-                                            <td><?= $row['time_report'] ?></td>
+                                            <td><?= $timeFormatted ?></td>
                                             <td><?= $row['take'] ?></td>
 
                                         </tr>
@@ -628,6 +641,12 @@ if (!isset($_SESSION["admin_log"])) {
                                 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                                 foreach ($result as $row) {
+                                    $closeTimeString = $row['close_date'];
+                                    if (empty($closeTimeString) || $closeTimeString === '00:00:00.000000') {
+                                        $closeTimeFormatted = '-'; // Placeholder for null/invalid times
+                                    } else {
+                                        $closeTimeFormatted = date('H:i', strtotime($closeTimeString)) . ' น.';
+                                    }
                                     if ($row['status'] == 4) {
                                 ?>
                                         <tr class="text-left">
@@ -649,7 +668,7 @@ if (!isset($_SESSION["admin_log"])) {
                                             <td><?= $row['report'] ?></td>
                                             <td><?= $row['depart_name'] ?></td>
                                             <td><?= $row['take'] ?></td>
-                                            <td><?= $row['close_date'] ?></td>
+                                            <td><?= $closeTimeFormatted ?></td>
                                         </tr>
                                 <?php }
                                 }
