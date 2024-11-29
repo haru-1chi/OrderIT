@@ -485,149 +485,400 @@ if (isset($_POST['submit_with_work'])) {
     $repair_count = $_POST['repair_count'] ?? null;
     $device = $_POST['device'] ?? null;
     $deviceName = $_POST['deviceName'] ?? null;
+    $noteTask = $_POST["noteTask"];
     $sla = $_POST['sla'] ?? null;
     $kpi = $_POST['kpi'] ?? null;
     $close_date = $_POST['close_date'] ?? null;
-    echo '<pre>';
-    var_dump([
-        'id_ref' => $id_ref,
-        'numberWork' => $numberWork,
-        'dateWithdraw' => $dateWithdraw,
-        'refWithdraw' => $refWithdraw,
-        'refWork' => $refWork,
-        'refDevice' => $refDevice,
-        'numberDevices' => $numberDevices,
-        'refDepart' => $refDepart,
-        'refUsername' => $refUsername,
-        'report' => $report,
-        'reason' => $reason,
-        'refOffer' => $refOffer,
-        'quotation' => $quotation,
-        'status' => $status,
-        'note' => $note,
-        'lists' => $lists,
-        'qualities' => $qualities,
-        'amounts' => $amounts,
-        'prices' => $prices,
-        'units' => $units,
+    $statusTask = null;
+    if (!empty($close_date) && strtotime($close_date)) {
+        if (empty($device) || empty($problem) || empty($sla) || empty($kpi)) {
+            $statusTask = 6; // Incomplete
+        } else {
+            $statusTask = 4; // Complete
+        }
+    }
 
-        //ขาด number_devices ของ task
-        'close_date' => $close_date,
-        'department' => $department,
-        'deviceName' => $deviceName,
-        'device' => $device,
-        'description' => $description,
-        'repair_count' => $repair_count,
-        'withdraw' => $withdraw,
-        'sla' => $sla,
-        'kpi' => $kpi,
-        'problem' => $problem,
-    ]);
-    echo '</pre>';
-    exit();
-    // if (empty($refDepart)) {
-    //     $_SESSION["error"] = "บันทีกข้อไม่สำเร็จ";
-    //     $_SESSION["warning"] = "กรุณากดเลือกหน่วยงานหลังพิมพ์";
-    //     header("Location: ../create.php");
-    // } else if (!$_SESSION['error'] && !$_SESSION['warning']) {
-    //     try {
-    //         $conn->beginTransaction();
+    date_default_timezone_set('Asia/Bangkok');
+    $timestamp = date('Y-m-d H:i:s');
+    // echo '<pre>';
+    // var_dump([
+    //     'id_ref' => $id_ref,
+    //     'numberWork' => $numberWork,
+    //     'dateWithdraw' => $dateWithdraw,
+    //     'refWithdraw' => $refWithdraw,
+    //     'refWork' => $refWork,
+    //     'refDevice' => $refDevice,
+    //     'numberDevices' => $numberDevices,
+    //     'refDepart' => $refDepart,
+    //     'refUsername' => $refUsername,
+    //     'report' => $report,
+    //     'reason' => $reason,
+    //     'refOffer' => $refOffer,
+    //     'quotation' => $quotation,
+    //     'status' => $status,
+    //     'note' => $note,
+    //     'lists' => $lists,
+    //     'qualities' => $qualities,
+    //     'amounts' => $amounts,
+    //     'prices' => $prices,
+    //     'units' => $units,
 
-    //         // Insert into orderdata_new
-    //         $sql = "INSERT INTO orderdata_new (numberWork, dateWithdraw, refWithdraw, refWork, refDevice, reason, report, refDepart, refUsername, refOffer, quotation, note, status, id_ref) 
-    //                 VALUES (:numberWork, :dateWithdraw, :refWithdraw, :refWork, :refDevice, :reason, :report, :refDepart, :refUsername, :refOffer, :quotation, :note, :status, :id_ref)";
-    //         $stmt = $conn->prepare($sql);
-    //         $stmt->bindParam(':numberWork', $numberWork);
-    //         $stmt->bindParam(':dateWithdraw', $dateWithdraw);
-    //         $stmt->bindParam(':refWithdraw', $refWithdraw);
-    //         $stmt->bindParam(':refWork', $refWork);
-    //         $stmt->bindParam(':refDevice', $refDevice);
-    //         $stmt->bindParam(':reason', $reason);
-    //         $stmt->bindParam(':report', $report);
-    //         $stmt->bindParam(':refDepart', $refDepart);
-    //         $stmt->bindParam(':refUsername', $refUsername);
-    //         $stmt->bindParam(':refOffer', $refOffer);
-    //         $stmt->bindParam(':quotation', $quotation);
-    //         $stmt->bindParam(':note', $note);
-    //         $stmt->bindParam(':status', $status);
-    //         $stmt->bindParam(':id_ref', $id_ref);
+    //     //ขาด number_devices ของ task
+    //     'close_date' => $close_date,
+    //     'department' => $department,
+    //     'deviceName' => $deviceName,
+    //     'device' => $device,
+    //     'description' => $description,
+    //     'repair_count' => $repair_count,
+    //     'withdraw' => $withdraw,
+    //     'noteTask' => $noteTask,
+    //     'sla' => $sla,
+    //     'kpi' => $kpi,
+    //     'problem' => $problem,
+    // ]);
+    // echo '</pre>';
+    // exit();
+    if (empty($refDepart)) {
+        $_SESSION["error"] = "บันทีกข้อไม่สำเร็จ";
+        $_SESSION["warning"] = "กรุณากดเลือกหน่วยงานหลังพิมพ์";
+        header("Location: ../create.php");
+    } else if (!$_SESSION['error'] && !$_SESSION['warning']) {
+        try {
+            $conn->beginTransaction();
 
-    //         if ($stmt->execute()) {
-    //             $orderId = $conn->lastInsertId();
+            // Insert into orderdata_new
+            $sql = "INSERT INTO orderdata_new (numberWork, dateWithdraw, refWithdraw, refWork, refDevice, reason, report, refDepart, refUsername, refOffer, quotation, note, id_ref) 
+                    VALUES (:numberWork, :dateWithdraw, :refWithdraw, :refWork, :refDevice, :reason, :report, :refDepart, :refUsername, :refOffer, :quotation, :note, :id_ref)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':numberWork', $numberWork);
+            $stmt->bindParam(':dateWithdraw', $dateWithdraw);
+            $stmt->bindParam(':refWithdraw', $refWithdraw);
+            $stmt->bindParam(':refWork', $refWork);
+            $stmt->bindParam(':refDevice', $refDevice);
+            $stmt->bindParam(':reason', $reason);
+            $stmt->bindParam(':report', $report);
+            $stmt->bindParam(':refDepart', $refDepart);
+            $stmt->bindParam(':refUsername', $refUsername);
+            $stmt->bindParam(':refOffer', $refOffer);
+            $stmt->bindParam(':quotation', $quotation);
+            $stmt->bindParam(':note', $note);
+            $stmt->bindParam(':id_ref', $id_ref);
 
-    //             // Insert into order_items
-    //             $itemSql = "INSERT INTO order_items (order_id, list, quality, amount, price, unit) 
-    //                         VALUES (:order_id, :list, :quality, :amount, :price, :unit)";
-    //             $itemStmt = $conn->prepare($itemSql);
+            if ($stmt->execute()) {
+                $orderId = $conn->lastInsertId();
 
-    //             foreach ($lists as $index => $list) {
-    //                 $itemStmt->bindParam(':order_id', $orderId);
-    //                 $itemStmt->bindParam(':list', $list);
-    //                 $itemStmt->bindParam(':quality', $qualities[$index]);
-    //                 $itemStmt->bindParam(':amount', $amounts[$index]);
-    //                 $itemStmt->bindParam(':price', $prices[$index]);
-    //                 $itemStmt->bindParam(':unit', $units[$index]);
-    //                 $itemStmt->execute();
-    //             }
+                // Prepare statements
+                $itemSql = "INSERT INTO order_items (order_id, list, quality, amount, price, unit) 
+                VALUES (:order_id, :list, :quality, :amount, :price, :unit)";
+                $itemStmt = $conn->prepare($itemSql);
 
-    //             // Insert into order_numberdevice
-    //             $deviceSql = "INSERT INTO order_numberdevice (order_item, numberDevice) VALUES (:order_item, :numberDevice)";
-    //             $deviceStmt = $conn->prepare($deviceSql);
+                $deviceSql = "INSERT INTO order_numberdevice (order_item, numberDevice) 
+                  VALUES (:order_item, :numberDevice)";
+                $deviceStmt = $conn->prepare($deviceSql);
 
-    //             if (isset($_POST['number_device'])) {
-    //                 foreach ($_POST['number_device'] as $modalId => $devices) {
-    //                     foreach ($devices as $numberDevice) {
-    //                         $deviceStmt->bindParam(':order_item', $orderId);
-    //                         $deviceStmt->bindParam(':numberDevice', $numberDevice);
-    //                         $deviceStmt->execute();
-    //                     }
-    //                 }
-    //             }
+                foreach ($lists as $modalId => $modalLists) {
+                    foreach ($modalLists as $index => $list) {
+                        $itemStmt->bindParam(':order_id', $orderId);
+                        $itemStmt->bindParam(':list', $list);
+                        $itemStmt->bindParam(':quality', $qualities[$modalId][$index]);
+                        $itemStmt->bindParam(':amount', $amounts[$modalId][$index]);
+                        $itemStmt->bindParam(':price', $prices[$modalId][$index]);
+                        $itemStmt->bindParam(':unit', $units[$modalId][$index]);
+                        $itemStmt->execute();
+                    }
+                }
 
-    //             // Update additional fields in data_report if `id_ref` matches
-    //             $checkSql = "SELECT numberWork FROM orderdata_new WHERE id_ref = :id_ref";
-    //             $checkStmt = $conn->prepare($checkSql);
-    //             $checkStmt->bindParam(":id_ref", $id_ref);
-    //             $checkStmt->execute();
+                if (isset($numberDevices)) {
+                    foreach ($numberDevices as $modalId => $devices) {
+                        foreach ($devices as $index => $numberDevice) {
+                            // Save devices to the order_numberdevice table
+                            $deviceStmt->bindParam(':order_item', $orderId);
+                            $deviceStmt->bindParam(':numberDevice', $numberDevice);
+                            $deviceStmt->execute();
+                
+                            // Save the first device into $firstNumberDevice
+                            if ($index === 0) {
+                                $firstNumberDevice = $numberDevice;
+                            }
+                        }
+                    }
+                }
 
-    //             if ($checkStmt->rowCount() > 0) {
-    //                 $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
-    //                 $withdraw = $result['numberWork'];
-    //             }
+                $statusSql = "INSERT INTO order_status (order_id, status, timestamp) 
+                  VALUES (:order_id, :status, :timestamp)";
+                $statusStmt = $conn->prepare($statusSql);
+                $statusStmt->bindParam(':order_id', $orderId);
+                $statusStmt->bindParam(':status', $status);
+                $statusStmt->bindParam(':timestamp', $timestamp);
+                $statusStmt->execute();
 
-    //             $updateSql = "UPDATE data_report 
-    //                           SET problem = :problem, description = :description, note = :note, withdraw = :withdraw,
-    //                               number_device = :number_device, device = :device, deviceName = :deviceName, sla = :sla, 
-    //                               kpi = :kpi, repair_count = :repair_count, close_date = :close_date, department = :department 
-    //                           WHERE id = :id_ref";
-    //             $updateStmt = $conn->prepare($updateSql);
-    //             $updateStmt->bindParam(":problem", $problem);
-    //             $updateStmt->bindParam(":description", $description);
-    //             $updateStmt->bindParam(":note", $note);
-    //             $updateStmt->bindParam(":withdraw", $withdraw);
-    //             $updateStmt->bindParam(":number_device", $numberDevices[0]); // Assuming the first device number
-    //             $updateStmt->bindParam(":device", $device);
-    //             $updateStmt->bindParam(":deviceName", $deviceName);
-    //             $updateStmt->bindParam(":sla", $sla);
-    //             $updateStmt->bindParam(":kpi", $kpi);
-    //             $updateStmt->bindParam(":repair_count", $repair_count);
-    //             $updateStmt->bindParam(":close_date", $close_date);
-    //             $updateStmt->bindParam(":department", $department);
-    //             $updateStmt->bindParam(":id_ref", $id_ref);
-    //             $updateStmt->execute();
+                // Update additional fields in data_report if `id_ref` matches
+                $checkSql = "SELECT numberWork FROM orderdata_new WHERE id_ref = :id_ref";
+                $checkStmt = $conn->prepare($checkSql);
+                $checkStmt->bindParam(":id_ref", $id_ref);
+                $checkStmt->execute();
 
-    //             $conn->commit();
-    //             $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จและอัปเดตเรียบร้อย";
-    //             header("location: ../create.php");
-    //         } else {
-    //             throw new Exception("Insert into orderdata_new failed.");
-    //         }
-    //     } catch (Exception $e) {
-    //         $conn->rollBack();
-    //         $_SESSION["error"] = "พบข้อผิดพลาด: " . $e->getMessage();
-    //         header("location: ../create.php");
-    //     }
-    // }
+                if ($checkStmt->rowCount() > 0) {
+                    $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
+                    $withdraw = $result['numberWork'];
+                }
+
+                $firstNumberDevice = $firstNumberDevice ?? null;
+
+                $updateSql = "UPDATE data_report 
+                              SET problem = :problem, description = :description, note = :note, withdraw = :withdraw,
+                                  number_device = :number_device, device = :device, deviceName = :deviceName, sla = :sla, 
+                                  kpi = :kpi, repair_count = :repair_count, close_date = :close_date, department = :department";
+
+                if (!empty($close_date) && strtotime($close_date)) {
+                    $updateSql .= ", status = :status";
+                }
+
+                $updateSql .= " WHERE id = :id_ref";
+                $updateStmt = $conn->prepare($updateSql);
+                $updateStmt->bindParam(":problem", $problem);
+                $updateStmt->bindParam(":description", $description);
+                $updateStmt->bindParam(":note", $noteTask);
+                $updateStmt->bindParam(":withdraw", $withdraw);
+                $updateStmt->bindParam(":number_device", $firstNumberDevice);
+                $updateStmt->bindParam(":device", $device);
+                $updateStmt->bindParam(":deviceName", $deviceName);
+                $updateStmt->bindParam(":sla", $sla);
+                $updateStmt->bindParam(":kpi", $kpi);
+                $updateStmt->bindParam(":repair_count", $repair_count);
+                $updateStmt->bindParam(":close_date", $close_date);
+                $updateStmt->bindParam(":department", $department);
+                $updateStmt->bindParam(":id_ref", $id_ref);
+                if (!empty($close_date) && strtotime($close_date)) {
+                    $updateStmt->bindParam(":status", $statusTask);
+                }
+                $updateStmt->execute();
+
+                $conn->commit();
+                $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จและอัปเดตเรียบร้อย";
+                header("location: ../create.php");
+            } else {
+                throw new Exception("Insert into orderdata_new failed.");
+            }
+        } catch (Exception $e) {
+            $conn->rollBack();
+            $_SESSION["error"] = "พบข้อผิดพลาด: " . $e->getMessage();
+            header("location: ../create.php");
+        }
+    }
+}
+
+if (isset($_POST['submit_with_work'])) {
+    // $numberWork = generateNumberWork($conn);
+    $dateWithdraw = $_POST["dateWithdraw"];
+    $refWithdraw = $_POST["ref_withdraw"];
+    $refWork = $_POST["ref_work"];
+    $refDevice = $_POST["ref_device"];
+    $reason = $_POST["reason"];
+    $report = $_POST["report"];
+    $refDepart = $_POST["depart_id"];
+    $refUsername = $_POST["ref_username"];
+    $refOffer = $_POST["ref_offer"];
+    $quotation = $_POST["quotation"];
+    $note = $_POST["note"];
+    $status = $_POST["status"];
+    // $id_ref = $_POST["id_ref"];
+    $numberDevices = $_POST["number_device"];
+
+    $lists = $_POST['list'];
+    $qualities = $_POST['quality'];
+    $amounts = $_POST['amount'];
+    $prices = $_POST['price'];
+    $units = $_POST['unit'];
+    // Additional fields from Bantext
+    $problem = $_POST['problem'] ?? null;
+    $description = $_POST['description'] ?? null;
+    $withdraw = $_POST['withdraw'] ?? $_POST['withdraw2'] ?? null;
+    $department = $_POST['department'] ?? null;
+    $repair_count = $_POST['repair_count'] ?? null;
+    $device = $_POST['device'] ?? null;
+    $deviceName = $_POST['deviceName'] ?? null;
+    $noteTask = $_POST["noteTask"];
+    $sla = $_POST['sla'] ?? null;
+    $kpi = $_POST['kpi'] ?? null;
+    $close_date = $_POST['close_date'] ?? null;
+    $statusTask = null;
+    if (!empty($close_date) && strtotime($close_date)) {
+        if (empty($device) || empty($problem) || empty($sla) || empty($kpi)) {
+            $statusTask = 6; // Incomplete
+        } else {
+            $statusTask = 4; // Complete
+        }
+    }
+
+    date_default_timezone_set('Asia/Bangkok');
+    $timestamp = date('Y-m-d H:i:s');
+    // echo '<pre>';
+    // var_dump([
+    //     'id_ref' => $id_ref,
+    //     'numberWork' => $numberWork,
+    //     'dateWithdraw' => $dateWithdraw,
+    //     'refWithdraw' => $refWithdraw,
+    //     'refWork' => $refWork,
+    //     'refDevice' => $refDevice,
+    //     'numberDevices' => $numberDevices,
+    //     'refDepart' => $refDepart,
+    //     'refUsername' => $refUsername,
+    //     'report' => $report,
+    //     'reason' => $reason,
+    //     'refOffer' => $refOffer,
+    //     'quotation' => $quotation,
+    //     'status' => $status,
+    //     'note' => $note,
+    //     'lists' => $lists,
+    //     'qualities' => $qualities,
+    //     'amounts' => $amounts,
+    //     'prices' => $prices,
+    //     'units' => $units,
+
+    //     //ขาด number_devices ของ task
+    //     'close_date' => $close_date,
+    //     'department' => $department,
+    //     'deviceName' => $deviceName,
+    //     'device' => $device,
+    //     'description' => $description,
+    //     'repair_count' => $repair_count,
+    //     'withdraw' => $withdraw,
+    //     'noteTask' => $noteTask,
+    //     'sla' => $sla,
+    //     'kpi' => $kpi,
+    //     'problem' => $problem,
+    // ]);
+    // echo '</pre>';
+    // exit();
+    if (empty($refDepart)) {
+        $_SESSION["error"] = "บันทีกข้อไม่สำเร็จ";
+        $_SESSION["warning"] = "กรุณากดเลือกหน่วยงานหลังพิมพ์";
+        header("Location: ../create.php");
+    } else if (!$_SESSION['error'] && !$_SESSION['warning']) {
+        try {
+            $conn->beginTransaction();
+
+            // Insert into orderdata_new
+            $sql = "INSERT INTO orderdata_new (numberWork, dateWithdraw, refWithdraw, refWork, refDevice, reason, report, refDepart, refUsername, refOffer, quotation, note, id_ref) 
+                    VALUES (:numberWork, :dateWithdraw, :refWithdraw, :refWork, :refDevice, :reason, :report, :refDepart, :refUsername, :refOffer, :quotation, :note, :id_ref)";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':numberWork', $numberWork);
+            $stmt->bindParam(':dateWithdraw', $dateWithdraw);
+            $stmt->bindParam(':refWithdraw', $refWithdraw);
+            $stmt->bindParam(':refWork', $refWork);
+            $stmt->bindParam(':refDevice', $refDevice);
+            $stmt->bindParam(':reason', $reason);
+            $stmt->bindParam(':report', $report);
+            $stmt->bindParam(':refDepart', $refDepart);
+            $stmt->bindParam(':refUsername', $refUsername);
+            $stmt->bindParam(':refOffer', $refOffer);
+            $stmt->bindParam(':quotation', $quotation);
+            $stmt->bindParam(':note', $note);
+            $stmt->bindParam(':id_ref', $id_ref);
+
+            if ($stmt->execute()) {
+                $orderId = $conn->lastInsertId();
+
+                // Prepare statements
+                $itemSql = "INSERT INTO order_items (order_id, list, quality, amount, price, unit) 
+                VALUES (:order_id, :list, :quality, :amount, :price, :unit)";
+                $itemStmt = $conn->prepare($itemSql);
+
+                $deviceSql = "INSERT INTO order_numberdevice (order_item, numberDevice) 
+                  VALUES (:order_item, :numberDevice)";
+                $deviceStmt = $conn->prepare($deviceSql);
+
+                foreach ($lists as $modalId => $modalLists) {
+                    foreach ($modalLists as $index => $list) {
+                        $itemStmt->bindParam(':order_id', $orderId);
+                        $itemStmt->bindParam(':list', $list);
+                        $itemStmt->bindParam(':quality', $qualities[$modalId][$index]);
+                        $itemStmt->bindParam(':amount', $amounts[$modalId][$index]);
+                        $itemStmt->bindParam(':price', $prices[$modalId][$index]);
+                        $itemStmt->bindParam(':unit', $units[$modalId][$index]);
+                        $itemStmt->execute();
+                    }
+                }
+
+                if (isset($numberDevices)) {
+                    foreach ($numberDevices as $modalId => $devices) {
+                        foreach ($devices as $index => $numberDevice) {
+                            // Save devices to the order_numberdevice table
+                            $deviceStmt->bindParam(':order_item', $orderId);
+                            $deviceStmt->bindParam(':numberDevice', $numberDevice);
+                            $deviceStmt->execute();
+                
+                            // Save the first device into $firstNumberDevice
+                            if ($index === 0) {
+                                $firstNumberDevice = $numberDevice;
+                            }
+                        }
+                    }
+                }
+
+                $statusSql = "INSERT INTO order_status (order_id, status, timestamp) 
+                  VALUES (:order_id, :status, :timestamp)";
+                $statusStmt = $conn->prepare($statusSql);
+                $statusStmt->bindParam(':order_id', $orderId);
+                $statusStmt->bindParam(':status', $status);
+                $statusStmt->bindParam(':timestamp', $timestamp);
+                $statusStmt->execute();
+
+                // Update additional fields in data_report if `id_ref` matches
+                $checkSql = "SELECT numberWork FROM orderdata_new WHERE id_ref = :id_ref";
+                $checkStmt = $conn->prepare($checkSql);
+                $checkStmt->bindParam(":id_ref", $id_ref);
+                $checkStmt->execute();
+
+                if ($checkStmt->rowCount() > 0) {
+                    $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
+                    $withdraw = $result['numberWork'];
+                }
+
+                $firstNumberDevice = $firstNumberDevice ?? null;
+
+                $updateSql = "UPDATE data_report 
+                              SET problem = :problem, description = :description, note = :note, withdraw = :withdraw,
+                                  number_device = :number_device, device = :device, deviceName = :deviceName, sla = :sla, 
+                                  kpi = :kpi, repair_count = :repair_count, close_date = :close_date, department = :department";
+
+                if (!empty($close_date) && strtotime($close_date)) {
+                    $updateSql .= ", status = :status";
+                }
+
+                $updateSql .= " WHERE id = :id_ref";
+                $updateStmt = $conn->prepare($updateSql);
+                $updateStmt->bindParam(":problem", $problem);
+                $updateStmt->bindParam(":description", $description);
+                $updateStmt->bindParam(":note", $noteTask);
+                $updateStmt->bindParam(":withdraw", $withdraw);
+                $updateStmt->bindParam(":number_device", $firstNumberDevice);
+                $updateStmt->bindParam(":device", $device);
+                $updateStmt->bindParam(":deviceName", $deviceName);
+                $updateStmt->bindParam(":sla", $sla);
+                $updateStmt->bindParam(":kpi", $kpi);
+                $updateStmt->bindParam(":repair_count", $repair_count);
+                $updateStmt->bindParam(":close_date", $close_date);
+                $updateStmt->bindParam(":department", $department);
+                $updateStmt->bindParam(":id_ref", $id_ref);
+                if (!empty($close_date) && strtotime($close_date)) {
+                    $updateStmt->bindParam(":status", $statusTask);
+                }
+                $updateStmt->execute();
+
+                $conn->commit();
+                $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จและอัปเดตเรียบร้อย";
+                header("location: ../create.php");
+            } else {
+                throw new Exception("Insert into orderdata_new failed.");
+            }
+        } catch (Exception $e) {
+            $conn->rollBack();
+            $_SESSION["error"] = "พบข้อผิดพลาด: " . $e->getMessage();
+            header("location: ../create.php");
+        }
+    }
 }
 
 // if (isset($_POST['submit_with_work'])) {
@@ -1197,7 +1448,7 @@ if (isset($_POST['CloseSubmit'])) {
     $id = $_POST['id'];
     $problem = $_POST['problem'];
     $description = $_POST['description'];
-    $note = $_POST['note'];
+    $note = $_POST['noteTask'];
     $department = $_POST['department'];
     $device = $_POST['device'];
     $deviceName = $_POST['deviceName'];
@@ -1300,7 +1551,7 @@ if (isset($_POST['Bantext'])) {
         $withdraw = $_POST['withdraw2'];
     }
 
-    $note = $_POST['note'];
+    $note = $_POST['noteTask'];
     $department = $_POST['department'];
     $number_device = $_POST['number_devices'];
     $repair_count = $_POST['repair_count'];
