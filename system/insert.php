@@ -500,44 +500,44 @@ if (isset($_POST['submit_with_work'])) {
 
     date_default_timezone_set('Asia/Bangkok');
     $timestamp = date('Y-m-d H:i:s');
-    // echo '<pre>';
-    // var_dump([
-    //     'id_ref' => $id_ref,
-    //     'numberWork' => $numberWork,
-    //     'dateWithdraw' => $dateWithdraw,
-    //     'refWithdraw' => $refWithdraw,
-    //     'refWork' => $refWork,
-    //     'refDevice' => $refDevice,
-    //     'numberDevices' => $numberDevices,
-    //     'refDepart' => $refDepart,
-    //     'refUsername' => $refUsername,
-    //     'report' => $report,
-    //     'reason' => $reason,
-    //     'refOffer' => $refOffer,
-    //     'quotation' => $quotation,
-    //     'status' => $status,
-    //     'note' => $note,
-    //     'lists' => $lists,
-    //     'qualities' => $qualities,
-    //     'amounts' => $amounts,
-    //     'prices' => $prices,
-    //     'units' => $units,
+    echo '<pre>';
+    var_dump([
+        'id_ref' => $id_ref,
+        'numberWork' => $numberWork,
+        'dateWithdraw' => $dateWithdraw,
+        'refWithdraw' => $refWithdraw,
+        'refWork' => $refWork,
+        'refDevice' => $refDevice,
+        'numberDevices' => $numberDevices,
+        'refDepart' => $refDepart,
+        'refUsername' => $refUsername,
+        'report' => $report,
+        'reason' => $reason,
+        'refOffer' => $refOffer,
+        'quotation' => $quotation,
+        'status' => $status,
+        'note' => $note,
+        'lists' => $lists,
+        'qualities' => $qualities,
+        'amounts' => $amounts,
+        'prices' => $prices,
+        'units' => $units,
 
-    //     //ขาด number_devices ของ task
-    //     'close_date' => $close_date,
-    //     'department' => $department,
-    //     'deviceName' => $deviceName,
-    //     'device' => $device,
-    //     'description' => $description,
-    //     'repair_count' => $repair_count,
-    //     'withdraw' => $withdraw,
-    //     'noteTask' => $noteTask,
-    //     'sla' => $sla,
-    //     'kpi' => $kpi,
-    //     'problem' => $problem,
-    // ]);
-    // echo '</pre>';
-    // exit();
+        //ขาด number_devices ของ task
+        'close_date' => $close_date,
+        'department' => $department,
+        'deviceName' => $deviceName,
+        'device' => $device,
+        'description' => $description,
+        'repair_count' => $repair_count,
+        'withdraw' => $withdraw,
+        'noteTask' => $noteTask,
+        'sla' => $sla,
+        'kpi' => $kpi,
+        'problem' => $problem,
+    ]);
+    echo '</pre>';
+    exit();
     if (empty($refDepart)) {
         $_SESSION["error"] = "บันทีกข้อไม่สำเร็จ";
         $_SESSION["warning"] = "กรุณากดเลือกหน่วยงานหลังพิมพ์";
@@ -595,7 +595,7 @@ if (isset($_POST['submit_with_work'])) {
                             $deviceStmt->bindParam(':order_item', $orderId);
                             $deviceStmt->bindParam(':numberDevice', $numberDevice);
                             $deviceStmt->execute();
-                
+
                             // Save the first device into $firstNumberDevice
                             if ($index === 0) {
                                 $firstNumberDevice = $numberDevice;
@@ -668,8 +668,9 @@ if (isset($_POST['submit_with_work'])) {
     }
 }
 
-if (isset($_POST['submit_with_work'])) {
-    // $numberWork = generateNumberWork($conn);
+if (isset($_POST['save_with_work'])) {
+    $numberWork = $_POST["numberWork"];
+    $withdraw_id = $_POST["withdraw_id"];
     $dateWithdraw = $_POST["dateWithdraw"];
     $refWithdraw = $_POST["ref_withdraw"];
     $refWork = $_POST["ref_work"];
@@ -682,14 +683,26 @@ if (isset($_POST['submit_with_work'])) {
     $quotation = $_POST["quotation"];
     $note = $_POST["note"];
     $status = $_POST["status"];
-    // $id_ref = $_POST["id_ref"];
+    $id_ref = $_POST["id_ref"];
+
     $numberDevices = $_POST["number_device"];
+    $update_number_device = $_POST["update_number_device"];
+    $deleted_devices = $_POST["deleted_devices"];
 
     $lists = $_POST['list'];
     $qualities = $_POST['quality'];
     $amounts = $_POST['amount'];
     $prices = $_POST['price'];
     $units = $_POST['unit'];
+
+    $update_lists = $_POST['update_list'];
+    $update_qualities = $_POST['update_quality'];
+    $update_amounts = $_POST['update_amount'];
+    $update_prices = $_POST['update_price'];
+    $update_units = $_POST['update_unit'];
+
+    $deleted_items = $_POST['deleted_items'];
+
     // Additional fields from Bantext
     $problem = $_POST['problem'] ?? null;
     $description = $_POST['description'] ?? null;
@@ -721,7 +734,6 @@ if (isset($_POST['submit_with_work'])) {
     //     'refWithdraw' => $refWithdraw,
     //     'refWork' => $refWork,
     //     'refDevice' => $refDevice,
-    //     'numberDevices' => $numberDevices,
     //     'refDepart' => $refDepart,
     //     'refUsername' => $refUsername,
     //     'report' => $report,
@@ -730,11 +742,24 @@ if (isset($_POST['submit_with_work'])) {
     //     'quotation' => $quotation,
     //     'status' => $status,
     //     'note' => $note,
+
+    //     'numberDevices' => $numberDevices,
+    //     'update_number_device' => $update_number_device,
+    //     'deleted_devices' => $deleted_devices,
+
     //     'lists' => $lists,
     //     'qualities' => $qualities,
     //     'amounts' => $amounts,
     //     'prices' => $prices,
     //     'units' => $units,
+
+    //     'update_lists' => $update_lists,
+    //     'update_qualities' => $update_qualities,
+    //     'update_amounts' => $update_amounts,
+    //     'update_prices' => $update_prices,
+    //     'update_units' => $update_units,
+
+    //     'deleted_items' => $deleted_items,
 
     //     //ขาด number_devices ของ task
     //     'close_date' => $close_date,
@@ -758,11 +783,23 @@ if (isset($_POST['submit_with_work'])) {
     } else if (!$_SESSION['error'] && !$_SESSION['warning']) {
         try {
             $conn->beginTransaction();
-
-            // Insert into orderdata_new
-            $sql = "INSERT INTO orderdata_new (numberWork, dateWithdraw, refWithdraw, refWork, refDevice, reason, report, refDepart, refUsername, refOffer, quotation, note, id_ref) 
-                    VALUES (:numberWork, :dateWithdraw, :refWithdraw, :refWork, :refDevice, :reason, :report, :refDepart, :refUsername, :refOffer, :quotation, :note, :id_ref)";
+            $sql = "UPDATE orderdata_new 
+        SET numberWork = :numberWork,
+            dateWithdraw = :dateWithdraw,
+            refWithdraw = :refWithdraw,
+            refWork = :refWork,
+            refDevice = :refDevice,
+            reason = :reason,
+            report = :report,
+            refDepart = :refDepart,
+            refUsername = :refUsername,
+            refOffer = :refOffer,
+            quotation = :quotation,
+            note = :note,
+            id_ref = :id_ref
+        WHERE id = :id";
             $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':id', $withdraw_id);
             $stmt->bindParam(':numberWork', $numberWork);
             $stmt->bindParam(':dateWithdraw', $dateWithdraw);
             $stmt->bindParam(':refWithdraw', $refWithdraw);
@@ -785,10 +822,6 @@ if (isset($_POST['submit_with_work'])) {
                 VALUES (:order_id, :list, :quality, :amount, :price, :unit)";
                 $itemStmt = $conn->prepare($itemSql);
 
-                $deviceSql = "INSERT INTO order_numberdevice (order_item, numberDevice) 
-                  VALUES (:order_item, :numberDevice)";
-                $deviceStmt = $conn->prepare($deviceSql);
-
                 foreach ($lists as $modalId => $modalLists) {
                     foreach ($modalLists as $index => $list) {
                         $itemStmt->bindParam(':order_id', $orderId);
@@ -801,28 +834,111 @@ if (isset($_POST['submit_with_work'])) {
                     }
                 }
 
-                if (isset($numberDevices)) {
-                    foreach ($numberDevices as $modalId => $devices) {
-                        foreach ($devices as $index => $numberDevice) {
-                            // Save devices to the order_numberdevice table
-                            $deviceStmt->bindParam(':order_item', $orderId);
-                            $deviceStmt->bindParam(':numberDevice', $numberDevice);
-                            $deviceStmt->execute();
-                
-                            // Save the first device into $firstNumberDevice
-                            if ($index === 0) {
-                                $firstNumberDevice = $numberDevice;
-                            }
+                if (!empty($_POST['list'])) {
+                    foreach ($_POST['list'] as $modalId => $modalLists) {
+                        foreach ($modalLists as $index => $list) {
+                            $sql = "INSERT INTO order_items (order_id, list, quality, amount, price, unit)  
+                                    VALUES (:order_id, :list, :quality, :amount, :price, :unit)";
+                            $stmt = $conn->prepare($sql);
+
+                            $stmt->bindParam(':order_id', $withdraw_id, PDO::PARAM_INT);
+                            $stmt->bindParam(':list', $list, PDO::PARAM_INT);
+                            $stmt->bindParam(':quality', $_POST['quality'][$modalId][$index], PDO::PARAM_STR);
+                            $stmt->bindParam(':amount', $_POST['amount'][$modalId][$index], PDO::PARAM_INT);
+                            $stmt->bindParam(':price', $_POST['price'][$modalId][$index], PDO::PARAM_STR);
+                            $stmt->bindParam(':unit', $_POST['unit'][$modalId][$index], PDO::PARAM_STR);
+
+                            $stmt->execute();
                         }
                     }
                 }
 
-                $statusSql = "INSERT INTO order_status (order_id, status, timestamp) 
-                  VALUES (:order_id, :status, :timestamp)";
+                if (!empty($_POST['update_list'])) {
+                    foreach ($_POST['update_list'] as $modalId => $updateLists) {
+                        foreach ($updateLists as $recordId => $list) {
+                            $sql = "UPDATE order_items 
+                                    SET list = :list, quality = :quality, amount = :amount, price = :price, unit = :unit 
+                                    WHERE id = :id";
+                            $stmt = $conn->prepare($sql);
+
+                            $stmt->bindParam(':list', $list, PDO::PARAM_STR);
+                            $stmt->bindParam(':quality', $_POST['update_quality'][$modalId][$recordId], PDO::PARAM_STR);
+                            $stmt->bindParam(':amount', $_POST['update_amount'][$modalId][$recordId], PDO::PARAM_INT);
+                            $stmt->bindParam(':price', $_POST['update_price'][$modalId][$recordId], PDO::PARAM_STR);
+                            $stmt->bindParam(':unit', $_POST['update_unit'][$modalId][$recordId], PDO::PARAM_STR);
+                            $stmt->bindParam(':id', $recordId, PDO::PARAM_INT);
+
+                            $stmt->execute();
+                        }
+                    }
+                }
+
+                if (!empty($_POST['deleted_items'])) {
+                    foreach ($_POST['deleted_items'] as $modalId => $items) {
+                        foreach ($items as $recordId => $value) {
+                            $sql = "UPDATE order_items SET is_deleted = 1 WHERE id = :id";
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bindParam(':id', $recordId, PDO::PARAM_INT);
+                            $stmt->execute();
+                        }
+                    }
+                }
+
+                if (!empty($_POST['update_number_device'])) {
+                    $firstNumberDevice = null;
+                    foreach ($_POST['update_number_device'] as $orderItem => $devices) {
+                        foreach ($devices as $deviceId => $numberDevice) {
+                            if ($firstNumberDevice === null) {
+                                $firstNumberDevice = $numberDevice;
+                            }
+
+                            $sql = "UPDATE order_numberdevice SET numberDevice = :numberDevice WHERE id = :id";
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bindParam(':numberDevice', $numberDevice);
+                            $stmt->bindParam(':id', $deviceId, PDO::PARAM_INT);
+                            $stmt->execute();
+                        }
+                    }
+                } else {
+                    $firstNumberDevice = null;
+                }
+
+                // Handle deletions
+                if (!empty($_POST['deleted_devices'])) {
+                    foreach ($_POST['deleted_devices'] as $orderItem => $devices) {
+                        foreach ($devices as $deviceId => $numberDevice) {
+                            $sql = "UPDATE order_numberdevice SET is_deleted = 1 WHERE id = :id";
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bindParam(':id', $deviceId, PDO::PARAM_INT);
+                            $stmt->execute();
+                        }
+                    }
+                }
+
+                // Handle new insertions
+                if (!empty($_POST['number_device'])) {
+                    foreach ($_POST['number_device'] as $orderItem => $devices) {
+                        foreach ($devices as $numberDevice) {
+                            if (trim($numberDevice) === "") {
+                                continue;
+                            }
+
+                            $sql = "INSERT INTO order_numberdevice (order_item, numberDevice) VALUES (:order_item, :numberDevice)";
+                            $stmt = $conn->prepare($sql);
+                            $stmt->bindParam(':order_item', $withdraw_id, PDO::PARAM_INT);
+                            $stmt->bindParam(':numberDevice', $numberDevice);
+                            $stmt->execute();
+                        }
+                    }
+                }
+
+                $statusSql = "UPDATE order_status 
+              SET status = :status, timestamp = :timestamp 
+              WHERE order_id = :order_id";
                 $statusStmt = $conn->prepare($statusSql);
-                $statusStmt->bindParam(':order_id', $orderId);
-                $statusStmt->bindParam(':status', $status);
-                $statusStmt->bindParam(':timestamp', $timestamp);
+                $statusStmt->bindParam(':order_id', $withdraw_id, PDO::PARAM_INT);
+                $statusStmt->bindParam(':status', $status, PDO::PARAM_STR);
+                $statusStmt->bindParam(':timestamp', $timestamp, PDO::PARAM_STR);
                 $statusStmt->execute();
 
                 // Update additional fields in data_report if `id_ref` matches
@@ -835,8 +951,6 @@ if (isset($_POST['submit_with_work'])) {
                     $result = $checkStmt->fetch(PDO::FETCH_ASSOC);
                     $withdraw = $result['numberWork'];
                 }
-
-                $firstNumberDevice = $firstNumberDevice ?? null;
 
                 $updateSql = "UPDATE data_report 
                               SET problem = :problem, description = :description, note = :note, withdraw = :withdraw,
@@ -869,7 +983,7 @@ if (isset($_POST['submit_with_work'])) {
 
                 $conn->commit();
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จและอัปเดตเรียบร้อย";
-                header("location: ../create.php");
+                header("location: ../myjob.php");
             } else {
                 throw new Exception("Insert into orderdata_new failed.");
             }

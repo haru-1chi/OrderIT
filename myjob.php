@@ -621,7 +621,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                 ?>
 
                                                 <div id="requisitionModal<?= $row['id'] ?>" class="modal-content withdraw-modal" style="display: none;">
-                                                    <div class="modal-header">
+                                                    <div class="modal-header" style="background-color: <?= $hasRequisition ? '#F8BF24' : '#cfe2ff'; ?>;">
                                                         <?php if ($hasRequisition): ?>
                                                             <h1 class="modal-title fs-5" id="staticBackdropLabel">แก้ไขใบเบิก</h1>
                                                         <?php else: ?>
@@ -629,16 +629,17 @@ if (!isset($_SESSION["admin_log"])) {
                                                         <?php endif; ?>
                                                         <button type="button" class="btn-close" onclick="toggleModal('#requisitionModal<?= $row['id'] ?>')"></button>
                                                     </div>
-                                                    <div class=" p-3">
-
+                                                    <div class="p-3">
                                                         <div class="row">
                                                             <input type="hidden" name="id_ref" value="<?= htmlspecialchars($row['id'], ENT_QUOTES, 'UTF-8') ?>">
                                                             <?php if ($hasRequisition) {
                                                                 foreach ($requisitionData as $rowData) { ?>
+                                                                    <input type="hidden" name="withdraw_id" value="<?= htmlspecialchars($rowData['id'], ENT_QUOTES, 'UTF-8') ?>">
                                                                     <div class="col-sm-12">
                                                                         <div class="mb-3">
                                                                             <label id="basic-addon1">เลขใบเบิก</label>
-                                                                            <input type="text" name="numberWork" class="form-control" value="<?= $rowData['numberWork'] ?>" disabled>
+                                                                            <input type="text" class="form-control" value="<?= $rowData['numberWork'] ?>" disabled>
+                                                                            <input type="hidden" name="numberWork" value="<?= $rowData['numberWork'] ?>">
                                                                         </div>
                                                                     </div>
 
@@ -713,7 +714,6 @@ if (!isset($_SESSION["admin_log"])) {
                                                                             <label id="basic-addon1">หมายเลขครุภัณฑ์</label>
                                                                             <div id="device-number-container-<?= $row['id'] ?>">
                                                                                 <?php
-                                                                                // Fetch data from the `order_numberdevice` table
                                                                                 $sql = 'SELECT * FROM order_numberdevice WHERE order_item = :order_item AND is_deleted = 0';
                                                                                 $stmt = $conn->prepare($sql);
                                                                                 $stmt->bindParam(':order_item', $rowData['id'], PDO::PARAM_INT);
@@ -721,21 +721,23 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 $numberDevices = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                                                                                 if (!empty($numberDevices)) {
-                                                                                    $isFirst = true; // Flag for the first element
+                                                                                    $isFirst = true;
                                                                                     foreach ($numberDevices as $device) { ?>
                                                                                         <div class="d-flex device-number-row">
-                                                                                            <input type="text" name="number_device[<?= $row['id'] ?>][]" class="form-control mb-2" value="<?= htmlspecialchars($device['numberDevice']) ?>">
+                                                                                            <input type="text" name="update_number_device[<?= $row['id'] ?>][<?= $device['id'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($device['numberDevice']) ?>">
                                                                                             <button type="button" class="btn btn-warning p-2 mb-2 ms-3 remove-field"
+                                                                                                data-device-id="<?= $device['id'] ?>"
+                                                                                                data-row-id="<?= $row['id'] ?>"
                                                                                                 style="visibility: <?= $isFirst ? 'hidden' : 'visible' ?>;">ลบ</button>
                                                                                         </div>
                                                                                     <?php
-                                                                                        $isFirst = false; // Set flag to false after the first iteration
+                                                                                        $isFirst = false;
                                                                                     }
                                                                                 } else { ?>
-                                                                                    <!-- If no records, show an empty input field -->
+
                                                                                     <div class="d-flex device-number-row">
-                                                                                        <input type="text" name="number_device[<?= $row['id'] ?>][]" class="form-control" value="">
-                                                                                        <button type="button" class="btn btn-danger p-2 ms-3" style="visibility: hidden;">ลบ</button>
+                                                                                        <input type="text" name="number_device[<?= $row['id'] ?>][]" class="form-control mb-2" value="">
+                                                                                        <button type="button" class="btn btn-danger p-2 ms-3 remove-field" style="visibility: hidden;">ลบ</button>
                                                                                     </div>
                                                                                 <?php } ?>
                                                                             </div>
@@ -987,12 +989,12 @@ if (!isset($_SESSION["admin_log"])) {
                                                                             <?php
                                                                             $rowNumber = 1;
                                                                             $isFirstRow = true;
-                                                                            foreach ($orderItems as $item) {
+                                                                            foreach ($orderItems as $item) { //สร้าง case ถ้า orderItems is null
                                                                             ?>
                                                                                 <tr class="text-center">
                                                                                     <th scope="row"><?= $rowNumber++; ?></th>
                                                                                     <td>
-                                                                                        <select style="width: 120px" class="form-select device-select" name="list[<?= $row['id'] ?>][]" data-row="1">
+                                                                                        <select style="width: 120px" class="form-select device-select" name="update_list[<?= $row['id'] ?>][<?= $item['id'] ?>]" data-row="1">
                                                                                             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                                                                                             <!-- Populate options dynamically -->
                                                                                             <?php
@@ -1007,11 +1009,13 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                             ?>
                                                                                         </select>
                                                                                     </td>
-                                                                                    <td><textarea rows="2" maxlength="60" name="quality[<?= $row['id'] ?>][]" class="form-control"><?= htmlspecialchars($item['quality']); ?></textarea></td>
-                                                                                    <td><input style="width: 2rem; margin: 0 auto;" type="text" name="amount[<?= $row['id'] ?>][]" class="form-control" value="<?= htmlspecialchars($item['amount']); ?>"></td>
-                                                                                    <td><input style="width: 4rem;" type="text" name="price[<?= $row['id'] ?>][]" class="form-control" value="<?= htmlspecialchars($item['price']); ?>"></td>
-                                                                                    <td><input style="width: 4rem;" type="text" name="unit[<?= $row['id'] ?>][]" class="form-control" value="<?= htmlspecialchars($item['unit']); ?>"></td>
+                                                                                    <td><textarea rows="2" maxlength="60" name="update_quality[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control"><?= htmlspecialchars($item['quality']); ?></textarea></td>
+                                                                                    <td><input style="width: 2rem; margin: 0 auto;" type="text" name="update_amount[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['amount']); ?>"></td>
+                                                                                    <td><input style="width: 4rem;" type="text" name="update_price[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['price']); ?>"></td>
+                                                                                    <td><input style="width: 4rem;" type="text" name="update_unit[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['unit']); ?>"></td>
                                                                                     <td><button type="button" class="btn btn-warning remove-row"
+                                                                                            data-items-id="<?= $item['id'] ?>"
+                                                                                            data-items-row-id="<?= $row['id'] ?>"
                                                                                             style="visibility: <?= $isFirstRow ? 'hidden' : 'visible' ?>;">ลบ</button></td>
                                                                                 </tr>
                                                                             <?php
@@ -1023,8 +1027,11 @@ if (!isset($_SESSION["admin_log"])) {
                                                                         <button type="button" id="add-row-<?= $row['id'] ?>" class="btn btn-success">+ เพิ่มแถว</button>
                                                                     </div>
 
-                                                                <?php }
-                                                            } else { ?>
+                                                                <?php } ?>
+                                                                <div class="w-100 d-flex justify-content-center">
+                                                                    <button type="submit" name="save_with_work" class="w-100 btn btn-primary mt-3">อัพเดตข้อมูล</button>
+                                                                </div>
+                                                            <?php } else { ?>
                                                                 <div class="col-sm-4">
                                                                     <div class="mb-3">
                                                                         <label id="basic-addon1">วันที่ออกใบเบิก</label>
@@ -1354,12 +1361,12 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="d-flex justify-content-end">
                                                                     <button type="button" id="add-row-<?= $row['id'] ?>" class="btn btn-success">+ เพิ่มแถว</button>
                                                                 </div>
-
+                                                                <div class="w-100 d-flex justify-content-center">
+                                                                    <button type="submit" name="submit_with_work" class="w-100 btn btn-primary mt-3">บันทึกข้อมูล</button>
+                                                                </div>
                                                             <?php }
                                                             ?>
-                                                            <div class="w-100 d-flex justify-content-center">
-                                                                <button type="submit" name="submit_with_work" class="w-100 btn btn-primary mt-3">บันทึกข้อมูล</button>
-                                                            </div>
+
                                                         </div>
                                                     </div>
 
@@ -1409,7 +1416,22 @@ if (!isset($_SESSION["admin_log"])) {
                                             document.addEventListener('click', function(e) {
                                                 if (e.target && e.target.classList.contains('remove-row')) {
                                                     const row = e.target.closest('tr');
-                                                    row.parentNode.removeChild(row);
+                                                    const hiddenInput = row.querySelector('select');
+
+                                                    if (hiddenInput && hiddenInput.name.startsWith('update_list')) {
+                                                        // Case 1: Soft delete for saved rows
+                                                        const rowId = e.target.getAttribute('data-items-row-id');
+                                                        const itemId = e.target.getAttribute('data-items-id');
+                                                        const tableBody = document.querySelector(`#table-body-${rowId}`);
+                                                        const deletedInput = document.createElement('input');
+                                                        deletedInput.type = 'hidden';
+                                                        deletedInput.name = `deleted_items[${rowId}][${itemId}]`;
+                                                        deletedInput.value = itemId;
+                                                        tableBody.appendChild(deletedInput);
+                                                    }
+
+                                                    // Case 2: Direct removal of unsaved rows
+                                                    row.remove();
                                                 }
                                             });
 
@@ -1424,7 +1446,11 @@ if (!isset($_SESSION["admin_log"])) {
                                             $(document).on('change', '.device-select', function() {
                                                 const models_id = $(this).val();
                                                 const rowElement = $(this).closest('tr');
-                                                const modalId = $(this).closest('tbody').attr('id').split('-').pop(); // Extract modalId
+                                                const modalId = $(this).closest('tbody').attr('id').split('-').pop();
+                                                const nameAttr = $(this).attr('name');
+                                                const matches = nameAttr.match(/\[(\d+)\]\[(\d+)\]/);
+                                                const isUpdateMode = matches !== null;
+                                                const itemId = isUpdateMode ? matches[2] : null;
 
                                                 if (models_id) {
                                                     $.ajax({
@@ -1436,9 +1462,15 @@ if (!isset($_SESSION["admin_log"])) {
                                                         success: function(response) {
                                                             const data = JSON.parse(response);
                                                             if (data.success) {
-                                                                rowElement.find('textarea').attr('name', `quality[${modalId}][]`).val(data.quality);
-                                                                rowElement.find('input[name^="price"]').attr('name', `price[${modalId}][]`).val(data.price);
-                                                                rowElement.find('input[name^="unit"]').attr('name', `unit[${modalId}][]`).val(data.unit);
+                                                                if (isUpdateMode) {
+                                                                    rowElement.find('textarea').attr('name', `update_quality[${modalId}][${itemId}]`).val(data.quality);
+                                                                    rowElement.find('input[name^="update_price"]').attr('name', `update_price[${modalId}][${itemId}]`).val(data.price);
+                                                                    rowElement.find('input[name^="update_unit"]').attr('name', `update_unit[${modalId}][${itemId}]`).val(data.unit);
+                                                                } else {
+                                                                    rowElement.find('textarea').attr('name', `quality[${modalId}][]`).val(data.quality);
+                                                                    rowElement.find('input[name^="price"]').attr('name', `price[${modalId}][]`).val(data.price);
+                                                                    rowElement.find('input[name^="unit"]').attr('name', `unit[${modalId}][]`).val(data.unit);
+                                                                }
                                                             } else {
                                                                 alert('ไม่สามารถดึงข้อมูลได้');
                                                             }
@@ -2447,7 +2479,7 @@ if (!isset($_SESSION["admin_log"])) {
         }
     </script>
     <script>
-        //เพิ่มแถวหมายเลขครุภัณฑ์
+        // Add a new device row
         document.addEventListener('click', function(e) {
             if (e.target && e.target.id.startsWith('add-device-number-')) {
                 const modalId = e.target.id.split('-').pop();
@@ -2462,9 +2494,30 @@ if (!isset($_SESSION["admin_log"])) {
             }
         });
 
+        // Remove a device row
         document.addEventListener('click', function(e) {
             if (e.target && e.target.classList.contains('remove-field')) {
-                e.target.closest('.device-number-row').remove();
+                const row = e.target.closest('.device-number-row');
+                const hiddenInput = row.querySelector('input[type="text"]');
+
+                if (hiddenInput && hiddenInput.name.startsWith('update_number_device')) {
+                    // Case 1: Soft delete
+                    const modalId = e.target.getAttribute('data-row-id');
+                    const deviceId = e.target.getAttribute('data-device-id');
+                    const container = document.querySelector(`#device-number-container-${modalId}`);
+                    const deletedInput = document.createElement('input');
+                    deletedInput.type = 'hidden';
+                    deletedInput.name = `deleted_devices[${modalId}][${deviceId}]`;
+                    deletedInput.value = hiddenInput.value;
+                    container.appendChild(deletedInput);
+                } else if (hiddenInput && hiddenInput.name.startsWith('number_device')) {
+                    // Case 2: Remove blank field
+                    row.remove();
+                    return;
+                }
+
+                // Remove row for both cases
+                row.remove();
             }
         });
     </script>
