@@ -80,7 +80,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <div>
                       <label class="form-label" for="inputGroupSelect01">หมายเลขออกงาน</label>
                       <?php
-                      $sql = "SELECT * FROM orderdata ORDER BY id DESC";
+                      $sql = "SELECT * FROM orderdata_new ORDER BY id DESC";
                       $stmt = $conn->prepare($sql);
                       $stmt->execute();
                       $d = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -113,7 +113,7 @@ if (!isset($_SESSION["admin_log"])) {
                               break;
                           }
                         ?>
-                          <option value="<?= $row['id'] ?>">
+                          <option value="<?= $row['numberWork'] ?>">
                             <?= $row['numberWork'] . ' ' . "( " . $statusTxtSlect . " )" ?>
                           </option>
                         <?php } ?>
@@ -134,7 +134,9 @@ if (!isset($_SESSION["admin_log"])) {
         </form>
       </div>
       <form action="export.php" method="post">
-        <button type="submit" name="DataAll" class="btn btn-secondary mb-3 p-3">Export to Excel</button>
+        <div class="d-flex justify-content-end">
+          <button type="submit" name="DataAll" class="btn btn-primary my-3 p-3">Export to Excel</button>
+        </div>
       </form>
       <?php
       $sql = "SELECT status, COUNT(*) as count FROM orderdata GROUP BY status";
@@ -195,7 +197,87 @@ if (!isset($_SESSION["admin_log"])) {
       ?>
     </div>
     </div>
-    <div class="card col-sm-12 col-lg-6 col-md-12">
+    <div class="card col-sm-12 col-lg-6 col-md-12  mb-5">
+      <?php
+      $sql = "
+  SELECT 
+    od.*, 
+    wd.withdraw_name, 
+    lw.work_name, 
+    dv.device_name, 
+    dp.depart_name, 
+    of.offer_name,
+    nd.numberDevice, 
+    nd.id AS numberDevice_id, 
+    oi.id AS item_id, 
+    dm.models_name AS list, 
+    oi.quality, 
+    oi.amount, 
+    oi.price, 
+    oi.unit
+  FROM 
+    orderdata_new AS od
+  INNER JOIN 
+    withdraw AS wd ON od.refWithdraw = wd.withdraw_id
+  INNER JOIN 
+    offer AS of ON od.refOffer = of.offer_id
+  INNER JOIN 
+    depart AS dp ON od.refDepart = dp.depart_id
+  INNER JOIN 
+    listwork AS lw ON od.refWork = lw.work_id
+  INNER JOIN 
+    device AS dv ON od.refDevice = dv.device_id
+  LEFT JOIN 
+    order_numberdevice AS nd ON od.id = nd.order_item
+  LEFT JOIN 
+    order_items AS oi ON od.id = oi.order_id
+  LEFT JOIN 
+    device_models AS dm ON oi.list = dm.models_id
+  WHERE 
+    (nd.is_deleted = 0 OR nd.is_deleted IS NULL)
+    AND (oi.is_deleted = 0 OR oi.is_deleted IS NULL)
+  AND od.id = (SELECT MAX(id) FROM orderdata_new) -- Fetch the latest record
+  ORDER BY nd.id, oi.id
+";
+
+      $stmt = $conn->prepare($sql);
+      $stmt->execute();
+      $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+      if ($results) {
+        // Process the latest record and related data
+        $order = $results[0]; // Fetch the main record details
+        $devices = [];
+        $items = [];
+
+        foreach ($results as $row) {
+          // Collect unique devices
+          if (!empty($row['numberDevice_id']) && !isset($devices[$row['numberDevice_id']])) {
+            $devices[$row['numberDevice_id']] = $row['numberDevice'];
+          }
+
+          // Collect unique items
+          if (!empty($row['item_id']) && !isset($items[$row['item_id']])) {
+            $items[$row['item_id']] = [
+              'list' => $row['list'],
+              'quality' => $row['quality'],
+              'amount' => $row['amount'],
+              'price' => $row['price'],
+              'unit' => $row['unit']
+            ];
+          }
+        }
+
+        // Reset keys for JSON encoding or numeric indexing
+        $devices = array_values($devices);
+        $items = array_values($items);
+      } else {
+        echo "No records found.";
+        $order = [];
+        $devices = [];
+        $items = [];
+      }
+      ?>
       <?php
       $columns = [];
 
@@ -272,7 +354,7 @@ if (!isset($_SESSION["admin_log"])) {
         } else {
           $Device3 = ', ' . $data["numberDevice3"];
         }
-
+        ////////^^^^ จัดการเลขครุภัณฑ์กับรายการ
         function toMonthThai($m)
         {
           $monthNamesThai = array(
@@ -330,16 +412,19 @@ if (!isset($_SESSION["admin_log"])) {
         $receiptThai = formatDateThai($receiptDateFromDB);
         $deliveryThai = formatDateThai($deliveryDateFromDB);
         $closeThai = formatDateThai($closeDateFromDB); ?>
+
+
         <div class="row">
           <div class="col-6">
             <label>วันที่ออกใบเบิก</label>
-            <input type="text" class="form-control"
-              value="<?= $dateWithdrawThai ?>" disabled>
+            <input type="date" class="form-control"
+              value="<?= $order['dateWithdraw'] ?? '' ?>" disabled>
           </div>
+
           <div class="col-6">
             <label>ผู้รับเรื่อง</label>
             <input type="text" class="form-control"
-              value="<?= $data['fname'] . ' ' . $data['lname'] ?>" disabled>
+              value="<?= $order['refUsername'] ?? '' ?>" disabled>
           </div>
         </div>
 
@@ -347,12 +432,12 @@ if (!isset($_SESSION["admin_log"])) {
           <div class="col-6">
             <label>ส่งซ่อมอุปกรณ์ คอมพิวเตอร์</label>
             <input type="text" class="form-control"
-              value="<?= $data['device_name'] ?>" disabled>
+              value="<?= $order['device_name'] ?? '' ?>" disabled>
           </div>
           <div class="col-6">
             <label>หมายเลขพัสดุ / ครุภัณฑ์</label>
             <input type="text" class="form-control"
-              value="<?= $data['numberDevice1'] . $Device2 . $Device3 ?>" disabled>
+              value="<?= htmlspecialchars(implode(', ', $devices)) ?>" disabled>
           </div>
         </div>
 
@@ -360,7 +445,7 @@ if (!isset($_SESSION["admin_log"])) {
           <div class="col-12">
             <label>อาการที่รับแจ้ง</label>
             <input type="text" class="form-control"
-              value="<?= $data['report'] ?>" disabled>
+              value="<?= $order['report'] ?>" disabled>
           </div>
         </div>
 
@@ -368,169 +453,137 @@ if (!isset($_SESSION["admin_log"])) {
           <div class="col-6">
             <label>รายละเอียด</label>
             <input type="text" class="form-control"
-              value="<?= $data['reason'] ?>" disabled>
+              value="<?= $order['reason'] ?>" disabled>
           </div>
           <div class="col-6">
             <label>หน่วยงานที่แจ้ง</label>
             <input type="text" class="form-control"
-              value="<?= $data['depart_name'] ?>" disabled>
+              value="<?= $order['depart_name'] ?>" disabled>
           </div>
         </div>
 
+        <div class="row">
+          <div class="col-12">
+            <label>หมายเหตุ</label>
+            <input type="text" class="form-control"
+              value="<?= $order['note'] ?>" disabled>
+          </div>
+        </div>
         <?php
-        $statusOptions = array(
+        $order_id = $order['id'];
+        $sql = "
+    SELECT status, timestamp 
+    FROM order_status 
+    WHERE order_id = :order_id 
+    ORDER BY status";
+        $stmt = $conn->prepare(query: $sql);
+        $stmt->execute(['order_id' => $order_id]);
+        $statuses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Check if the order is canceled (status = 6 exists)
+        $isCanceled = in_array(6, array_column($statuses, 'status'));
+
+        // Define status names
+        $statusNames = [
           1 => "รอรับเอกสารจากหน่วยงาน",
           2 => "รอส่งเอกสารไปพัสดุ",
           3 => "รอพัสดุสั่งของ",
           4 => "รอหมายเลขครุภัณฑ์",
           5 => "ปิดงาน",
           6 => "ยกเลิก"
-        );
+        ];
 
-        $dataStatus = $data['status'];
-
-
-        // ตรวจสอบว่าค่าที่ได้จาก $dataStatus มีอยู่ใน $statusOptions หรือไม่
-        if (array_key_exists($dataStatus, $statusOptions)) {
-          $statusText = $statusOptions[$dataStatus];
-        } else {
-          $statusText = "ไม่ระบุสถานะ"; // หรือข้อความที่คุณต้องการเมื่อไม่พบสถานะที่ระบุ
-        }
-
-
+        // Current status from records
+        $currentStatus = !empty($statuses) ? max(array_column($statuses, 'status')) : 0;
         ?>
-        <form action="system/update.php" method="POST">
-
-          <div class="row">
-            <div class="col-sm-4">
-              <div class="mb-3">
-                <input type="checkbox" disabled name="show_receipt_date" class="form-checkbox" onclick="toggleDateInput('receipt_date')"> วันที่รับเอกสาร :
-                <p class="thaiDATE"><?= $receiptThai ?></p>
-                <input type="hidden" value="<?= $data['receiptDate'] ?>" name="receipt_date" class="form-control inputDate thaiDateInput" value="<?= $receiptThai ?>">
-
-              </div>
-            </div>
-            <div class="col-sm-4">
-              <div class="mb-3">
-                <input type="checkbox" disabled name="show_delivery_date" class="form-checkbox" onclick="toggleDateInput('delivery_date')"> วันที่ส่งเอกสาร :
-                <p class="thaiDATE"><?= $deliveryThai ?></p>
-                <input type="hidden" value="<?= $data['deliveryDate'] ?>" name="delivery_date" class="form-control thaiDATE1 thaiDateInput" value="<?= $deliveryThai ?>">
-              </div>
-            </div>
-            <div class="col-sm-4">
-              <div class="mb-3">
-                <input type="checkbox" disabled name="show_close_date" class="form-checkbox" onclick="toggleDateInput('close_date')"> วันที่ปิดงาน :
-                <p class="thaiDATE"><?= $closeThai ?></p>
-                <input type="hidden" value="<?= $data['closeDate'] ?>" name="close_date" class="form-control thaiDATE1 thaiDateInput" value="<?= $closeThai ?>">
-              </div>
-            </div>
-          </div>
-
-          <b>สถานะ :</b>
-          <select disabled required class="form-select mb-3" name="status" id="statusD">
+        <h4 class="mt-3">สถานะ</h4>
+        <table id="pdf" style="width: 100%;" class="table">
+          <thead class="table-warning">
+            <tr class="text-center">
+              <th scope="col">สถานะ</th>
+              <th scope="col">วันที่อัพเดตสถานะ</th>
+              <th scope="col">ปุ่มยืนยัน</th>
+            </tr>
+          </thead>
+          <tbody class="text-center">
             <?php
-            $options = [
-              1 => 'รอรับเอกสารจากหน่วยงาน',
-              2 => 'รอส่งเอกสารไปพัสดุ',
-              3 => 'รอพัสดุสั่งของ',
-              4 => 'รอหมายเลขครุภัณฑ์',
-              5 => 'ปิดงาน',
-              6 => 'ยกเลิก',
-            ];
+            foreach ($statusNames as $key => $name) {
+              $record = array_filter($statuses, fn($row) => $row['status'] == $key);
+              $timestamp = $record ? reset($record)['timestamp'] : null;
 
-            foreach ($options as $value => $text) {
-              // Check if $dataStatus is set and equals the current option value
-              $selected = (isset($dataStatus) && $dataStatus == $value) ? 'selected' : '';
+              echo "<tr>";
+              echo "<td>{$name}</td>";
+              echo "<td>" . ($timestamp
+                ? date('d/m/Y', strtotime($timestamp))
+                : (($key == $currentStatus + 1 || $key == 6) && !$isCanceled ? date('d/m/Y') : '-')) . "</td>";
+              echo "<td>";
 
-              echo '<option value="' . $value . '" ' . $selected . '>' . $text . '</option>';
-            }
-            ?>
-          </select>
-
-          <table id="pdf" style="width: 100%;" class="table">
-            <thead class="table-primary">
-              <tr class="text-center">
-                <th scope="col">ลำดับ</th>
-                <th scope="col">รายการ</th>
-                <th scope="col">คุณสมบัติ</th>
-                <th scope="col">จำนวน</th>
-                <th scope="col">ราคา</th>
-                <th scope="col">รวม</th>
-                <th scope="col">หน่วย</th>
-              </tr>
-            </thead>
-            <tbody class="text-center">
-              <?php
-
-
-              $sum = 0;
-
-              for ($i = 1; $i <= 15; $i++) {
-                $list = $result["list$i"];
-                $quality = $result["quality$i"];
-                $amount = $result["amount$i"];
-                $price = $result["price$i"];
-                $unit = $result["unit$i"];
-                // คำนวณ $sum
-                $amount = intval($amount);
-                $price = intval($price);
-                $currentSum = $amount * $price;
-
-                $sum += intval($currentSum);
-
-                // ตรวจสอบว่า $currentSum เป็น 0 หรือไม่
-                if ($currentSum == 0) {
-                  $currentSum = ""; // กำหนดให้ $currentSum เป็นค่าว่าง
-                }
-                if ($result["list$i"] == "" || $result["quality$i"] == "" || $result["amount$i"] == "" || $result["price$i"] == "" && $result["unit$i"] == "") {
-                  $list = "";
-                  $quality = "";
-                  $amount = "";
-                  $price = "";
-                  $unit = "";
-                }
-                if (!empty($list)) {
-                  $sql = "SELECT models_name FROM device_models WHERE models_id = :modelsId";
-                  $stmt = $conn->prepare($sql);
-                  $stmt->bindParam(":modelsId", $list);
-                  $stmt->execute();
-                  $modelName = $stmt->fetchColumn();
+              if ($isCanceled) {
+                if ($key == 6) {
+                  echo "<p class='text-danger'>ยกเลิกใบเบิกแล้ว</p>";
                 } else {
-                  $modelName = "";
+                  if ($timestamp) {
+                    echo "<p>ยืนยันแล้ว</p>";
+                  } else {
+                    echo "<p >-</p>";
+                  }
                 }
-              ?>
-                <tr class="empty-row">
-                  <th style="font-weight: normal;" class="arabicNumber" scope="row"><?= $i; ?></th>
-                  <td>
-                    <select disabled style="width: 120px;" class="form-select" name="list<?= $i ?>">
-                      <option value=""></option>
-                      <?php
-                      // ดึงข้อมูลจากตาราง device_models
-                      $sql = "SELECT models_id, models_name FROM device_models";
-                      $stmt = $conn->prepare($sql);
-                      $stmt->execute();
-                      $deviceModels = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                      foreach ($deviceModels as $deviceModel) {
-                        $selected = ($deviceModel['models_id'] == $list) ? 'selected' : '';
-                        echo "<option value='{$deviceModel['models_id']}' {$selected}>{$deviceModel['models_name']}</option>";
-                      }
-                      ?>
-                    </select>
-                  </td>
-
-                  <td><textarea disabled rows="2" maxlength="60" name="quality<?= $i ?>" class="form-control limitedTextarea"><?= $quality ?></textarea></td>
-                  <td><input disabled value="<?= $amount ?>" style="width: 2rem;" type="text" name="amount<?= $i ?>" class="form-control"></td>
-                  <td><input disabled value="<?= $price ?>" style="width: 4rem;" type="text" name="price<?= $i ?>" class="form-control"></td>
-                  <td><input disabled readonly value="<?= $currentSum ?>" style="width: 4rem;" class="form-control"></td>
-                  <td><input disabled value="<?= $unit ?>" style="width: 4rem;" type="text" name="unit<?= $i ?>" class="form-control"></td>
-                </tr>
-              <?php
+              } else {
+                if ($timestamp) {
+                  echo "<p>ยืนยันแล้ว</p>";
+                } elseif ($key == $currentStatus + 1 && $key <= 5) {
+                  echo "<button type='button' class='btn mb-3 btn-success confirm-btn' data-status='{$key}' data-order-id='{$order_id}'>รอการยืนยัน</button>";
+                } elseif ($key > $currentStatus + 1 && $key <= 5) {
+                  echo "<button type='button' class='btn mb-3 btn-secondary' disabled>รอดำเนินการก่อนหน้า</button>";
+                }
               }
 
-              ?>
-            </tbody>
-          </table>
+              if ($key == 6 && !$isCanceled) {
+                echo "<button type='button' class='btn mb-3 btn-danger cancel-btn' data-status='6' data-order-id='{$order_id}'>ยกเลิกใบเบิก</button>";
+              }
+
+              echo "</td>";
+              echo "</tr>";
+            }
+            ?>
+          </tbody>
+        </table>
+        <h4>รายการเบิก</h4>
+        <table id="pdf" style="width: 100%;" class="table">
+          <thead class="text-center table-primary">
+            <th scope="col">ลำดับ</th>
+            <th scope="col">รายการ</th>
+            <th scope="col">คุณสมบัติ</th>
+            <th scope="col">จำนวน</th>
+            <th scope="col">ราคา</th>
+            <th scope="col">หน่วย</th>
+            </tr>
+          </thead>
+          <tbody class="text-center">
+            <?php foreach ($items as $index => $item): ?>
+              <tr>
+                <td><?= $index + 1 ?></td>
+                <td>
+                  <input disabled value="<?= htmlspecialchars($item['list']) ?>" style="width: 8rem;" type="text" class="form-control">
+                </td>
+                <td>
+                  <textarea disabled class="form-control"><?= htmlspecialchars($item['quality']) ?></textarea>
+                </td>
+                <td>
+                  <input disabled value="<?= htmlspecialchars($item['amount']) ?>" style="width: 3rem;" type="text" class="form-control">
+                </td>
+                <td>
+                  <input disabled value="<?= htmlspecialchars($item['price']) ?>" style="width: 4rem;" type="text" class="form-control">
+                </td>
+                <td>
+                  <input disabled value="<?= htmlspecialchars($item['unit']) ?>" style="width: 5rem;" type="text" class="form-control">
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+
+        <form action="system/update.php" method="POST">
         </form>
     </div>
     </div>
@@ -543,9 +596,88 @@ if (!isset($_SESSION["admin_log"])) {
 
 <?php
 if (isset($_GET['numberWork'])) {
-
-
   $numberWork = $_GET['numberWork'];
+
+  $sql = "
+SELECT 
+od.*, 
+wd.withdraw_name, 
+lw.work_name, 
+dv.device_name, 
+dp.depart_name, 
+of.offer_name,
+nd.numberDevice, 
+nd.id AS numberDevice_id, 
+oi.id AS item_id, 
+dm.models_name AS list, 
+oi.quality, 
+oi.amount, 
+oi.price, 
+oi.unit
+FROM 
+orderdata_new AS od
+INNER JOIN 
+withdraw AS wd ON od.refWithdraw = wd.withdraw_id
+INNER JOIN 
+offer AS of ON od.refOffer = of.offer_id
+INNER JOIN 
+depart AS dp ON od.refDepart = dp.depart_id
+INNER JOIN 
+listwork AS lw ON od.refWork = lw.work_id
+INNER JOIN 
+device AS dv ON od.refDevice = dv.device_id
+LEFT JOIN 
+order_numberdevice AS nd ON od.id = nd.order_item
+LEFT JOIN 
+order_items AS oi ON od.id = oi.order_id
+LEFT JOIN 
+device_models AS dm ON oi.list = dm.models_id
+WHERE 
+(od.numberWork = :numberWork) AND
+(nd.is_deleted = 0 OR nd.is_deleted IS NULL)
+AND (oi.is_deleted = 0 OR oi.is_deleted IS NULL)
+ORDER BY nd.id, oi.id
+";
+
+  $stmt = $conn->prepare($sql);
+  $stmt->bindParam(":numberWork", $numberWork);
+  $stmt->execute();
+  $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+  if ($results) {
+    // Process the latest record and related data
+    $order = $results[0]; // Fetch the main record details
+    $devices = [];
+    $items = [];
+
+    foreach ($results as $row) {
+      // Collect unique devices
+      if (!empty($row['numberDevice_id']) && !isset($devices[$row['numberDevice_id']])) {
+        $devices[$row['numberDevice_id']] = $row['numberDevice'];
+      }
+
+      // Collect unique items
+      if (!empty($row['item_id']) && !isset($items[$row['item_id']])) {
+        $items[$row['item_id']] = [
+          'list' => $row['list'],
+          'quality' => $row['quality'],
+          'amount' => $row['amount'],
+          'price' => $row['price'],
+          'unit' => $row['unit']
+        ];
+      }
+    }
+
+    // Reset keys for JSON encoding or numeric indexing
+    $devices = array_values($devices);
+    $items = array_values($items);
+  } else {
+    echo "No records found.";
+    $order = [];
+    $devices = [];
+    $items = [];
+  }
+
   $columns = [];
 
   for ($i = 1; $i <= 15; $i++) {
@@ -676,8 +808,6 @@ if (isset($_GET['numberWork'])) {
   $receiptThai = formatDateThai($receiptDateFromDB);
   $deliveryThai = formatDateThai($deliveryDateFromDB);
   $closeThai = formatDateThai($closeDateFromDB);
-
-
 ?>
 
 
@@ -721,7 +851,7 @@ if (isset($_GET['numberWork'])) {
 
                   <label class="form-label" for="inputGroupSelect01">หมายเลขออกงาน</label>
                   <?php
-                  $sql = "SELECT * FROM orderdata";
+                  $sql = "SELECT * FROM orderdata_new";
                   $stmt = $conn->prepare($sql);
                   $stmt->execute();
                   $d = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -754,7 +884,7 @@ if (isset($_GET['numberWork'])) {
                           break;
                       }
                     ?>
-                      <option value="<?= $row['id'] ?>" <?php echo ($numberWork == $row['id']) ? 'selected' : ''; ?>>
+                      <option value="<?= $row['numberWork'] ?>" <?php echo ($numberWork == $row['numberWork']) ? 'selected' : ''; ?>>
                         <?= $row['numberWork'] . ' ' . "( " . $statusTxtSlect . " )" ?>
                       </option>
                     <?php } ?>
@@ -766,12 +896,7 @@ if (isset($_GET['numberWork'])) {
                     window.location.href = '?numberWork=' + numberWork;
                   });
                 </script>
-                <!-- <button type="submit" class="btn btn-primary me-3 mb-3 p-3">ดูข้อมูล</button> -->
-                <!-- <button type="button" class="btn btn-secondary mb-3 p-3" onclick="window.location.href='?numberWork=' + (parseInt(location.search.split('=')[1]) - 1)">ย้อนกลับ</button>
-                <button type="button" class="btn btn-primary mb-3 p-3" onclick="window.location.href='?numberWork=' + (parseInt(location.search.split('=')[1]) + 1)">ถัดไป</button> -->
                 <?php
-
-
                 // Check if numberWork is set in the query string
                 if (isset($_GET['numberWork'])) {
                   $numberWork = $_GET['numberWork'];
@@ -779,7 +904,7 @@ if (isset($_GET['numberWork'])) {
                   // Check if the selected numberWork exists in the database
                   $isValidNumberWork = false;
                   foreach ($d as $row) {
-                    if ($numberWork == $row['id']) {
+                    if ($numberWork == $row['numberWork']) {
                       $isValidNumberWork = true;
                       break;
                     }
@@ -874,219 +999,206 @@ if (isset($_GET['numberWork'])) {
         <div class="col-sm-12 col-md-12 col-lg-6">
           <form action="system/update.php" method="POST">
 
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-end mb-3">
+              <input type="hidden" name="numberWork" value="<?= $numberWork ?>">
+              <a href="create.php?id=<?= $numberWork ?>" class="btn btn-secondary p-2 me-3">คัดลอก</a>
+              <button id="editData" class="btn btn-warning p-2 me-3">แก้ไข</button>
 
-              <p style="text-align:right;line-height:16pt">
-                <?= $dateWithdrawThai ?>
-              </p>
-              <p style="text-align:left;line-height:16pt"><b>ผู้รับเรื่อง :</b> <?= $data['fname'] . ' ' . $data['lname'] ?></p>
+              <!-- <button type="submit" disabled name="updateData" class="btn btn-success p-2 me-3">บันทึก</button> -->
             </div>
-            <div class="d-flex justify-content-between">
 
-              <p style="text-align:left;line-height:16pt">
-                <b>ส่งซ่อมอุปกรณ์ คอมพิวเตอร์ :</b> <?= $data['device_name'] ?>
-              </p>
-
-              <p style="text-align:right;line-height:16pt">
-              <div class="row">
-                <b>หมายเลขพัสดุ / ครุภัณฑ์ :</b>
-                <div class="col-sm-4 col-md-4 col-lg-4">
-                  <input class="form-control form-control-sm" disabled type="text" name="numberDevice1" value="<?= $data['numberDevice1'] ?>">
-                </div>
-                <div class="col-sm-4 col-md-4 col-lg-4">
-
-                  <input class="form-control form-control-sm" disabled type="text" name="numberDevice2" value="<?= $data['numberDevice2'] ?>">
-
-                </div>
-                <div class="col-sm-4 col-md-4 col-lg-4">
-
-                  <input class="form-control form-control-sm" disabled type="text" name="numberDevice3" value="<?= $data['numberDevice3'] ?>">
-                </div>
+            <div class="row">
+              <div class="col-6">
+                <label>วันที่ออกใบเบิก</label>
+                <input type="date" class="form-control"
+                  value="<?= $order['dateWithdraw'] ?? '' ?>" disabled>
               </div>
 
-              </p>
-
+              <div class="col-6">
+                <label>ผู้รับเรื่อง</label>
+                <input type="text" class="form-control"
+                  value="<?= $order['refUsername'] ?? '' ?>" disabled>
+              </div>
             </div>
-            <div class="d-flex justify-content-between">
 
-
-              <p style="text-align:left;line-height:16pt"><b>อาการที่รับแจ้ง :</b>
-                <input class="form-control form-control-sm" disabled type="text" name="report" value="<?= $data['report'] ?>">
-              </p>
-              <p style="text-align:left; line-height:16pt"><b>รายละเอียด :</b>
-                <input class="form-control form-control-sm" disabled type="text" name="reason" value="<?= $data['reason'] ?>">
-              </p>
-              <p style="text-align:left; line-height:16pt"><b>หน่วยงานที่แจ้ง :</b>
-                <?= $data['depart_name'] ?></p>
+            <div class="row">
+              <div class="col-6">
+                <label>ส่งซ่อมอุปกรณ์ คอมพิวเตอร์</label>
+                <input type="text" class="form-control"
+                  value="<?= $order['device_name'] ?? '' ?>" disabled>
+              </div>
+              <div class="col-6">
+                <label>หมายเลขพัสดุ / ครุภัณฑ์</label>
+                <div id="device-number-container">
+                  <?php foreach ($devices as $index => $device): ?>
+                    <div class="d-flex device-number-row">
+                      <input type="text" name="device_numbers[]" class="form-control mb-2" value="<?= htmlspecialchars($device) ?>" disabled>
+                      <button type="button" class="btn btn-warning p-2 ms-3 mb-2 remove-field" style="display: none; visibility: <?= $index === 0 ? 'hidden' : 'visible' ?>;">ลบ</button>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+                <div class="d-flex justify-content-end">
+                  <button type="button" id="add-device-number" class="btn btn-success mt-2 align-self-end" style="display: none;">+ เพิ่มหมายเลขครุภัณฑ์</button>
+                </div>
+              </div>
             </div>
-            <p style="text-align:left; line-height:16pt"><b>หมายเหตุ :</b>
-              <input class="form-control form-control-sm" disabled type="text" name="note" value="<?= $data['note'] ?>">
-            </p>
+
+            <div class="row">
+              <div class="col-12">
+                <label>อาการที่รับแจ้ง</label>
+                <input type="text" class="form-control" name="report"
+                  value="<?= $order['report'] ?>" disabled>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-6">
+                <label>รายละเอียด</label>
+                <input type="text" class="form-control" name="reason"
+                  value="<?= $order['reason'] ?>" disabled>
+              </div>
+              <div class="col-6">
+                <label>หน่วยงานที่แจ้ง</label>
+                <input type="text" class="form-control"
+                  value="<?= $order['depart_name'] ?>" disabled>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12">
+                <label>หมายเหตุ</label>
+                <input type="text" class="form-control" name="note"
+                  value="<?= $order['note'] ?>" disabled>
+              </div>
+            </div>
             <?php
-            $statusOptions = array(
+            $order_id = $order['id'];
+            $sql = "
+    SELECT status, timestamp 
+    FROM order_status 
+    WHERE order_id = :order_id 
+    ORDER BY status";
+            $stmt = $conn->prepare(query: $sql);
+            $stmt->execute(['order_id' => $order_id]);
+            $statuses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Check if the order is canceled (status = 6 exists)
+            $isCanceled = in_array(6, array_column($statuses, 'status'));
+
+            // Define status names
+            $statusNames = [
               1 => "รอรับเอกสารจากหน่วยงาน",
               2 => "รอส่งเอกสารไปพัสดุ",
               3 => "รอพัสดุสั่งของ",
               4 => "รอหมายเลขครุภัณฑ์",
               5 => "ปิดงาน",
               6 => "ยกเลิก"
-            );
+            ];
 
-            $dataStatus = $data['status'];
-
-
-            // ตรวจสอบว่าค่าที่ได้จาก $dataStatus มีอยู่ใน $statusOptions หรือไม่
-            if (array_key_exists($dataStatus, $statusOptions)) {
-              $statusText = $statusOptions[$dataStatus];
-            } else {
-              $statusText = "ไม่ระบุสถานะ"; // หรือข้อความที่คุณต้องการเมื่อไม่พบสถานะที่ระบุ
-            }
-
-
+            // Current status from records
+            $currentStatus = !empty($statuses) ? max(array_column($statuses, 'status')) : 0;
             ?>
+            <h4 class="mt-3">สถานะ</h4>
+            <table id="pdf" style="width: 100%;" class="table">
+              <thead class="table-warning">
+                <tr class="text-center">
+                  <th scope="col">สถานะ</th>
+                  <th scope="col">วันที่อัพเดตสถานะ</th>
+                  <th scope="col">ปุ่มยืนยัน</th>
+                </tr>
+              </thead>
+              <tbody class="text-center">
+                <?php
+                foreach ($statusNames as $key => $name) {
+                  $record = array_filter($statuses, fn($row) => $row['status'] == $key);
+                  $timestamp = $record ? reset($record)['timestamp'] : null;
 
-            <div class="row">
-              <div class="col-sm-4">
-                <div class="mb-3">
-                  <input type="checkbox" disabled name="show_receipt_date" class="form-checkbox" onclick="toggleDateInput('receipt_date')"> วันที่รับเอกสาร :
-                  <input type="date" disabled value="<?= $data['receiptDate'] ?>" name="receipt_date" class="form-control inputDate thaiDateInput" value="<?= $receiptThai ?>">
-                  <p class="thaiDATE"><?= $receiptThai ?></p>
+                  echo "<tr>";
+                  echo "<td>{$name}</td>";
+                  echo "<td>" . ($timestamp
+                    ? date('d/m/Y', strtotime($timestamp))
+                    : (($key == $currentStatus + 1 || $key == 6) && !$isCanceled ? date('d/m/Y') : '-')) . "</td>";
+                  echo "<td>";
 
-                </div>
-              </div>
-              <div class="col-sm-4">
-                <div class="mb-3">
-                  <input type="checkbox" disabled name="show_delivery_date" class="form-checkbox" onclick="toggleDateInput('delivery_date')"> วันที่ส่งเอกสาร :
-                  <input type="date" disabled value="<?= $data['deliveryDate'] ?>" name="delivery_date" class="form-control thaiDATE1 thaiDateInput" value="<?= $deliveryThai ?>">
-                  <p class="thaiDATE"><?= $deliveryThai ?></p>
-                </div>
-              </div>
-              <div class="col-sm-4">
-                <div class="mb-3">
-                  <input type="checkbox" disabled name="show_close_date" class="form-checkbox" onclick="toggleDateInput('close_date')"> วันที่ปิดงาน :
-                  <input type="date" disabled value="<?= $data['closeDate'] ?>" name="close_date" class="form-control thaiDATE1 thaiDateInput" value="<?= $closeThai ?>">
-                  <p class="thaiDATE"><?= $closeThai ?></p>
-                </div>
-              </div>
-            </div>
-            <b>สถานะ :</b>
-            <select disabled required class="form-select mb-3" name="status" id="statusD">
-              <?php
-              $options = [
-                1 => 'รอรับเอกสารจากหน่วยงาน',
-                2 => 'รอส่งเอกสารไปพัสดุ',
-                3 => 'รอพัสดุสั่งของ',
-                4 => 'รอหมายเลขครุภัณฑ์',
-                5 => 'ปิดงาน',
-                6 => 'ยกเลิก',
-              ];
+                  if ($isCanceled) {
+                    if ($key == 6) {
+                      echo "<p class='text-danger'>ยกเลิกใบเบิกแล้ว</p>";
+                    } else {
+                      if ($timestamp) {
+                        echo "<p>ยืนยันแล้ว</p>";
+                      } else {
+                        echo "<p >-</p>";
+                      }
+                    }
+                  } else {
+                    if ($timestamp) {
+                      echo "<p>ยืนยันแล้ว</p>";
+                    } elseif ($key == $currentStatus + 1 && $key <= 5) {
+                      echo "<button type='button' class='btn mb-3 btn-success confirm-btn' data-status='{$key}' data-order-id='{$order_id}'>รอการยืนยัน</button>";
+                    } elseif ($key > $currentStatus + 1 && $key <= 5) {
+                      echo "<button type='button' class='btn mb-3 btn-secondary' disabled>รอดำเนินการก่อนหน้า</button>";
+                    }
+                  }
 
-              foreach ($options as $value => $text) {
-                // Check if $dataStatus is set and equals the current option value
-                $selected = (isset($dataStatus) && $dataStatus == $value) ? 'selected' : '';
+                  if ($key == 6 && !$isCanceled) {
+                    echo "<button type='button' class='btn mb-3 btn-danger cancel-btn' data-status='6' data-order-id='{$order_id}'>ยกเลิกใบเบิก</button>";
+                  }
 
-                echo '<option value="' . $value . '" ' . $selected . '>' . $text . '</option>';
-              }
-              ?>
-            </select>
-
-            <div class="d-flex justify-content-center mb-3">
-              <input type="hidden" name="numberWork" value="<?= $numberWork ?>">
-              <button id="editData" class="btn btn-warning p-2 me-3">แก้ไข</button>
-              <a href="create.php?id=<?= $numberWork ?>" class="btn btn-secondary p-2 me-3">คัดลอก</a>
-              <button type="submit" disabled name="updateData" class="btn btn-success p-2 me-3">บันทึก</button>
-            </div>
-
+                  echo "</td>";
+                  echo "</tr>";
+                }
+                ?>
+              </tbody>
+            </table>
+            <h4>รายการเบิก</h4>
 
             <a href="แบบฟอร์มคำขอส่งซ่อมบำรุงอุปกรณ์คอมพิวเตอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบซ่อม</a>
             <a target="_blank" href="ใบเบิก.php?workid=<?= $numberWork ?>" class="btn btn-primary p-2">ใบเบิกครุภัณฑ์</a>
             <a href="พิมพ์ใบครุภัณฑ์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบกำหนดคุณสมบัติ</a>
             <a href="เอกสารคณะกรรมการ.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">เอกสารคณะกรรมการ</a>
             <a href="พิมพ์สติ๊กเกอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">สติ๊กเกอร์งาน</a>
-            <table id="pdf" class="table table-hover mt-3 table-bordered border-secondary">
-              <thead>
-                <tr class="text-center">
+
+            <table id="pdf" style="width: 100%;" class="table">
+              <thead class="text-center table-primary">
+                <tr>
                   <th scope="col">ลำดับ</th>
                   <th scope="col">รายการ</th>
                   <th scope="col">คุณสมบัติ</th>
                   <th scope="col">จำนวน</th>
                   <th scope="col">ราคา</th>
-                  <th scope="col">รวม</th>
                   <th scope="col">หน่วย</th>
+                  <th scope="col">จัดการ</th>
                 </tr>
               </thead>
-              <tbody class="text-center">
-                <?php
-
-
-                $sum = 0;
-
-                for ($i = 1; $i <= 15; $i++) {
-                  $list = $result["list$i"];
-                  $quality = $result["quality$i"];
-                  $amount = $result["amount$i"];
-                  $price = $result["price$i"];
-                  $unit = $result["unit$i"];
-                  // คำนวณ $sum
-                  $amount = intval($amount);
-                  $price = intval($price);
-                  $currentSum = $amount * $price;
-
-                  $sum += intval($currentSum);
-
-                  // ตรวจสอบว่า $currentSum เป็น 0 หรือไม่
-                  if ($currentSum == 0) {
-                    $currentSum = ""; // กำหนดให้ $currentSum เป็นค่าว่าง
-                  }
-                  if ($result["list$i"] == "" || $result["quality$i"] == "" || $result["amount$i"] == "" || $result["price$i"] == "" && $result["unit$i"] == "") {
-                    $list = "";
-                    $quality = "";
-                    $amount = "";
-                    $price = "";
-                    $unit = "";
-                  }
-                  if (!empty($list)) {
-                    $sql = "SELECT models_name FROM device_models WHERE models_id = :modelsId";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bindParam(":modelsId", $list);
-                    $stmt->execute();
-                    $modelName = $stmt->fetchColumn();
-                  } else {
-                    $modelName = "";
-                  }
-                ?>
-                  <tr class="empty-row">
-                    <th style="font-weight: normal;" class="arabicNumber" scope="row"><?= $i; ?></th>
+              <tbody id="table-body" class="text-center">
+                <?php foreach ($items as $index => $item): ?>
+                  <tr>
+                    <td><?= $index + 1 ?></td>
                     <td>
-                      <select disabled style="width: 120px;" class="form-select" name="list<?= $i ?>">
-                        <option value=""></option>
-                        <?php
-                        // ดึงข้อมูลจากตาราง device_models
-                        $sql = "SELECT models_id, models_name FROM device_models";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->execute();
-                        $deviceModels = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                        foreach ($deviceModels as $deviceModel) {
-                          $selected = ($deviceModel['models_id'] == $list) ? 'selected' : '';
-                          echo "<option value='{$deviceModel['models_id']}' {$selected}>{$deviceModel['models_name']}</option>";
-                        }
-                        ?>
-                      </select>
+                      <input disabled value="<?= htmlspecialchars($item['list']) ?>" style="width: 8rem;" type="text" class="form-control">
                     </td>
-
-                    <td><textarea disabled rows="2" maxlength="60" name="quality<?= $i ?>" class="limitedTextarea"><?= $quality ?></textarea></td>
-                    <td><input disabled value="<?= $amount ?>" style="width: 2rem;" type="text" name="amount<?= $i ?>"></td>
-                    <td><input disabled value="<?= $price ?>" style="width: 4rem;" type="text" name="price<?= $i ?>"></td>
-                    <td><input disabled readonly value="<?= $currentSum ?>" style="width: 4rem;"></td>
-                    <td><input disabled value="<?= $unit ?>" style="width: 4rem;" type="text" name="unit<?= $i ?>"></td>
+                    <td>
+                      <textarea disabled class="form-control"><?= htmlspecialchars($item['quality']) ?></textarea>
+                    </td>
+                    <td>
+                      <input disabled value="<?= htmlspecialchars($item['amount']) ?>" style="width: 3rem;" type="text" class="form-control">
+                    </td>
+                    <td>
+                      <input disabled value="<?= htmlspecialchars($item['price']) ?>" style="width: 4rem;" type="text" class="form-control">
+                    </td>
+                    <td>
+                      <input disabled value="<?= htmlspecialchars($item['unit']) ?>" style="width: 5rem;" type="text" class="form-control">
+                    </td>
+                    <td>
+                      <button type="button" class="btn btn-warning remove-row" style="display: none;">ลบ</button>
+                    </td>
                   </tr>
-                <?php
-                }
-
-                ?>
+                <?php endforeach; ?>
               </tbody>
             </table>
+            <div class="d-flex justify-content-end">
+              <button type="button" id="add-row" class="btn btn-success" style="display: none;">+ เพิ่มแถว</button>
+            </div>
           </form>
         </div>
       </div>
@@ -1095,6 +1207,48 @@ if (isset($_GET['numberWork'])) {
 
 
   <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const editButton = document.getElementById("editData");
+      const addDeviceButton = document.getElementById("add-device-number");
+      const removeFields = document.querySelectorAll(".remove-field");
+
+      editButton.addEventListener("click", function(event) {
+        event.preventDefault();
+        toggleEditMode();
+      });
+
+      function toggleEditMode() {
+        const isDisabled = document.querySelector("#device-number-container input").disabled;
+        removeFields.forEach(function(button) {
+          button.style.display = isDisabled ? "inline-block" : "none";
+        });
+        addDeviceButton.style.display = isDisabled ? "inline-block" : "none";
+      }
+
+      addDeviceButton.addEventListener("click", function() {
+        const container = document.getElementById("device-number-container");
+        const newRow = document.createElement("div");
+        newRow.className = "d-flex device-number-row";
+        newRow.innerHTML = `
+        <input type="text" name="device_numbers[]" class="form-control mb-2" value="">
+        <button type="button" class="btn btn-warning p-2 ms-3 remove-field mb-2">ลบ</button>
+      `;
+        container.appendChild(newRow);
+
+        const newRemoveButton = newRow.querySelector(".remove-field");
+        newRemoveButton.addEventListener("click", function() {
+          newRow.remove();
+        });
+      });
+
+      removeFields.forEach(function(button) {
+        button.addEventListener("click", function() {
+          const row = button.closest(".device-number-row");
+          row.remove();
+        });
+      });
+    });
+
     document.addEventListener("DOMContentLoaded", function() {
       var editButton = document.getElementById("editData");
       editButton.addEventListener("click", function(event) {
@@ -1106,85 +1260,77 @@ if (isset($_GET['numberWork'])) {
     function enableInputs() {
       var inputNames = ["list", "quality", "amount", "price", "unit"];
 
-      var numberDevice1 = document.querySelector("input[name='numberDevice1']");
-      if (numberDevice1) {
-        numberDevice1.disabled = false;
-      }
-      var numberDevice2 = document.querySelector("input[name='numberDevice2']");
-      if (numberDevice2) {
-        numberDevice2.disabled = false;
-      }
-      var numberDevice3 = document.querySelector("input[name='numberDevice3']");
-      if (numberDevice3) {
-        numberDevice3.disabled = false;
-      }
-      var report = document.querySelector("input[name='report']");
-      if (report) {
-        report.disabled = false;
-      }
-      var reason = document.querySelector("input[name='reason']");
-      if (reason) {
-        reason.disabled = false;
-      }
-      var note = document.querySelector("input[name='note']");
-      if (note) {
-        note.disabled = false;
-      }
+      const deviceInputs = document.querySelectorAll("#device-number-container input");
+      deviceInputs.forEach(function(input) {
+        input.disabled = !input.disabled;
+      });
 
-      for (var i = 1; i <= 15; i++) {
-        inputNames.forEach(function(name) {
-          var input = document.querySelector("input[name='" + name + i + "']");
-          if (input) {
-            input.disabled = false;
-          }
-          var textarea = document.querySelector("textarea[name='" + name + i + "']");
-          if (textarea) {
-            textarea.disabled = false;
-          }
-          var select = document.querySelector("select[name='" + name + i + "']");
-          if (select) {
-            select.disabled = false;
-          }
-        });
-        var status = document.getElementById("statusD");
-        if (status) {
-          status.disabled = false;
+      ["report", "reason", "note"].forEach(function(name) {
+        var input = document.querySelector(`input[name='${name}']`);
+        if (input) {
+          input.disabled = !input.disabled;
         }
-        var saveButton = document.querySelector("button[name='updateData']");
-        if (saveButton) {
-          saveButton.disabled = false;
-        }
-        var show_receipt_date = document.querySelector("input[name='show_receipt_date']");
-        if (show_receipt_date) {
-          show_receipt_date.disabled = false;
-        }
-        var show_delivery_date = document.querySelector("input[name='show_delivery_date']");
-        if (show_delivery_date) {
-          show_delivery_date.disabled = false;
-        }
-        var show_close_date = document.querySelector("input[name='show_close_date']");
-        if (show_close_date) {
-          show_close_date.disabled = false;
-        }
-        var receipt_date = document.querySelector("input[name='receipt_date']");
-        if (receipt_date) {
-          receipt_date.disabled = false;
-        }
-        var close_date = document.querySelector("input[name='close_date']");
-        if (close_date) {
-          close_date.disabled = false;
-        }
+      });
 
-        var delivery_date = document.querySelector("input[name='delivery_date']");
-        if (delivery_date) {
-          delivery_date.disabled = false;
-        }
+      var tableInputs = document.querySelectorAll("#pdf input, #pdf textarea");
+      tableInputs.forEach(function(input) {
+        input.disabled = !input.disabled;
+      });
 
-        var currentSumInput = document.querySelector("input[name='currentSum" + i + "']");
-        if (currentSumInput) {
-          currentSumInput.readOnly = false;
-        }
-      }
+      // for (var i = 1; i <= 15; i++) {
+      //   inputNames.forEach(function(name) {
+      //     var input = document.querySelector("input[name='" + name + i + "']");
+      //     if (input) {
+      //       input.disabled = false;
+      //     }
+      //     var textarea = document.querySelector("textarea[name='" + name + i + "']");
+      //     if (textarea) {
+      //       textarea.disabled = false;
+      //     }
+      //     var select = document.querySelector("select[name='" + name + i + "']");
+      //     if (select) {
+      //       select.disabled = false;
+      //     }
+      //   });
+      //   var status = document.getElementById("statusD");
+      //   if (status) {
+      //     status.disabled = false;
+      //   }
+      //   var saveButton = document.querySelector("button[name='updateData']");
+      //   if (saveButton) {
+      //     saveButton.disabled = false;
+      //   }
+      //   var show_receipt_date = document.querySelector("input[name='show_receipt_date']");
+      //   if (show_receipt_date) {
+      //     show_receipt_date.disabled = false;
+      //   }
+      //   var show_delivery_date = document.querySelector("input[name='show_delivery_date']");
+      //   if (show_delivery_date) {
+      //     show_delivery_date.disabled = false;
+      //   }
+      //   var show_close_date = document.querySelector("input[name='show_close_date']");
+      //   if (show_close_date) {
+      //     show_close_date.disabled = false;
+      //   }
+      //   var receipt_date = document.querySelector("input[name='receipt_date']");
+      //   if (receipt_date) {
+      //     receipt_date.disabled = false;
+      //   }
+      //   var close_date = document.querySelector("input[name='close_date']");
+      //   if (close_date) {
+      //     close_date.disabled = false;
+      //   }
+
+      //   var delivery_date = document.querySelector("input[name='delivery_date']");
+      //   if (delivery_date) {
+      //     delivery_date.disabled = false;
+      //   }
+
+      //   var currentSumInput = document.querySelector("input[name='currentSum" + i + "']");
+      //   if (currentSumInput) {
+      //     currentSumInput.readOnly = false;
+      //   }
+      // }
     }
   </script>
 <?php } ?>
@@ -1293,7 +1439,30 @@ if (isset($_GET['numberWork'])) {
     // Check if the entered value is not in autocomplete
   });
 </script>
+<script>
+  document.querySelectorAll('.confirm-btn, .cancel-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const status = this.dataset.status;
+      const orderId = this.dataset.orderId;
 
+      fetch('update_status.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            status,
+            order_id: orderId
+          })
+        })
+        .then(response => response.text())
+        .then(data => {
+          alert(data);
+          location.reload();
+        });
+    });
+  });
+</script>
 
 <?php SC5() ?>
 </body>

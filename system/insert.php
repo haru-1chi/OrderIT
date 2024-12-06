@@ -500,44 +500,44 @@ if (isset($_POST['submit_with_work'])) {
 
     date_default_timezone_set('Asia/Bangkok');
     $timestamp = date('Y-m-d H:i:s');
-    echo '<pre>';
-    var_dump([
-        'id_ref' => $id_ref,
-        'numberWork' => $numberWork,
-        'dateWithdraw' => $dateWithdraw,
-        'refWithdraw' => $refWithdraw,
-        'refWork' => $refWork,
-        'refDevice' => $refDevice,
-        'numberDevices' => $numberDevices,
-        'refDepart' => $refDepart,
-        'refUsername' => $refUsername,
-        'report' => $report,
-        'reason' => $reason,
-        'refOffer' => $refOffer,
-        'quotation' => $quotation,
-        'status' => $status,
-        'note' => $note,
-        'lists' => $lists,
-        'qualities' => $qualities,
-        'amounts' => $amounts,
-        'prices' => $prices,
-        'units' => $units,
+    // echo '<pre>';
+    // var_dump([
+    //     'id_ref' => $id_ref,
+    //     'numberWork' => $numberWork,
+    //     'dateWithdraw' => $dateWithdraw,
+    //     'refWithdraw' => $refWithdraw,
+    //     'refWork' => $refWork,
+    //     'refDevice' => $refDevice,
+    //     'numberDevices' => $numberDevices,
+    //     'refDepart' => $refDepart,
+    //     'refUsername' => $refUsername,
+    //     'report' => $report,
+    //     'reason' => $reason,
+    //     'refOffer' => $refOffer,
+    //     'quotation' => $quotation,
+    //     'status' => $status,
+    //     'note' => $note,
+    //     'lists' => $lists,
+    //     'qualities' => $qualities,
+    //     'amounts' => $amounts,
+    //     'prices' => $prices,
+    //     'units' => $units,
 
-        //ขาด number_devices ของ task
-        'close_date' => $close_date,
-        'department' => $department,
-        'deviceName' => $deviceName,
-        'device' => $device,
-        'description' => $description,
-        'repair_count' => $repair_count,
-        'withdraw' => $withdraw,
-        'noteTask' => $noteTask,
-        'sla' => $sla,
-        'kpi' => $kpi,
-        'problem' => $problem,
-    ]);
-    echo '</pre>';
-    exit();
+    //     //ขาด number_devices ของ task
+    //     'close_date' => $close_date,
+    //     'department' => $department,
+    //     'deviceName' => $deviceName,
+    //     'device' => $device,
+    //     'description' => $description,
+    //     'repair_count' => $repair_count,
+    //     'withdraw' => $withdraw,
+    //     'noteTask' => $noteTask,
+    //     'sla' => $sla,
+    //     'kpi' => $kpi,
+    //     'problem' => $problem,
+    // ]);
+    // echo '</pre>';
+    // exit();
     if (empty($refDepart)) {
         $_SESSION["error"] = "บันทีกข้อไม่สำเร็จ";
         $_SESSION["warning"] = "กรุณากดเลือกหน่วยงานหลังพิมพ์";
@@ -591,6 +591,9 @@ if (isset($_POST['submit_with_work'])) {
                 if (isset($numberDevices)) {
                     foreach ($numberDevices as $modalId => $devices) {
                         foreach ($devices as $index => $numberDevice) {
+                            if (trim($numberDevice) === "") {
+                                continue;
+                            }
                             // Save devices to the order_numberdevice table
                             $deviceStmt->bindParam(':order_item', $orderId);
                             $deviceStmt->bindParam(':numberDevice', $numberDevice);
@@ -656,14 +659,14 @@ if (isset($_POST['submit_with_work'])) {
 
                 $conn->commit();
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จและอัปเดตเรียบร้อย";
-                header("location: ../create.php");
+                header("location: ../myjob.php");
             } else {
                 throw new Exception("Insert into orderdata_new failed.");
             }
         } catch (Exception $e) {
             $conn->rollBack();
             $_SESSION["error"] = "พบข้อผิดพลาด: " . $e->getMessage();
-            header("location: ../create.php");
+            header("location: ../myjob.php");
         }
     }
 }
@@ -815,25 +818,6 @@ if (isset($_POST['save_with_work'])) {
             $stmt->bindParam(':id_ref', $id_ref);
 
             if ($stmt->execute()) {
-                $orderId = $conn->lastInsertId();
-
-                // Prepare statements
-                $itemSql = "INSERT INTO order_items (order_id, list, quality, amount, price, unit) 
-                VALUES (:order_id, :list, :quality, :amount, :price, :unit)";
-                $itemStmt = $conn->prepare($itemSql);
-
-                foreach ($lists as $modalId => $modalLists) {
-                    foreach ($modalLists as $index => $list) {
-                        $itemStmt->bindParam(':order_id', $orderId);
-                        $itemStmt->bindParam(':list', $list);
-                        $itemStmt->bindParam(':quality', $qualities[$modalId][$index]);
-                        $itemStmt->bindParam(':amount', $amounts[$modalId][$index]);
-                        $itemStmt->bindParam(':price', $prices[$modalId][$index]);
-                        $itemStmt->bindParam(':unit', $units[$modalId][$index]);
-                        $itemStmt->execute();
-                    }
-                }
-
                 if (!empty($_POST['list'])) {
                     foreach ($_POST['list'] as $modalId => $modalLists) {
                         foreach ($modalLists as $index => $list) {
@@ -932,14 +916,14 @@ if (isset($_POST['save_with_work'])) {
                     }
                 }
 
-                $statusSql = "UPDATE order_status 
-              SET status = :status, timestamp = :timestamp 
-              WHERE order_id = :order_id";
-                $statusStmt = $conn->prepare($statusSql);
-                $statusStmt->bindParam(':order_id', $withdraw_id, PDO::PARAM_INT);
-                $statusStmt->bindParam(':status', $status, PDO::PARAM_STR);
-                $statusStmt->bindParam(':timestamp', $timestamp, PDO::PARAM_STR);
-                $statusStmt->execute();
+            //     $statusSql = "UPDATE order_status 
+            //   SET status = :status, timestamp = :timestamp 
+            //   WHERE order_id = :order_id";
+            //     $statusStmt = $conn->prepare($statusSql);
+            //     $statusStmt->bindParam(':order_id', $withdraw_id, PDO::PARAM_INT);
+            //     $statusStmt->bindParam(':status', $status, PDO::PARAM_STR);
+            //     $statusStmt->bindParam(':timestamp', $timestamp, PDO::PARAM_STR);
+            //     $statusStmt->execute();
 
                 // Update additional fields in data_report if `id_ref` matches
                 $checkSql = "SELECT numberWork FROM orderdata_new WHERE id_ref = :id_ref";
@@ -990,7 +974,7 @@ if (isset($_POST['save_with_work'])) {
         } catch (Exception $e) {
             $conn->rollBack();
             $_SESSION["error"] = "พบข้อผิดพลาด: " . $e->getMessage();
-            header("location: ../create.php");
+            header("location: ../myjob.php");
         }
     }
 }
