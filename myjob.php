@@ -1378,110 +1378,6 @@ if (!isset($_SESSION["admin_log"])) {
 
                                         </div>
 
-                                        <script>
-                                            //เพิ่มแถวตาราง
-                                            let rowIndex = 1;
-                                            document.addEventListener('click', function(e) {
-                                                if (e.target && e.target.id.startsWith('add-row-')) {
-                                                    const modalId = e.target.id.split('-').pop(); // Extract the modal index
-                                                    const tableBody = document.querySelector(`#table-body-${modalId}`);
-                                                    const rowIndex = tableBody.querySelectorAll('tr').length + 1;
-
-                                                    const newRow = document.createElement('tr');
-                                                    newRow.className = 'text-center';
-                                                    newRow.innerHTML = `
-<th scope="row">${rowIndex}</th>
-<td>
-<select style="width: 120px" class="form-select device-select" name="list[${modalId}][]" data-row="${rowIndex}">
-<option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-<?php
-                            foreach ($result as $d) {
-?>
-<option value="<?= $d['models_id'] ?>"><?= $d['models_name'] ?></option>
-<?php
-                            }
-?>
-</select>
-</td>
-<td><textarea rows="2" maxlength="60" name="quality[${modalId}][]" class="form-control"></textarea></td>
-<td><input style="width: 2rem; margin: 0 auto;" type="text" name="amount[${modalId}][]" class="form-control"></td>
-<td><input style="width: 4rem;" type="text" name="price[${modalId}][]" class="form-control"></td>
-<td><input style="width: 4rem;" type="text" name="unit[${modalId}][]" class="form-control"></td>
-<td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
-        `;
-                                                    tableBody.appendChild(newRow);
-                                                }
-                                            });
-
-                                            document.addEventListener('click', function(e) {
-                                                if (e.target && e.target.classList.contains('remove-row')) {
-                                                    const row = e.target.closest('tr');
-                                                    const hiddenInput = row.querySelector('select');
-
-                                                    if (hiddenInput && hiddenInput.name.startsWith('update_list')) {
-                                                        // Case 1: Soft delete for saved rows
-                                                        const rowId = e.target.getAttribute('data-items-row-id');
-                                                        const itemId = e.target.getAttribute('data-items-id');
-                                                        const tableBody = document.querySelector(`#table-body-${rowId}`);
-                                                        const deletedInput = document.createElement('input');
-                                                        deletedInput.type = 'hidden';
-                                                        deletedInput.name = `deleted_items[${rowId}][${itemId}]`;
-                                                        deletedInput.value = itemId;
-                                                        tableBody.appendChild(deletedInput);
-                                                    }
-
-                                                    // Case 2: Direct removal of unsaved rows
-                                                    row.remove();
-                                                }
-                                            });
-
-                                            function updateRowNumbers() {
-                                                const rows = document.querySelectorAll('#table-body tr');
-                                                rows.forEach((row, index) => {
-                                                    row.querySelector('th').textContent = index + 1;
-                                                });
-                                                rowIndex = rows.length;
-                                            }
-
-                                            $(document).on('change', '.device-select', function() {
-                                                const models_id = $(this).val();
-                                                const rowElement = $(this).closest('tr');
-                                                const modalId = $(this).closest('tbody').attr('id').split('-').pop();
-                                                const nameAttr = $(this).attr('name');
-                                                const matches = nameAttr.match(/\[(\d+)\]\[(\d+)\]/);
-                                                const isUpdateMode = matches !== null;
-                                                const itemId = isUpdateMode ? matches[2] : null;
-
-                                                if (models_id) {
-                                                    $.ajax({
-                                                        url: 'autoList.php',
-                                                        type: 'POST',
-                                                        data: {
-                                                            models_id: models_id
-                                                        },
-                                                        success: function(response) {
-                                                            const data = JSON.parse(response);
-                                                            if (data.success) {
-                                                                if (isUpdateMode) {
-                                                                    rowElement.find('textarea').attr('name', `update_quality[${modalId}][${itemId}]`).val(data.quality);
-                                                                    rowElement.find('input[name^="update_price"]').attr('name', `update_price[${modalId}][${itemId}]`).val(data.price);
-                                                                    rowElement.find('input[name^="update_unit"]').attr('name', `update_unit[${modalId}][${itemId}]`).val(data.unit);
-                                                                } else {
-                                                                    rowElement.find('textarea').attr('name', `quality[${modalId}][]`).val(data.quality);
-                                                                    rowElement.find('input[name^="price"]').attr('name', `price[${modalId}][]`).val(data.price);
-                                                                    rowElement.find('input[name^="unit"]').attr('name', `unit[${modalId}][]`).val(data.unit);
-                                                                }
-                                                            } else {
-                                                                alert('ไม่สามารถดึงข้อมูลได้');
-                                                            }
-                                                        },
-                                                        error: function() {
-                                                            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                        </script>
             </div>
             </form>
             </td>
@@ -2477,6 +2373,110 @@ if (!isset($_SESSION["admin_log"])) {
                 console.error("Modal not found:", modalId);
             }
         }
+    </script>
+    <script>
+        //เพิ่มแถวตาราง
+        let rowIndex = 1;
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id.startsWith('add-row-')) {
+                const modalId = e.target.id.split('-').pop(); // Extract the modal index
+                const tableBody = document.querySelector(`#table-body-${modalId}`);
+                const rowIndex = tableBody.querySelectorAll('tr').length + 1;
+
+                const newRow = document.createElement('tr');
+                newRow.className = 'text-center';
+                newRow.innerHTML = `
+<th scope="row">${rowIndex}</th>
+<td>
+<select style="width: 120px" class="form-select device-select" name="list[${modalId}][]" data-row="${rowIndex}">
+<option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+<?php
+foreach ($result as $d) {
+?>
+<option value="<?= $d['models_id'] ?>"><?= $d['models_name'] ?></option>
+<?php
+}
+?>
+</select>
+</td>
+<td><textarea rows="2" maxlength="60" name="quality[${modalId}][]" class="form-control"></textarea></td>
+<td><input style="width: 2rem; margin: 0 auto;" type="text" name="amount[${modalId}][]" class="form-control"></td>
+<td><input style="width: 4rem;" type="text" name="price[${modalId}][]" class="form-control"></td>
+<td><input style="width: 4rem;" type="text" name="unit[${modalId}][]" class="form-control"></td>
+<td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
+        `;
+                tableBody.appendChild(newRow);
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('remove-row')) {
+                const row = e.target.closest('tr');
+                const hiddenInput = row.querySelector('select');
+
+                if (hiddenInput && hiddenInput.name.startsWith('update_list')) {
+                    // Case 1: Soft delete for saved rows
+                    const rowId = e.target.getAttribute('data-items-row-id');
+                    const itemId = e.target.getAttribute('data-items-id');
+                    const tableBody = document.querySelector(`#table-body-${rowId}`);
+                    const deletedInput = document.createElement('input');
+                    deletedInput.type = 'hidden';
+                    deletedInput.name = `deleted_items[${rowId}][${itemId}]`;
+                    deletedInput.value = itemId;
+                    tableBody.appendChild(deletedInput);
+                }
+
+                // Case 2: Direct removal of unsaved rows
+                row.remove();
+            }
+        });
+
+        function updateRowNumbers() {
+            const rows = document.querySelectorAll('#table-body tr');
+            rows.forEach((row, index) => {
+                row.querySelector('th').textContent = index + 1;
+            });
+            rowIndex = rows.length;
+        }
+
+        $(document).on('change', '.device-select', function() {
+            const models_id = $(this).val();
+            const rowElement = $(this).closest('tr');
+            const modalId = $(this).closest('tbody').attr('id').split('-').pop();
+            const nameAttr = $(this).attr('name');
+            const matches = nameAttr.match(/\[(\d+)\]\[(\d+)\]/);
+            const isUpdateMode = matches !== null;
+            const itemId = isUpdateMode ? matches[2] : null;
+
+            if (models_id) {
+                $.ajax({
+                    url: 'autoList.php',
+                    type: 'POST',
+                    data: {
+                        models_id: models_id
+                    },
+                    success: function(response) {
+                        const data = JSON.parse(response);
+                        if (data.success) {
+                            if (isUpdateMode) {
+                                rowElement.find('textarea').attr('name', `update_quality[${modalId}][${itemId}]`).val(data.quality);
+                                rowElement.find('input[name^="update_price"]').attr('name', `update_price[${modalId}][${itemId}]`).val(data.price);
+                                rowElement.find('input[name^="update_unit"]').attr('name', `update_unit[${modalId}][${itemId}]`).val(data.unit);
+                            } else {
+                                rowElement.find('textarea').attr('name', `quality[${modalId}][]`).val(data.quality);
+                                rowElement.find('input[name^="price"]').attr('name', `price[${modalId}][]`).val(data.price);
+                                rowElement.find('input[name^="unit"]').attr('name', `unit[${modalId}][]`).val(data.unit);
+                            }
+                        } else {
+                            alert('ไม่สามารถดึงข้อมูลได้');
+                        }
+                    },
+                    error: function() {
+                        alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                    }
+                });
+            }
+        });
     </script>
     <script>
         // Add a new device row

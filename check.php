@@ -263,6 +263,7 @@ if (!isset($_SESSION["admin_log"])) {
               'quality' => $row['quality'],
               'amount' => $row['amount'],
               'price' => $row['price'],
+              'total' => $row['price'] * $row['amount'],
               'unit' => $row['unit']
             ];
           }
@@ -556,6 +557,7 @@ if (!isset($_SESSION["admin_log"])) {
             <th scope="col">คุณสมบัติ</th>
             <th scope="col">จำนวน</th>
             <th scope="col">ราคา</th>
+            <th scope="col">รวม</th>
             <th scope="col">หน่วย</th>
             </tr>
           </thead>
@@ -576,15 +578,15 @@ if (!isset($_SESSION["admin_log"])) {
                   <input disabled value="<?= htmlspecialchars($item['price']) ?>" style="width: 4rem;" type="text" class="form-control">
                 </td>
                 <td>
+                  <input disabled value="<?= htmlspecialchars($item['total']) ?>" style="width: 4rem;" type="text" class="form-control">
+                </td>
+                <td>
                   <input disabled value="<?= htmlspecialchars($item['unit']) ?>" style="width: 5rem;" type="text" class="form-control">
                 </td>
               </tr>
             <?php endforeach; ?>
           </tbody>
         </table>
-
-        <form action="system/update.php" method="POST">
-        </form>
     </div>
     </div>
     </div>
@@ -609,7 +611,7 @@ of.offer_name,
 nd.numberDevice, 
 nd.id AS numberDevice_id, 
 oi.id AS item_id, 
-dm.models_name AS list, 
+oi.list, 
 oi.quality, 
 oi.amount, 
 oi.price, 
@@ -630,8 +632,6 @@ LEFT JOIN
 order_numberdevice AS nd ON od.id = nd.order_item
 LEFT JOIN 
 order_items AS oi ON od.id = oi.order_id
-LEFT JOIN 
-device_models AS dm ON oi.list = dm.models_id
 WHERE 
 (od.numberWork = :numberWork) AND
 (nd.is_deleted = 0 OR nd.is_deleted IS NULL)
@@ -663,6 +663,7 @@ ORDER BY nd.id, oi.id
           'quality' => $row['quality'],
           'amount' => $row['amount'],
           'price' => $row['price'],
+          'total' => $row['price'] * $row['amount'],
           'unit' => $row['unit']
         ];
       }
@@ -1004,7 +1005,7 @@ ORDER BY nd.id, oi.id
               <a href="create.php?id=<?= $numberWork ?>" class="btn btn-secondary p-2 me-3">คัดลอก</a>
               <button id="editData" class="btn btn-warning p-2 me-3">แก้ไข</button>
 
-              <!-- <button type="submit" disabled name="updateData" class="btn btn-success p-2 me-3">บันทึก</button> -->
+              <button type="submit" name="updateData" class="btn btn-success p-2 me-3">บันทึก</button>
             </div>
 
             <div class="row">
@@ -1032,8 +1033,9 @@ ORDER BY nd.id, oi.id
                 <div id="device-number-container">
                   <?php foreach ($devices as $index => $device): ?>
                     <div class="d-flex device-number-row">
-                      <input type="text" name="device_numbers[]" class="form-control mb-2" value="<?= htmlspecialchars($device) ?>" disabled>
-                      <button type="button" class="btn btn-warning p-2 ms-3 mb-2 remove-field" style="display: none; visibility: <?= $index === 0 ? 'hidden' : 'visible' ?>;">ลบ</button>
+                      <input type="text" name="update_number_device[]" class="form-control mb-2" value="<?= htmlspecialchars($device) ?>" disabled>
+                      <button type="button" class="btn btn-warning p-2 ms-3 mb-2 remove-field"
+                        style="display: none; visibility: <?= $index === 0 ? 'hidden' : 'visible' ?>;">ลบ</button>
                     </div>
                   <?php endforeach; ?>
                 </div>
@@ -1166,8 +1168,9 @@ ORDER BY nd.id, oi.id
                   <th scope="col">คุณสมบัติ</th>
                   <th scope="col">จำนวน</th>
                   <th scope="col">ราคา</th>
+                  <th scope="col">รวม</th>
                   <th scope="col">หน่วย</th>
-                  <th scope="col">จัดการ</th>
+                  <th scope="col" style="display: none;"></th>
                 </tr>
               </thead>
               <tbody id="table-body" class="text-center">
@@ -1175,22 +1178,44 @@ ORDER BY nd.id, oi.id
                   <tr>
                     <td><?= $index + 1 ?></td>
                     <td>
-                      <input disabled value="<?= htmlspecialchars($item['list']) ?>" style="width: 8rem;" type="text" class="form-control">
+                      <select
+                        disabled
+                        style="width: 120px"
+                        class="form-select device-select"
+                        name="update_list[]">
+                        <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+                        <?php
+                        $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
+                        $deviceStmt = $conn->prepare($deviceSql);
+                        $deviceStmt->execute();
+                        $devices = $deviceStmt->fetchAll(PDO::FETCH_ASSOC);
+                        $deviceOptions = '';
+                        foreach ($devices as $device) {
+                          $deviceOptions .= "<option value='{$device['models_id']}'>{$device['models_name']}</option>";
+                          $selected = $device['models_id'] == $item['list'] ? 'selected' : '';
+                          echo "<option value='{$device['models_id']}' $selected>{$device['models_name']}</option>";
+                        }
+                        ?>
+                      </select>
                     </td>
                     <td>
-                      <textarea disabled class="form-control"><?= htmlspecialchars($item['quality']) ?></textarea>
+                      <textarea disabled class="form-control" name="update_quality[]"><?= htmlspecialchars($item['quality']) ?></textarea>
                     </td>
                     <td>
-                      <input disabled value="<?= htmlspecialchars($item['amount']) ?>" style="width: 3rem;" type="text" class="form-control">
+                      <input disabled name="update_amount[]" value="<?= htmlspecialchars($item['amount']) ?>" style="width: 3rem;" type="text" class="form-control">
                     </td>
                     <td>
-                      <input disabled value="<?= htmlspecialchars($item['price']) ?>" style="width: 4rem;" type="text" class="form-control">
+                      <input disabled name="update_price[]" value="<?= htmlspecialchars($item['price']) ?>" style="width: 4rem;" type="text" class="form-control">
                     </td>
                     <td>
-                      <input disabled value="<?= htmlspecialchars($item['unit']) ?>" style="width: 5rem;" type="text" class="form-control">
+                      <input disabled value="<?= htmlspecialchars($item['total']) ?>" style="width: 4rem;" type="text" class="form-control no-toggle">
                     </td>
                     <td>
-                      <button type="button" class="btn btn-warning remove-row" style="display: none;">ลบ</button>
+                      <input disabled name="update_unit[]" value="<?= htmlspecialchars($item['unit']) ?>" style="width: 5rem;" type="text" class="form-control">
+                    </td>
+                    <td>
+                      <button type="button" class="btn btn-warning remove-row"
+                        style="display: none;">ลบ</button>
                     </td>
                   </tr>
                 <?php endforeach; ?>
@@ -1211,6 +1236,7 @@ ORDER BY nd.id, oi.id
       const editButton = document.getElementById("editData");
       const addDeviceButton = document.getElementById("add-device-number");
       const removeFields = document.querySelectorAll(".remove-field");
+      const manageColumnHeader = document.querySelector("th[scope='col'][style='display: none;']");
 
       editButton.addEventListener("click", function(event) {
         event.preventDefault();
@@ -1223,6 +1249,7 @@ ORDER BY nd.id, oi.id
           button.style.display = isDisabled ? "inline-block" : "none";
         });
         addDeviceButton.style.display = isDisabled ? "inline-block" : "none";
+        manageColumnHeader.style.display = isDisabled ? "table-cell" : "none";
       }
 
       addDeviceButton.addEventListener("click", function() {
@@ -1258,80 +1285,138 @@ ORDER BY nd.id, oi.id
     });
 
     function enableInputs() {
-      var inputNames = ["list", "quality", "amount", "price", "unit"];
-
       const deviceInputs = document.querySelectorAll("#device-number-container input");
       deviceInputs.forEach(function(input) {
         input.disabled = !input.disabled;
       });
 
       ["report", "reason", "note"].forEach(function(name) {
-        var input = document.querySelector(`input[name='${name}']`);
+        var input = document.querySelector(`input[name='${name}']`)
         if (input) {
           input.disabled = !input.disabled;
         }
       });
 
-      var tableInputs = document.querySelectorAll("#pdf input, #pdf textarea");
+      const tableInputs = document.querySelectorAll(
+        "#table-body input, #table-body textarea, #table-body select"
+      );
+
       tableInputs.forEach(function(input) {
-        input.disabled = !input.disabled;
+        if (!input.classList.contains("no-toggle")) {
+          input.disabled = !input.disabled;
+        }
       });
 
-      // for (var i = 1; i <= 15; i++) {
-      //   inputNames.forEach(function(name) {
-      //     var input = document.querySelector("input[name='" + name + i + "']");
-      //     if (input) {
-      //       input.disabled = false;
-      //     }
-      //     var textarea = document.querySelector("textarea[name='" + name + i + "']");
-      //     if (textarea) {
-      //       textarea.disabled = false;
-      //     }
-      //     var select = document.querySelector("select[name='" + name + i + "']");
-      //     if (select) {
-      //       select.disabled = false;
-      //     }
-      //   });
-      //   var status = document.getElementById("statusD");
-      //   if (status) {
-      //     status.disabled = false;
-      //   }
-      //   var saveButton = document.querySelector("button[name='updateData']");
-      //   if (saveButton) {
-      //     saveButton.disabled = false;
-      //   }
-      //   var show_receipt_date = document.querySelector("input[name='show_receipt_date']");
-      //   if (show_receipt_date) {
-      //     show_receipt_date.disabled = false;
-      //   }
-      //   var show_delivery_date = document.querySelector("input[name='show_delivery_date']");
-      //   if (show_delivery_date) {
-      //     show_delivery_date.disabled = false;
-      //   }
-      //   var show_close_date = document.querySelector("input[name='show_close_date']");
-      //   if (show_close_date) {
-      //     show_close_date.disabled = false;
-      //   }
-      //   var receipt_date = document.querySelector("input[name='receipt_date']");
-      //   if (receipt_date) {
-      //     receipt_date.disabled = false;
-      //   }
-      //   var close_date = document.querySelector("input[name='close_date']");
-      //   if (close_date) {
-      //     close_date.disabled = false;
-      //   }
+      var removeButtons = document.querySelectorAll(".remove-row");
+      var addRowButton = document.getElementById("add-row");
+      removeButtons.forEach(function(button) {
+        button.style.display = button.style.display === "none" ? "inline-block" : "none";
+      });
+      addRowButton.style.display = addRowButton.style.display === "none" ? "inline-block" : "none";
 
-      //   var delivery_date = document.querySelector("input[name='delivery_date']");
-      //   if (delivery_date) {
-      //     delivery_date.disabled = false;
-      //   }
+      const tableRows = document.querySelectorAll("#table-body tr");
+      tableRows.forEach((row) => {
+        const amountInput = row.querySelector('input[name="amount[]"]');
+        const priceInput = row.querySelector('input[name="price[]"]');
+        const totalInput = row.querySelector('input.no-toggle');
 
-      //   var currentSumInput = document.querySelector("input[name='currentSum" + i + "']");
-      //   if (currentSumInput) {
-      //     currentSumInput.readOnly = false;
-      //   }
-      // }
+        // Add event listeners for real-time calculation
+        const calculateTotal = () => {
+          const amount = parseFloat(amountInput.value) || 0;
+          const price = parseFloat(priceInput.value) || 0;
+          totalInput.value = (amount * price); // Calculate total and update
+        };
+
+        amountInput.addEventListener("input", calculateTotal);
+        priceInput.addEventListener("input", calculateTotal);
+      });
     }
+
+    document.getElementById("add-row").addEventListener("click", function() {
+      const deviceOptions = `<?= $deviceOptions ?>`;
+      var tableBody = document.getElementById("table-body");
+      var rowIndex = tableBody.querySelectorAll("tr").length + 1;
+
+      var newRow = document.createElement("tr");
+      newRow.innerHTML = `
+            <td>${rowIndex}</td>
+<td>
+          <select style="width: 120px" class="form-select device-select" name="list[]">
+            <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+            ${deviceOptions}
+          </select>
+        </td>
+            <td><textarea class="form-control" name="quality[]"></textarea></td>
+            <td><input style="width: 3rem;" type="text" name="amount[]" class="form-control"></td>
+            <td><input style="width: 4rem;" type="text" name="price[]" class="form-control"></td>
+            <td><input disabled style="width: 4rem;" type="text" class="form-control no-toggle"></td>
+            <td><input style="width: 5rem;" type="text" name="unit[]" class="form-control"></td>
+            <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
+        `;
+      tableBody.appendChild(newRow);
+
+      const amountInput = newRow.querySelector('input[name="amount[]"]');
+      const priceInput = newRow.querySelector('input[name="price[]"]');
+      const totalInput = newRow.querySelector('input.no-toggle');
+
+      const calculateTotal = () => {
+        const amount = parseFloat(amountInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        totalInput.value = (amount * price);
+      };
+
+      amountInput.addEventListener("input", calculateTotal);
+      priceInput.addEventListener("input", calculateTotal);
+
+      bindAutoList();
+    });
+
+    // Remove Row
+    document.addEventListener("click", function(event) {
+      if (event.target && event.target.classList.contains("remove-row")) {
+        var row = event.target.closest("tr");
+        row.remove();
+      }
+    });
+
+
+    function bindAutoList() {
+      const deviceSelects = document.querySelectorAll(".device-select");
+      deviceSelects.forEach(function(select) {
+        select.removeEventListener("change", handleDeviceChange); // Prevent duplicate binding
+        select.addEventListener("change", handleDeviceChange);
+      });
+    }
+
+    // Handle the onchange event for device-select
+    function handleDeviceChange(event) {
+      const models_id = event.target.value;
+      const rowElement = event.target.closest("tr");
+
+      if (models_id) {
+        $.ajax({
+          url: "autoList.php",
+          type: "POST",
+          data: {
+            models_id: models_id
+          },
+          success: function(response) {
+            const data = JSON.parse(response);
+            if (data.success) {
+              rowElement.querySelector('textarea[name="quality[]"]').value = data.quality;
+              rowElement.querySelector('input[name="price[]"]').value = data.price;
+              rowElement.querySelector('input[name="unit[]"]').value = data.unit;
+            } else {
+              alert("ไม่สามารถดึงข้อมูลได้");
+            }
+          },
+          error: function() {
+            alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+          },
+        });
+      }
+    }
+    bindAutoList();
   </script>
 <?php } ?>
 

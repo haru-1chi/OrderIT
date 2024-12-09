@@ -239,35 +239,58 @@ if (isset($_POST['problemL'])) {
     }
 }
 if (isset($_POST['updateData'])) {
-    $id = $_POST['numberWork'];
-    $status = $_POST['status'];
-    $receiptDate = $_POST["receipt_date"];
-    $deliveryDate = $_POST["delivery_date"];
-    $closeDate = $_POST["close_date"];
-    $numberDevice1 = $_POST['numberDevice1'];
-    $numberDevice2 = $_POST['numberDevice2'];
-    $numberDevice3 = $_POST['numberDevice3'];
+    $numberWork = $_POST['numberWork']; //ตอนนี้เป็น numberWork ให้เปลี่ยนเป็น id ใบเบิก
     $report = $_POST['report'];
     $reason = $_POST['reason'];
     $note = $_POST['note'];
+
+    $numberDevices = $_POST["device_numbers"];
+    $update_number_device = $_POST["update_number_device"];
+    $deleted_devices = $_POST["deleted_devices"];
+
+    $lists = $_POST['list'];
+    $qualities = $_POST['quality'];
+    $amounts = $_POST['amount'];
+    $prices = $_POST['price'];
+    $units = $_POST['unit'];
+
+    $update_lists = $_POST['update_list'];
+    $update_qualities = $_POST['update_quality'];
+    $update_amounts = $_POST['update_amount'];
+    $update_prices = $_POST['update_price'];
+    $update_units = $_POST['update_unit'];
+
+    $deleted_items = $_POST['deleted_items'];
+
+     echo '<pre>';
+    var_dump([
+        'numberWork' => $numberWork,
+        'report' => $report,
+        'reason' => $reason,
+        'note' => $note,
+
+        'numberDevices' => $numberDevices,
+        'update_number_device' => $update_number_device,
+        'deleted_devices' => $deleted_devices,
+
+        'lists' => $lists,
+        'qualities' => $qualities,
+        'amounts' => $amounts,
+        'prices' => $prices,
+        'units' => $units,
+
+        'update_lists' => $update_lists,
+        'update_qualities' => $update_qualities,
+        'update_amounts' => $update_amounts,
+        'update_prices' => $update_prices,
+        'update_units' => $update_units,
+
+        'deleted_items' => $deleted_items,
+    ]);
+    echo '</pre>';
+    exit();
     // สร้าง SQL UPDATE statement
     $sql = "UPDATE orderdata SET
-            list1 = :list1, quality1 = :quality1, amount1 = :amount1, price1 = :price1, unit1 = :unit1,
-            list2 = :list2, quality2 = :quality2, amount2 = :amount2, price2 = :price2, unit2 = :unit2,
-            list3 = :list3, quality3 = :quality3, amount3 = :amount3, price3 = :price3, unit3 = :unit3,
-            list4 = :list4, quality4 = :quality4, amount4 = :amount4, price4 = :price4, unit4 = :unit4,
-            list5 = :list5, quality5 = :quality5, amount5 = :amount5, price5 = :price5, unit5 = :unit5,
-            list6 = :list6, quality6 = :quality6, amount6 = :amount6, price6 = :price6, unit6 = :unit6,
-            list7 = :list7, quality7 = :quality7, amount7 = :amount7, price7 = :price7, unit7 = :unit7,
-            list8 = :list8, quality8 = :quality8, amount8 = :amount8, price8 = :price8, unit8 = :unit8,
-            list9 = :list9, quality9 = :quality9, amount9 = :amount9, price9 = :price9, unit9 = :unit9,
-            list10 = :list10, quality10 = :quality10, amount10 = :amount10, price10 = :price10, unit10 = :unit10,
-            list11 = :list11, quality11 = :quality11, amount11 = :amount11, price11 = :price11, unit11 = :unit11,
-            list12 = :list12, quality12 = :quality12, amount12 = :amount12, price12 = :price12, unit12 = :unit12,
-            list13 = :list13, quality13 = :quality13, amount13 = :amount13, price13 = :price13, unit13 = :unit13,
-            list14 = :list14, quality14 = :quality14, amount14 = :amount14, price14 = :price14, unit14 = :unit14,
-            list15 = :list15, quality15 = :quality15, amount15 = :amount15, price15 = :price15, unit15 = :unit15,
-            receiptDate = :receiptDate,deliveryDate = :deliveryDate,closeDate = :closeDate,
             numberDevice1 = :numberDevice1,
             numberDevice2 = :numberDevice2,
             numberDevice3 = :numberDevice3,
@@ -280,15 +303,6 @@ if (isset($_POST['updateData'])) {
     // เตรียมและ execute statement
     $stmt = $conn->prepare($sql);
 
-    // Manually bind parameters (without using a loop)
-    for ($i = 1; $i <= 15; $i++) {
-        $stmt->bindParam(":list$i", $_POST["list$i"]);
-        $stmt->bindParam(":quality$i", $_POST["quality$i"]);
-        $stmt->bindParam(":amount$i", $_POST["amount$i"]);
-        $stmt->bindParam(":price$i", $_POST["price$i"]);
-        $stmt->bindParam(":unit$i", $_POST["unit$i"]);
-    }
-
     // bind id parameter
     $stmt->bindParam(":numberDevice1", $numberDevice1);
     $stmt->bindParam(":numberDevice2", $numberDevice2);
@@ -296,11 +310,7 @@ if (isset($_POST['updateData'])) {
     $stmt->bindParam(":report", $report);
     $stmt->bindParam(":reason", $reason);
     $stmt->bindParam(":note", $note);
-    $stmt->bindParam(":status", $status);
     $stmt->bindParam(":id", $id);
-    $stmt->bindParam(':receiptDate', $receiptDate);
-    $stmt->bindParam(':deliveryDate', $deliveryDate);
-    $stmt->bindParam(':closeDate', $closeDate);
     // execute statement
     $stmt->execute();
 
