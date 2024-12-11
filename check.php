@@ -5,11 +5,12 @@ require_once 'template/navbar.php';
 
 if (isset($_SESSION['admin_log'])) {
   $admin = $_SESSION['admin_log'];
-  $sql = "SELECT * FROM admin WHERE username = :admin";
+  $sql = "SELECT CONCAT(fname, ' ', lname) AS full_name FROM admin WHERE username = :admin";
   $stmt = $conn->prepare($sql);
   $stmt->bindParam(":admin", $admin);
   $stmt->execute();
   $result = $stmt->fetch(PDO::FETCH_ASSOC);
+  $fullname = $result['full_name'];
 }
 if (!isset($_SESSION["admin_log"])) {
   $_SESSION["warning"] = "กรุณาเข้าสู่ระบบ";
@@ -653,12 +654,17 @@ ORDER BY nd.id, oi.id
     foreach ($results as $row) {
       // Collect unique devices
       if (!empty($row['numberDevice_id']) && !isset($devices[$row['numberDevice_id']])) {
-        $devices[$row['numberDevice_id']] = $row['numberDevice'];
+        $devices[$row['numberDevice_id']] =
+          [
+            'numberDevice_id' => $row['numberDevice_id'],
+            'numberDevice' => $row['numberDevice']
+          ];
       }
 
       // Collect unique items
       if (!empty($row['item_id']) && !isset($items[$row['item_id']])) {
         $items[$row['item_id']] = [
+          'item_id' => $row['item_id'],
           'list' => $row['list'],
           'quality' => $row['quality'],
           'amount' => $row['amount'],
@@ -1001,10 +1007,11 @@ ORDER BY nd.id, oi.id
           <form action="system/update.php" method="POST">
 
             <div class="d-flex justify-content-end mb-3">
+              <input type="hidden" name="id" value="<?= $order['id'] ?>">
               <input type="hidden" name="numberWork" value="<?= $numberWork ?>">
               <a href="create.php?id=<?= $numberWork ?>" class="btn btn-secondary p-2 me-3">คัดลอก</a>
               <button id="editData" class="btn btn-warning p-2 me-3">แก้ไข</button>
-
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requisitionModal">เบิก/ส่งซ่อม</button>
               <button type="submit" name="updateData" class="btn btn-success p-2 me-3">บันทึก</button>
             </div>
 
@@ -1033,8 +1040,10 @@ ORDER BY nd.id, oi.id
                 <div id="device-number-container">
                   <?php foreach ($devices as $index => $device): ?>
                     <div class="d-flex device-number-row">
-                      <input type="text" name="update_number_device[]" class="form-control mb-2" value="<?= htmlspecialchars($device) ?>" disabled>
+                      <input type="text" name="update_number_device[<?= $order['id'] ?>][<?= $device['numberDevice_id'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($device['numberDevice']) ?>" disabled>
                       <button type="button" class="btn btn-warning p-2 ms-3 mb-2 remove-field"
+                        data-device-id="<?= $device['numberDevice_id'] ?>"
+                        data-row-id="<?= $order['id'] ?>"
                         style="display: none; visibility: <?= $index === 0 ? 'hidden' : 'visible' ?>;">ลบ</button>
                     </div>
                   <?php endforeach; ?>
@@ -1173,6 +1182,7 @@ ORDER BY nd.id, oi.id
                   <th scope="col" style="display: none;"></th>
                 </tr>
               </thead>
+
               <tbody id="table-body" class="text-center">
                 <?php foreach ($items as $index => $item): ?>
                   <tr>
@@ -1182,7 +1192,7 @@ ORDER BY nd.id, oi.id
                         disabled
                         style="width: 120px"
                         class="form-select device-select"
-                        name="update_list[]">
+                        name="update_list[<?= $order['id'] ?>][<?= $item['item_id'] ?>]">
                         <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                         <?php
                         $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
@@ -1199,22 +1209,24 @@ ORDER BY nd.id, oi.id
                       </select>
                     </td>
                     <td>
-                      <textarea disabled class="form-control" name="update_quality[]"><?= htmlspecialchars($item['quality']) ?></textarea>
+                      <textarea disabled class="form-control" name="update_quality[<?= $order['id'] ?>][<?= $item['item_id'] ?>]"><?= htmlspecialchars($item['quality']) ?></textarea>
                     </td>
                     <td>
-                      <input disabled name="update_amount[]" value="<?= htmlspecialchars($item['amount']) ?>" style="width: 3rem;" type="text" class="form-control">
+                      <input disabled name="update_amount[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['amount']) ?>" style="width: 3rem;" type="text" class="form-control">
                     </td>
                     <td>
-                      <input disabled name="update_price[]" value="<?= htmlspecialchars($item['price']) ?>" style="width: 4rem;" type="text" class="form-control">
+                      <input disabled name="update_price[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['price']) ?>" style="width: 4rem;" type="text" class="form-control">
                     </td>
                     <td>
                       <input disabled value="<?= htmlspecialchars($item['total']) ?>" style="width: 4rem;" type="text" class="form-control no-toggle">
                     </td>
                     <td>
-                      <input disabled name="update_unit[]" value="<?= htmlspecialchars($item['unit']) ?>" style="width: 5rem;" type="text" class="form-control">
+                      <input disabled name="update_unit[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['unit']) ?>" style="width: 5rem;" type="text" class="form-control">
                     </td>
                     <td>
                       <button type="button" class="btn btn-warning remove-row"
+                        data-items-id="<?= $item['item_id'] ?>"
+                        data-items-row-id="<?= $order['id'] ?>"
                         style="display: none;">ลบ</button>
                     </td>
                   </tr>
@@ -1230,6 +1242,343 @@ ORDER BY nd.id, oi.id
     </div>
   </div>
 
+
+
+  <div id="requisitionModal" class="modal fade" tabindex="-1" aria-labelledby="requisitionModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="background-color: <?= $hasRequisition ? '#F8BF24' : '#cfe2ff'; ?>;">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">สร้างใบเบิก</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-3">
+          <div class="row">
+            <div class="col-sm-4">
+              <div class="mb-3">
+                <label id="basic-addon1">วันที่ออกใบเบิก</label>
+                <input required type="date" name="dateWithdraw" class="form-control thaiDateInput">
+              </div>
+            </div>
+
+            <div class="col-sm-4">
+              <div class="mb-3">
+                <label for="inputGroupSelect01">ประเภทการเบิก</label>
+                <select required class="form-select" name="ref_withdraw" id="inputGroupSelect01">
+                  <?php
+                  $sql = 'SELECT * FROM withdraw';
+                  $stmt = $conn->prepare($sql);
+                  $stmt->execute();
+                  $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                  foreach ($result as $row) { ?>
+
+                    <option value="<?= $row['withdraw_id'] ?>"><?= $row['withdraw_name'] ?></option>
+                  <?php }
+                  ?>
+
+                </select>
+              </div>
+            </div>
+
+            <div class="col-sm-4">
+              <div class="mb-3">
+                <label for="inputGroupSelect01">ประเภทงาน</label>
+                <select required class="form-select" name="ref_work" id="inputGroupSelect01">
+                  <?php
+                  $sql = 'SELECT * FROM listwork';
+                  $stmt = $conn->prepare($sql);
+                  $stmt->execute();
+                  $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                  foreach ($result as $row) { ?>
+
+                    <option value="<?= $row['work_id'] ?>"><?= $row['work_name'] ?></option>
+                  <?php }
+                  ?>
+
+                </select>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="mb-3">
+                <label for="inputGroupSelect01">รายการอุปกรณ์</label>
+                <select required class="form-select" name="ref_device" id="inputGroupSelect01">
+                  <?php
+                  $sql = 'SELECT * FROM device';
+                  $stmt = $conn->prepare($sql);
+                  $stmt->execute();
+                  $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                  foreach ($result as $row) { ?>
+                    <option value="<?= $row['device_id'] ?>"><?= $row['device_name'] ?></option>
+                  <?php }
+                  ?>
+
+                </select>
+              </div>
+            </div>
+
+            <div class="col-6">
+              <label>หมายเลขพัสดุ / ครุภัณฑ์</label>
+              <div id="device-number-container">
+                <div class="d-flex device-number-row">
+                  <input type="text" name="device_numbers[]" class="form-control mb-2" value="">
+                  <button type="button" class="btn btn-warning p-2 ms-3 mb-2 remove-field"
+                    style="display: none; visibility: <?= $index === 0 ? 'hidden' : 'visible' ?>;">ลบ</button>
+                </div>
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="button" id="add-device-number" class="btn btn-success mt-2 align-self-end">+ เพิ่มหมายเลขครุภัณฑ์</button>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="mb-3">
+                <label for="departInput">หน่วยงาน</label>
+                <input type="text" required class="form-control" id="departInput" name="ref_depart">
+                <input type="hidden" id="departId" name="depart_id">
+              </div>
+
+              <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+              <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+              <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+              <script>
+                $(function() {
+                  function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
+                    let inputChanged = false;
+
+                    $(inputId).autocomplete({
+                        source: function(request, response) {
+                          $.ajax({
+                            url: url,
+                            dataType: "json",
+                            data: {
+                              term: request.term,
+                              type: type
+                            },
+                            success: function(data) {
+                              response(data); // Show suggestions
+                            }
+                          });
+                        },
+                        minLength: 1,
+                        autoFocus: true,
+                        select: function(event, ui) {
+                          $(inputId).val(ui.item.label); // Fill input with label
+                          $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
+                          return false; // Prevent default behavior
+                        }
+                      })
+                      .data("ui-autocomplete")._renderItem = function(ul, item) {
+                        return $("<li>")
+                          .append("<div>" + item.label + "</div>")
+                          .appendTo(ul);
+                      };
+
+                    $(inputId).on("autocompletefocus", function(event, ui) {
+                      // You can log or do something here but won't change the input value
+                      console.log("Item highlighted: ", ui.item.label);
+                      return false;
+                    });
+
+                    $(inputId).on("keyup", function() {
+                      inputChanged = true;
+                    });
+
+                    $(inputId).on("blur", function() {
+                      if (inputChanged) {
+                        const userInput = $(this).val().trim();
+                        if (userInput === "") return;
+
+                        let found = false;
+                        $(this).autocomplete("instance").menu.element.find("div").each(function() {
+                          if ($(this).text() === userInput) {
+                            found = true;
+                            return false;
+                          }
+                        });
+
+                        if (!found) {
+                          Swal.fire({
+                            title: confirmMessage,
+                            icon: "info",
+                            showCancelButton: true,
+                            confirmButtonText: "ใช่",
+                            cancelButtonText: "ไม่"
+                          }).then((result) => {
+                            if (result.isConfirmed) {
+                              $.ajax({
+                                url: addDataUrl,
+                                method: "POST",
+                                data: {
+                                  dataToInsert: userInput
+                                },
+                                success: function(response) {
+                                  console.log("Data inserted successfully!");
+                                  $(hiddenInputId).val(response); // Set inserted ID
+                                },
+                                error: function(xhr, status, error) {
+                                  console.error("Error inserting data:", error);
+                                }
+                              });
+                            } else {
+                              $(inputId).val(""); // Clear input
+                              $(hiddenInputId).val("");
+                            }
+                          });
+                        }
+                      }
+                      inputChanged = false; // Reset the flag
+                    });
+                  }
+
+                  // Setup autocomplete for "หน่วยงาน" (departInput)
+                  setupAutocomplete(
+                    "depart",
+                    "#departInput",
+                    "#departId",
+                    "autocomplete.php",
+                    "insertDepart.php",
+                    "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
+                  );
+                });
+              </script>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="mb-3">
+                <label for="inputGroupSelect01">ผู้รับเรื่อง</label>
+                <input type="text" class="form-control" value="<?= $fullname ?>" disabled>
+                <input type="hidden" name="ref_username" value="<?= $fullname ?>">
+              </div>
+            </div>
+
+            <div class="col-sm-12">
+              <div class="mb-3">
+                <label id="basic-addon1">เหตุผลและความจำเป็น</label>
+                <input type="text" name="reason" class="form-control">
+              </div>
+            </div>
+
+            <div class="col-sm-4">
+              <div class="mb-3">
+                <label for="inputGroupSelect01">ร้านที่เสนอราคา
+                </label>
+                <select required class="form-select" name="ref_offer" id="inputGroupSelect01">
+                  <?php
+                  $sql = 'SELECT * FROM offer';
+                  $stmt = $conn->prepare($sql);
+                  $stmt->execute();
+                  $offers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                  foreach ($offers as $offer) { ?>
+                    <option value="<?= $offer['offer_id'] ?>"><?= $offer['offer_name'] ?></option>
+                  <?php }
+                  ?>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-sm-4">
+              <div class="mb-3">
+                <label for="inputGroupSelect01">เลขที่ใบเสนอราคา
+                </label>
+                <input value="-" type="text" name="quotation" class="form-control">
+              </div>
+            </div>
+
+            <div class="col-sm-4">
+              <div class="mb-3">
+                <label for="inputGroupSelect01">สถานะ
+                </label>
+                <select required class="form-select" name="status" id="inputGroupSelect01">
+                  <option value="1">รอรับเอกสารจากหน่วยงาน</option>
+                  <option value="2">รอส่งเอกสารไปพัสดุ</option>
+                  <option value="3">รอพัสดุสั่งของ</option>
+                  <option value="4">รอหมายเลขครุภัณฑ์</option>
+                  <option value="5">ปิดงาน</option>
+                  <option value="6">ยกเลิก</option>
+                </select>
+              </div>
+            </div>
+            <input type="hidden" name="report" class="form-control">
+
+            <div class="col-sm-12">
+              <div class="mb-3">
+                <label for="inputGroupSelect01">หมายเหตุ
+                </label>
+                <input value="-" type="text" name="note" class="form-control">
+              </div>
+            </div>
+
+            <table id="pdf" style="width: 100%;" class="table">
+              <thead class="table-primary">
+                <tr class="text-center">
+                  <th scope="col">ลำดับ</th>
+                  <th scope="col">รายการ</th>
+                  <th scope="col">คุณสมบัติ</th>
+                  <th scope="col">จำนวน</th>
+                  <th scope="col">ราคา</th>
+                  <th scope="col">หน่วย</th>
+                  <th scope="col"></th>
+                </tr>
+              </thead>
+
+              <tbody id="table-body" class="text-center">
+                <tr>
+                  <th scope="row">1</th>
+                  <td>
+                    <select
+                      style="width: 120px"
+                      class="form-select device-select"
+                      name="list[]">
+                      <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+                      <!-- Populate options dynamically -->
+                      <?php
+                      $sql = "SELECT * FROM device_models ORDER BY models_name ASC";
+                      $stmt = $conn->prepare($sql);
+                      $stmt->execute();
+                      $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                      foreach ($result as $d) {
+                      ?>
+                        <option value="<?= $d['models_id'] ?>"><?= $d['models_name'] ?></option>
+                      <?php
+                      }
+                      ?>
+                    </select>
+                  </td>
+                  <td>
+                    <textarea class="form-control" name="quality[]"></textarea>
+                  </td>
+                  <td>
+                    <input name="amount[]" value="" style="width: 3rem;" type="text" class="form-control">
+                  </td>
+                  <td>
+                    <input name="price[]" value="" style="width: 4rem;" type="text" class="form-control">
+                  </td>
+                  <td>
+                    <input name="unit[]" value="" style="width: 5rem;" type="text" class="form-control">
+                  </td>
+                  <td>
+                    <button type="button" class="btn btn-warning remove-row"
+                      style="display: none;">ลบ</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="d-flex justify-content-end">
+              <button type="button" id="add-row" class="btn btn-success">+ เพิ่มแถว</button>
+            </div>
+
+            <div class="w-100 d-flex justify-content-center">
+              <button type="submit" name="submit_with_work" class="w-100 btn btn-primary mt-3">บันทึกข้อมูล</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -1261,18 +1610,28 @@ ORDER BY nd.id, oi.id
         <button type="button" class="btn btn-warning p-2 ms-3 remove-field mb-2">ลบ</button>
       `;
         container.appendChild(newRow);
-
-        const newRemoveButton = newRow.querySelector(".remove-field");
-        newRemoveButton.addEventListener("click", function() {
-          newRow.remove();
-        });
       });
 
-      removeFields.forEach(function(button) {
-        button.addEventListener("click", function() {
-          const row = button.closest(".device-number-row");
+      document.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('remove-field')) {
+          const row = e.target.closest('.device-number-row');
+          const hiddenInput = row.querySelector('input[type="text"]');
+
+          if (hiddenInput && hiddenInput.name.startsWith('update_number_device')) {
+            // Case 1: Soft delete
+            const modalId = e.target.getAttribute('data-row-id');
+            const deviceId = e.target.getAttribute('data-device-id');
+            const container = document.querySelector(`#device-number-container`);
+            const deletedInput = document.createElement('input');
+            deletedInput.type = 'hidden';
+            deletedInput.name = `deleted_devices[${modalId}][${deviceId}]`;
+            deletedInput.value = hiddenInput.value;
+            container.appendChild(deletedInput);
+          }
+
+          // Remove row for both cases
           row.remove();
-        });
+        }
       });
     });
 
@@ -1375,9 +1734,27 @@ ORDER BY nd.id, oi.id
     document.addEventListener("click", function(event) {
       if (event.target && event.target.classList.contains("remove-row")) {
         var row = event.target.closest("tr");
+        var hiddenInput = row.querySelector('select');
+
+        if (hiddenInput && hiddenInput.name.startsWith('update_list')) {
+          // Case 1: Soft delete for saved rows
+          var rowId = event.target.getAttribute('data-items-row-id');
+          var itemId = event.target.getAttribute('data-items-id');
+          var tableBody = document.querySelector(`#table-body`);
+          if (tableBody) {
+            var deletedInput = document.createElement('input');
+            deletedInput.type = 'hidden';
+            deletedInput.name = `deleted_items[${rowId}][${itemId}]`;
+            deletedInput.value = itemId;
+            tableBody.appendChild(deletedInput);
+          }
+        }
+
+        // Case 2: Direct removal of unsaved rows
         row.remove();
       }
     });
+
 
 
     function bindAutoList() {

@@ -239,7 +239,8 @@ if (isset($_POST['problemL'])) {
     }
 }
 if (isset($_POST['updateData'])) {
-    $numberWork = $_POST['numberWork']; //ตอนนี้เป็น numberWork ให้เปลี่ยนเป็น id ใบเบิก
+    $id = $_POST['id'];
+    $numberWork = $_POST['numberWork'];
     $report = $_POST['report'];
     $reason = $_POST['reason'];
     $note = $_POST['note'];
@@ -262,62 +263,139 @@ if (isset($_POST['updateData'])) {
 
     $deleted_items = $_POST['deleted_items'];
 
-     echo '<pre>';
-    var_dump([
-        'numberWork' => $numberWork,
-        'report' => $report,
-        'reason' => $reason,
-        'note' => $note,
+    // echo '<pre>';
+    // var_dump([
+    //     'numberWork' => $numberWork,
+    //     'report' => $report,
+    //     'reason' => $reason,
+    //     'note' => $note,
 
-        'numberDevices' => $numberDevices,
-        'update_number_device' => $update_number_device,
-        'deleted_devices' => $deleted_devices,
+    //     'numberDevices' => $numberDevices,
+    //     'update_number_device' => $update_number_device,
+    //     'deleted_devices' => $deleted_devices,
 
-        'lists' => $lists,
-        'qualities' => $qualities,
-        'amounts' => $amounts,
-        'prices' => $prices,
-        'units' => $units,
+    //     'lists' => $lists,
+    //     'qualities' => $qualities,
+    //     'amounts' => $amounts,
+    //     'prices' => $prices,
+    //     'units' => $units,
 
-        'update_lists' => $update_lists,
-        'update_qualities' => $update_qualities,
-        'update_amounts' => $update_amounts,
-        'update_prices' => $update_prices,
-        'update_units' => $update_units,
+    //     'update_lists' => $update_lists,
+    //     'update_qualities' => $update_qualities,
+    //     'update_amounts' => $update_amounts,
+    //     'update_prices' => $update_prices,
+    //     'update_units' => $update_units,
 
-        'deleted_items' => $deleted_items,
-    ]);
-    echo '</pre>';
-    exit();
+    //     'deleted_items' => $deleted_items,
+    // ]);
+    // echo '</pre>';
+    // exit();
     // สร้าง SQL UPDATE statement
-    $sql = "UPDATE orderdata SET
-            numberDevice1 = :numberDevice1,
-            numberDevice2 = :numberDevice2,
-            numberDevice3 = :numberDevice3,
+    $sql = "UPDATE orderdata_new SET
             report = :report,
             reason = :reason,
-            note = :note,
-            status = :status
+            note = :note
             WHERE id = :id";
 
     // เตรียมและ execute statement
-    $stmt = $conn->prepare($sql);
 
-    // bind id parameter
-    $stmt->bindParam(":numberDevice1", $numberDevice1);
-    $stmt->bindParam(":numberDevice2", $numberDevice2);
-    $stmt->bindParam(":numberDevice3", $numberDevice3);
+    $stmt = $conn->prepare($sql);
     $stmt->bindParam(":report", $report);
     $stmt->bindParam(":reason", $reason);
     $stmt->bindParam(":note", $note);
     $stmt->bindParam(":id", $id);
-    // execute statement
-    $stmt->execute();
+    if ($stmt->execute()) {
+        if (!empty($_POST['list'])) {
+            foreach ($_POST['list'] as $index => $list) {
+                $sql = "INSERT INTO order_items (order_id, list, quality, amount, price, unit)  
+                        VALUES (:order_id, :list, :quality, :amount, :price, :unit)";
+                $stmt = $conn->prepare($sql);
+                
+                $stmt->bindParam(':order_id', $id, PDO::PARAM_INT);
+                $stmt->bindParam(':list', $list, PDO::PARAM_INT);
+                $stmt->bindParam(':quality', $_POST['quality'][$index], PDO::PARAM_STR);
+                $stmt->bindParam(':amount', $_POST['amount'][$index], PDO::PARAM_INT);
+                $stmt->bindParam(':price', $_POST['price'][$index], PDO::PARAM_STR);
+                $stmt->bindParam(':unit', $_POST['unit'][$index], PDO::PARAM_STR);
+
+                $stmt->execute();
+            }
+        }
+
+        if (!empty($_POST['update_list'])) {
+            foreach ($_POST['update_list'] as $modalId => $updateLists) {
+                foreach ($updateLists as $recordId => $list) {
+                    $sql = "UPDATE order_items 
+                            SET list = :list, quality = :quality, amount = :amount, price = :price, unit = :unit 
+                            WHERE id = :id";
+                    $stmt = $conn->prepare($sql);
+
+                    $stmt->bindParam(':list', $list, PDO::PARAM_STR);
+                    $stmt->bindParam(':quality', $_POST['update_quality'][$modalId][$recordId], PDO::PARAM_STR);
+                    $stmt->bindParam(':amount', $_POST['update_amount'][$modalId][$recordId], PDO::PARAM_INT);
+                    $stmt->bindParam(':price', $_POST['update_price'][$modalId][$recordId], PDO::PARAM_STR);
+                    $stmt->bindParam(':unit', $_POST['update_unit'][$modalId][$recordId], PDO::PARAM_STR);
+                    $stmt->bindParam(':id', $recordId, PDO::PARAM_INT);
+
+                    $stmt->execute();
+                }
+            }
+        }
+
+        if (!empty($_POST['deleted_items'])) {
+            foreach ($_POST['deleted_items'] as $modalId => $items) {
+                foreach ($items as $recordId => $value) {
+                    $sql = "UPDATE order_items SET is_deleted = 1 WHERE id = :id";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bindParam(':id', $recordId, PDO::PARAM_INT);
+                    $stmt->execute();
+                }
+            }
+        }
+
+        if (!empty($_POST['update_number_device'])) {
+            foreach ($_POST['update_number_device'] as $orderItem => $devices) {
+                foreach ($devices as $deviceId => $numberDevice) {
+                    $sql = "UPDATE order_numberdevice SET numberDevice = :numberDevice WHERE id = :id";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bindParam(':numberDevice', $numberDevice);
+                    $stmt->bindParam(':id', $deviceId, PDO::PARAM_INT);
+                    $stmt->execute();
+                }
+            }
+        }
+
+        if (!empty($_POST['deleted_devices'])) {
+            foreach ($_POST['deleted_devices'] as $orderItem => $devices) {
+                foreach ($devices as $deviceId => $numberDevice) {
+                    $sql = "UPDATE order_numberdevice SET is_deleted = 1 WHERE id = :id";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bindParam(':id', $deviceId, PDO::PARAM_INT);
+                    $stmt->execute();
+                }
+            }
+        }
+
+        if (!empty($_POST['device_numbers'])) {
+            foreach ($_POST['device_numbers'] as $numberDevice) {
+                if (trim($numberDevice) === "") {
+                    continue;
+                }
+
+                $sql = "INSERT INTO order_numberdevice (order_item, numberDevice) VALUES (:order_item, :numberDevice)";
+                $stmt = $conn->prepare($sql);
+                $stmt->bindParam(':order_item', $id, PDO::PARAM_INT); // Use $id as the order item ID
+                $stmt->bindParam(':numberDevice', $numberDevice, PDO::PARAM_STR);
+                $stmt->execute();
+            }
+        }
+    }
 
     $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
     $_SESSION["warning"] = "กรุณาตรวจสอบสถานะของใบงานอีกครั้ง";
-    header("location: ../check.php?numberWork=$id");
+    header("location: ../check.php?numberWork=$numberWork");
 }
+
 if (isset($_POST['updateStatus'])) {
     // Check if any checkboxes are checked
     if (empty($_POST['selectedRows'])) {
