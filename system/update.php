@@ -263,33 +263,33 @@ if (isset($_POST['updateData'])) {
 
     $deleted_items = $_POST['deleted_items'];
 
-    // echo '<pre>';
-    // var_dump([
-    //     'numberWork' => $numberWork,
-    //     'report' => $report,
-    //     'reason' => $reason,
-    //     'note' => $note,
+    echo '<pre>';
+    var_dump([
+        'numberWork' => $numberWork,
+        'report' => $report,
+        'reason' => $reason,
+        'note' => $note,
 
-    //     'numberDevices' => $numberDevices,
-    //     'update_number_device' => $update_number_device,
-    //     'deleted_devices' => $deleted_devices,
+        'numberDevices' => $numberDevices,
+        'update_number_device' => $update_number_device,
+        'deleted_devices' => $deleted_devices,
 
-    //     'lists' => $lists,
-    //     'qualities' => $qualities,
-    //     'amounts' => $amounts,
-    //     'prices' => $prices,
-    //     'units' => $units,
+        'lists' => $lists,
+        'qualities' => $qualities,
+        'amounts' => $amounts,
+        'prices' => $prices,
+        'units' => $units,
 
-    //     'update_lists' => $update_lists,
-    //     'update_qualities' => $update_qualities,
-    //     'update_amounts' => $update_amounts,
-    //     'update_prices' => $update_prices,
-    //     'update_units' => $update_units,
+        'update_lists' => $update_lists,
+        'update_qualities' => $update_qualities,
+        'update_amounts' => $update_amounts,
+        'update_prices' => $update_prices,
+        'update_units' => $update_units,
 
-    //     'deleted_items' => $deleted_items,
-    // ]);
-    // echo '</pre>';
-    // exit();
+        'deleted_items' => $deleted_items,
+    ]);
+    echo '</pre>';
+    exit();
     // สร้าง SQL UPDATE statement
     $sql = "UPDATE orderdata_new SET
             report = :report,
