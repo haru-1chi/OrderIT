@@ -1251,7 +1251,7 @@ ORDER BY nd.id, oi.id
   <div id="requisitionModal" class="modal fade" tabindex="-1" aria-labelledby="requisitionModal" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <div class="modal-header" style="background-color: <?= $hasRequisition ? '#F8BF24' : '#cfe2ff'; ?>;">
+        <div class="modal-header">
           <h1 class="modal-title fs-5" id="staticBackdropLabel">สร้างใบเบิก</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -1591,7 +1591,7 @@ ORDER BY nd.id, oi.id
   <div id="copiedRequisitionModal" class="modal fade" tabindex="-1" aria-labelledby="copiedRequisitionModal" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <div class="modal-header" style="background-color: <?= $hasRequisition ? '#F8BF24' : '#cfe2ff'; ?>;">
+        <div class="modal-header">
           <h1 class="modal-title fs-5" id="staticBackdropLabel">สร้างใบเบิก</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -1610,14 +1610,14 @@ ORDER BY nd.id, oi.id
                 <div class="col-sm-4">
                   <div class="mb-3">
                     <label id="basic-addon1">วันที่ออกใบเบิก</label>
-                    <input required type="date" name="copied_dateWithdraw" value="<?= $rowData['dateWithdraw'] ?>" class="form-control thaiDateInput">
+                    <input required type="date" name="dateWithdraw" value="<?= $rowData['dateWithdraw'] ?>" class="form-control thaiDateInput">
                   </div>
                 </div>
 
                 <div class="col-sm-4">
                   <div class="mb-3">
                     <label for="inputGroupSelect01">ประเภทการเบิก</label>
-                    <select required class="form-select" name="copied_ref_withdraw" id="inputGroupSelect01">
+                    <select required class="form-select" name="ref_withdraw" id="inputGroupSelect01">
                       <?php
                       $sql = 'SELECT * FROM withdraw';
                       $stmt = $conn->prepare($sql);
@@ -1635,7 +1635,7 @@ ORDER BY nd.id, oi.id
                 <div class="col-sm-4">
                   <div class="mb-3">
                     <label for="inputGroupSelect01">ประเภทงาน</label>
-                    <select required class="form-select" name="copied_ref_work" id="inputGroupSelect01">
+                    <select required class="form-select" name="ref_work" id="inputGroupSelect01">
                       <?php
                       $sql = 'SELECT * FROM listwork';
                       $stmt = $conn->prepare($sql);
@@ -1655,7 +1655,7 @@ ORDER BY nd.id, oi.id
                 <div class="col-sm-6">
                   <div class="mb-3">
                     <label for="inputGroupSelect01">รายการอุปกรณ์</label>
-                    <select required class="form-select" name="copied_ref_device" id="inputGroupSelect01">
+                    <select required class="form-select" name="ref_device" id="inputGroupSelect01">
                       <?php
                       $sql = 'SELECT * FROM device';
                       $stmt = $conn->prepare($sql);
@@ -1688,7 +1688,7 @@ ORDER BY nd.id, oi.id
                         $isFirst = true;
                         foreach ($numberDevices as $device) { ?>
                           <div class="d-flex device-number-row">
-                            <input type="text" name="copied_device_numbers[]" class="form-control mb-2" value="<?= htmlspecialchars($device['numberDevice']) ?>">
+                            <input type="text" name="device_numbers[]" class="form-control mb-2" value="<?= htmlspecialchars($device['numberDevice']) ?>">
                             <button type="button" class="btn btn-warning p-2 mb-2 ms-3 remove-field"
                               style="visibility: <?= $isFirst ? 'hidden' : 'visible' ?>;">ลบ</button>
                           </div>
@@ -1697,7 +1697,7 @@ ORDER BY nd.id, oi.id
                         }
                       } else { ?>
                         <div class="d-flex device-number-row">
-                          <input type="text" name="copied_device_numbers[]" class="form-control mb-2" value="">
+                          <input type="text" name="device_numbers[]" class="form-control mb-2" value="">
                           <button type="button" class="btn btn-danger p-2 ms-3 remove-field" style="visibility: hidden;">ลบ</button>
                         </div>
                       <?php } ?>
@@ -1717,9 +1717,9 @@ ORDER BY nd.id, oi.id
                     $stmt->execute([$rowData['refDepart']]);
                     $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
                     ?>
-                    <input type="text" class="form-control" id="copied_departInput" name="copied_ref_depart"
+                    <input type="text" class="form-control" id="departInput" name="ref_depart"
                       value="<?= $departRow['depart_name'] ?>">
-                    <input type="hidden" name="copied_depart_id" id="copied_departId"
+                    <input type="hidden" name="depart_id" id="departId"
                       value="<?= $rowData['refDepart'] ?>">
                   </div>
 
@@ -1819,8 +1819,8 @@ ORDER BY nd.id, oi.id
 
                       setupAutocomplete(
                         "depart",
-                        "#copied_departInput",
-                        "#copied_departId",
+                        "#departInput",
+                        "#departId",
                         "autocomplete.php",
                         "insertDepart.php",
                         "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
@@ -1833,21 +1833,21 @@ ORDER BY nd.id, oi.id
                   <div class="mb-3">
                     <label for="inputGroupSelect01">ผู้รับเรื่อง</label>
                     <input type="text" class="form-control" value="<?= $fullname ?>" disabled>
-                    <input type="hidden" name="copied_ref_username" value="<?= $fullname ?>">
+                    <input type="hidden" name="ref_username" value="<?= $fullname ?>">
                   </div>
                 </div>
 
                 <div class="col-sm-12">
                   <div class="mb-3">
                     <label id="basic-addon1">เหตุผลและความจำเป็น</label>
-                    <input type="text" name="copied_reason" class="form-control" value="<?= $rowData['reason'] ?>">
+                    <input type="text" name="reason" class="form-control" value="<?= $rowData['reason'] ?>">
                   </div>
                 </div>
 
                 <div class="col-sm-4">
                   <div class="mb-3">
                     <label for="inputGroupSelect01">ร้านที่เสนอราคา</label>
-                    <select required class="form-select" name="copied_ref_offer" id="inputGroupSelect01">
+                    <select required class="form-select" name="ref_offer" id="inputGroupSelect01">
                       <?php
                       $sql = 'SELECT * FROM offer';
                       $stmt = $conn->prepare($sql);
@@ -1867,7 +1867,7 @@ ORDER BY nd.id, oi.id
                   <div class="mb-3">
                     <label for="inputGroupSelect01">เลขที่ใบเสนอราคา
                     </label>
-                    <input type="text" name="copied_quotation" class="form-control" value="<?= $rowData['quotation'] ?>">
+                    <input type="text" name="quotation" class="form-control" value="<?= $rowData['quotation'] ?>">
                   </div>
                 </div>
 
@@ -1875,7 +1875,7 @@ ORDER BY nd.id, oi.id
                   <div class="mb-3">
                     <label for="inputGroupSelect01">สถานะ
                     </label>
-                    <select required class="form-select" name="copied_status" id="inputGroupSelect01">
+                    <select required class="form-select" name="status" id="inputGroupSelect01">
                       <option value="1">รอรับเอกสารจากหน่วยงาน</option>
                       <option value="2">รอส่งเอกสารไปพัสดุ</option>
                       <option value="3">รอพัสดุสั่งของ</option>
@@ -1885,13 +1885,13 @@ ORDER BY nd.id, oi.id
                     </select>
                   </div>
                 </div>
-                <input type="hidden" name="copied_report" class="form-control">
+                <input type="hidden" name="report" class="form-control">
 
                 <div class="col-sm-12">
                   <div class="mb-3">
                     <label for="inputGroupSelect01">หมายเหตุ
                     </label>
-                    <input type="text" name="copied_note" class="form-control" value="<?= $rowData['note'] ?>">
+                    <input type="text" name="note" class="form-control" value="<?= $rowData['note'] ?>">
                   </div>
                 </div>
 
@@ -1924,7 +1924,7 @@ ORDER BY nd.id, oi.id
                       <tr class="text-center">
                         <th scope="row"><?= $rowNumber++; ?></th>
                         <td>
-                          <select style="width: 120px; margin: 0 auto;" class="form-select device-select" name="copied_list[]" data-row="1">
+                          <select style="width: 120px; margin: 0 auto;" class="form-select device-select" name="list[]" data-row="1">
                             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                             <!-- Populate options dynamically -->
                             <?php
@@ -1939,10 +1939,10 @@ ORDER BY nd.id, oi.id
                             ?>
                           </select>
                         </td>
-                        <td><textarea rows="2" maxlength="60" name="copied_quality[]" class="form-control"><?= htmlspecialchars($item['quality']); ?></textarea></td>
-                        <td><input style="width: 3rem; margin: 0 auto;" type="text" name="copied_amount[]" class="form-control" value="<?= htmlspecialchars($item['amount']); ?>"></td>
-                        <td><input style="width: 4rem; margin: 0 auto;" type="text" name="copied_price[]" class="form-control" value="<?= htmlspecialchars($item['price']); ?>"></td>
-                        <td><input style="width: 4rem; margin: 0 auto;" type="text" name="copied_unit[]" class="form-control" value="<?= htmlspecialchars($item['unit']); ?>"></td>
+                        <td><textarea rows="2" maxlength="60" name="quality[]" class="form-control"><?= htmlspecialchars($item['quality']); ?></textarea></td>
+                        <td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[]" class="form-control" value="<?= htmlspecialchars($item['amount']); ?>"></td>
+                        <td><input style="width: 4rem; margin: 0 auto;" type="text" name="price[]" class="form-control" value="<?= htmlspecialchars($item['price']); ?>"></td>
+                        <td><input style="width: 4rem; margin: 0 auto;" type="text" name="unit[]" class="form-control" value="<?= htmlspecialchars($item['unit']); ?>"></td>
                         <td><button type="button" class="btn btn-warning remove-row"
                             style="visibility: <?= $isFirstRow ? 'hidden' : 'visible' ?>;">ลบ</button></td>
                       </tr>
@@ -1956,7 +1956,7 @@ ORDER BY nd.id, oi.id
                 </div>
 
                 <div class="w-100 d-flex justify-content-center">
-                  <button type="submit" name="copied_submit" class="w-100 btn btn-primary mt-3">บันทึกข้อมูล</button>
+                  <button type="submit" name="submit" class="w-100 btn btn-primary mt-3">บันทึกข้อมูล</button>
                 </div>
               <?php } ?>
             </div>
@@ -1993,17 +1993,17 @@ ORDER BY nd.id, oi.id
           const container = document.querySelector(`#device-number-container-${modalId}`);
           const newRow = document.createElement('div');
           newRow.className = 'd-flex device-number-row';
-          if (modalId == "copied") {
-            newRow.innerHTML = `
-<input type="text" name="copied_device_numbers[]" class="form-control mb-2" value="">
-<button type="button" class="btn btn-warning p-2 ms-3 remove-field mb-2">ลบ</button>
-        `;
-          } else {
+//           if (modalId == "copied") {
+//             newRow.innerHTML = `
+// <input type="text" name="copied_device_numbers[]" class="form-control mb-2" value="">
+// <button type="button" class="btn btn-warning p-2 ms-3 remove-field mb-2">ลบ</button>
+//         `;
+//           } else {
             newRow.innerHTML = `
 <input type="text" name="device_numbers[]" class="form-control mb-2" value="">
 <button type="button" class="btn btn-warning p-2 ms-3 remove-field mb-2">ลบ</button>
         `;
-          }
+          // }
 
           container.appendChild(newRow);
         }
@@ -2096,7 +2096,7 @@ ORDER BY nd.id, oi.id
         const rowIndex = tableBody.querySelectorAll("tr").length + 1;
 
         const newRow = document.createElement("tr");
-        if (modalId == "main") {
+        // if (modalId == "main") {
           newRow.innerHTML = `
             <td>${rowIndex}</td>
 <td>
@@ -2112,37 +2112,37 @@ ORDER BY nd.id, oi.id
             <td><input style="width: 5rem;" type="text" name="unit[]" class="form-control"></td>
             <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
         `;
-        } else if (modalId == "modal") {
-          newRow.innerHTML = `
-            <td>${rowIndex}</td>
-<td>
-          <select style="width: 120px" class="form-select device-select" name="list[]">
-            <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-            ${deviceOptions}
-          </select>
-        </td>
-            <td><textarea class="form-control" name="quality[]"></textarea></td>
-            <td><input style="width: 3rem;" type="text" name="amount[]" class="form-control"></td>
-            <td><input style="width: 4rem;" type="text" name="price[]" class="form-control"></td>
-            <td><input style="width: 5rem;" type="text" name="unit[]" class="form-control"></td>
-            <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
-        `;
-        } else if (modalId == "copied") {
-          newRow.innerHTML = `
-            <td class="text-center">${rowIndex}</td>
-<td>
-          <select style="width: 120px; margin: 0 auto;" class="form-select device-select" name="copied_list[]">
-            <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-            ${deviceOptions}
-          </select>
-        </td>
-            <td><textarea class="form-control" name="copied_quality[]"></textarea></td>
-            <td><input style="width: 3rem; margin: 0 auto;" type="text" name="copied_amount[]" class="form-control"></td>
-            <td><input style="width: 4rem; margin: 0 auto;" type="text" name="copied_price[]" class="form-control"></td>
-            <td><input style="width: 4rem; margin: 0 auto;" type="text" name="copied_unit[]" class="form-control"></td>
-            <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
-        `;
-        }
+//         } else if (modalId == "modal") {
+//           newRow.innerHTML = `
+//             <td>${rowIndex}</td>
+// <td>
+//           <select style="width: 120px" class="form-select device-select" name="list[]">
+//             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+//             ${deviceOptions}
+//           </select>
+//         </td>
+//             <td><textarea class="form-control" name="quality[]"></textarea></td>
+//             <td><input style="width: 3rem;" type="text" name="amount[]" class="form-control"></td>
+//             <td><input style="width: 4rem;" type="text" name="price[]" class="form-control"></td>
+//             <td><input style="width: 5rem;" type="text" name="unit[]" class="form-control"></td>
+//             <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
+//         `;
+//         } else if (modalId == "copied") {
+//           newRow.innerHTML = `
+//             <td class="text-center">${rowIndex}</td>
+// <td>
+//           <select style="width: 120px; margin: 0 auto;" class="form-select device-select" name="copied_list[]">
+//             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+//             ${deviceOptions}
+//           </select>
+//         </td>
+//             <td><textarea class="form-control" name="copied_quality[]"></textarea></td>
+//             <td><input style="width: 3rem; margin: 0 auto;" type="text" name="copied_amount[]" class="form-control"></td>
+//             <td><input style="width: 4rem; margin: 0 auto;" type="text" name="copied_price[]" class="form-control"></td>
+//             <td><input style="width: 4rem; margin: 0 auto;" type="text" name="copied_unit[]" class="form-control"></td>
+//             <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
+//         `;
+//         }
         tableBody.appendChild(newRow);
 
         const amountInput = newRow.querySelector('input[name="amount[]"]');

@@ -385,33 +385,33 @@ if (isset($_POST['submit'])) {
     $prices = $_POST['price'];
     $units = $_POST['unit'];
 
-    // echo '<pre>';
-    // var_dump([
-    //     'numberWork' => $numberWork,
-    //     'dateWithdraw' => $dateWithdraw,
-    //     'refWithdraw' => $refWithdraw,
-    //     'refWork' => $refWork,
-    //     'refDevice' => $refDevice,
+    echo '<pre>';
+    var_dump([
+        'numberWork' => $numberWork,
+        'dateWithdraw' => $dateWithdraw,
+        'refWithdraw' => $refWithdraw,
+        'refWork' => $refWork,
+        'refDevice' => $refDevice,
 
-    //     'numberDevices' => $numberDevices,
+        'numberDevices' => $numberDevices,
 
-    //     'refDepart' => $refDepart,
-    //     'refUsername' => $refUsername,
-    //     'report' => $report,
-    //     'reason' => $reason,
-    //     'refOffer' => $refOffer,
-    //     'quotation' => $quotation,
-    //     'status' => $status,
-    //     'note' => $note,
+        'refDepart' => $refDepart,
+        'refUsername' => $refUsername,
+        'report' => $report,
+        'reason' => $reason,
+        'refOffer' => $refOffer,
+        'quotation' => $quotation,
+        'status' => $status,
+        'note' => $note,
 
-    //     'lists' => $lists,
-    //     'qualities' => $qualities,
-    //     'amounts' => $amounts,
-    //     'prices' => $prices,
-    //     'units' => $units,
-    // ]);
-    // echo '</pre>';
-    // exit();
+        'lists' => $lists,
+        'qualities' => $qualities,
+        'amounts' => $amounts,
+        'prices' => $prices,
+        'units' => $units,
+    ]);
+    echo '</pre>';
+    exit();
     if (empty($refDepart)) {
         $_SESSION["error"] = "บันทีกข้อไม่สำเร็จ";
         $_SESSION["warning"] = "กรุณากดเลือกหน่วยงานหลังพิมพ์";
