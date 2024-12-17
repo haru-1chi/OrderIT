@@ -4,33 +4,32 @@
 // Include your database connection file here
 require_once 'config/db.php';
 
-$term = $_GET['term']; // คำที่ผู้ใช้ป้อน
+$term = $_GET['term']; // Search term entered by the user
 
-$sql = "SELECT id , numberDevice1, numberDevice2 , numberDevice3 FROM orderdata WHERE numberDevice1 LIKE :term OR numberDevice2 LIKE :term OR numberDevice3 ORDER BY id DESC";
+// SQL query with JOIN to fetch relevant data
+$sql = "
+    SELECT od.numberWork, ond.numberDevice
+    FROM order_numberdevice AS ond
+    INNER JOIN orderdata_new AS od ON ond.order_item = od.id
+    WHERE ond.is_deleted = 0
+    AND (
+        ond.numberDevice LIKE :term
+    )
+    ORDER BY ond.id DESC
+";
 $stmt = $conn->prepare($sql);
 $stmt->bindValue(':term', '%' . $term . '%', PDO::PARAM_STR);
 $stmt->execute();
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$data = array();
+// Prepare JSON response
+$data = [];
 foreach ($result as $row) {
-    if ($row['numberDevice1']) {
-        $label = $row['numberDevice1'];
-        $value = $row['id'];
-    } elseif ($row['numberDevice2']) {
-        $label = $row['numberDevice2'];
-        $value = $row['id'];
-    } else {
-        $label = $row['numberDevice3'];
-        $value = $row['id'];
-    }
-
-
-    $data[] = array(
-        'label' => $label,
-        'value' => $value
-    );
+    $data[] = [
+        'label' => $row['numberDevice'], // This is what the user sees in autocomplete
+        'value' => $row['numberWork'],   // This is what will be passed to the query string
+    ];
 }
 
-
+// Output response in JSON format
 echo json_encode($data);
