@@ -132,62 +132,183 @@ $id = $_GET['workid'];
     <div class="breakhere">
         <br />
         <?php
-        $sql = "SELECT od.*, dp.depart_name ,lw.work_name,dv.device_name,ad.fname,ad.lname,dw.withdraw_name
-        FROM orderdata AS od
-        INNER JOIN depart AS dp ON od.refDepart = dp.depart_id
-        INNER JOIN listwork AS lw ON od.refWork = lw.work_id
-        INNER JOIN device AS dv ON od.refDevice = dv.device_id
-        INNER JOIN withdraw AS dw ON od.refWithdraw = dw.withdraw_id
-        INNER JOIN admin AS ad ON od.refUsername = ad.username
-         WHERE od.id = :id";
+        $sql = "
+ SELECT 
+ od.*, 
+ wd.withdraw_name, 
+ lw.work_name, 
+ dv.device_name, 
+ dp.depart_name, 
+ of.offer_name,
+ nd.numberDevice, 
+ nd.id AS numberDevice_id, 
+ oi.id AS item_id, 
+ dm.models_name AS list, 
+ oi.quality, 
+ oi.amount, 
+ oi.price, 
+ oi.unit
+ FROM 
+ orderdata_new AS od
+ INNER JOIN 
+ withdraw AS wd ON od.refWithdraw = wd.withdraw_id
+ INNER JOIN 
+ offer AS of ON od.refOffer = of.offer_id
+ INNER JOIN 
+ depart AS dp ON od.refDepart = dp.depart_id
+ INNER JOIN 
+ listwork AS lw ON od.refWork = lw.work_id
+ INNER JOIN 
+ device AS dv ON od.refDevice = dv.device_id
+ LEFT JOIN 
+ order_numberdevice AS nd ON od.id = nd.order_item
+ LEFT JOIN 
+ order_items AS oi ON od.id = oi.order_id
+   LEFT JOIN 
+     device_models AS dm ON oi.list = dm.models_id
+ WHERE 
+ (od.numberWork = :numberWork) AND
+ (nd.is_deleted = 0 OR nd.is_deleted IS NULL)
+ AND (oi.is_deleted = 0 OR oi.is_deleted IS NULL)
+ ORDER BY nd.id, oi.id
+ ";
+
         $stmt = $conn->prepare($sql);
-        $stmt->bindParam(":id", $id);
+        $stmt->bindParam(":numberWork", $id);
         $stmt->execute();
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $Device2 = "";
-        $Device3 = "";
+        if ($results) {
+            $order = $results[0];
+            $devices = [];
+            $items = [];
 
-        if ($data['numberDevice2'] == "") {
-            $Device2 = "";
+            $columnCount = 0;
+            $sum = 0;
+
+            foreach ($results as $row) {
+                if (!empty($row['numberDevice_id']) && !isset($devices[$row['numberDevice_id']])) {
+                    $devices[$row['numberDevice_id']] =
+                        [
+                            'numberDevice_id' => $row['numberDevice_id'],
+                            'numberDevice' => $row['numberDevice']
+                        ];
+                }
+
+                if (!empty($row['item_id']) && !isset($items[$row['item_id']])) {
+                    $items[$row['item_id']] = [
+                        'item_id' => $row['item_id'],
+                        'list' => $row['list'],
+                        'quality' => $row['quality'],
+                        'amount' => $row['amount'],
+                        'price' => $row['price'],
+                        'total' => $row['price'] * $row['amount'],
+                        'unit' => $row['unit']
+                    ];
+
+                    $columnCount++;
+                    $sum += $row['price'] * $row['amount'];
+                }
+            }
+
+            $devices = array_values($devices);
+            $items = array_values($items);
+
+            $numberDeviceList = array_column($devices, 'numberDevice');
+            $numberDeviceString = implode(', ', $numberDeviceList);
+
+            function toMonthThai($m)
+            {
+                $monthNamesThai = array(
+                    "",
+                    "มกราคม",
+                    "กุมภาพันธ์",
+                    "มีนาคม",
+                    "เมษายน",
+                    "พฤษภาคม",
+                    "มิถุนายน",
+                    "กรกฎาคม",
+                    "สิงหาคม",
+                    "กันยายน",
+                    "ตุลาคม",
+                    "พฤศจิกายน",
+                    "ธันวาคม"
+                );
+                return $monthNamesThai[$m];
+            }
+            $dateWithdrawFromDB = $order['dateWithdraw']; // เปลี่ยนตามฐานข้อมูลของคุณ
+
+            // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp
+            $timestamp = strtotime($dateWithdrawFromDB);
+
+            // ดึงเดือน
+            $monthNumber = date('n', $timestamp);
+
+            // แปลงเดือนเป็นภาษาไทย
+            $monthThai = toMonthThai($monthNumber);
         } else {
-            $Device2 = ', ' . $data["numberDevice2"];
-        }
-        if ($data['numberDevice3'] == "") {
-            $Device3 = "";
-        } else {
-            $Device3 = ', ' . $data["numberDevice3"];
+            echo "No records found.";
+            $order = [];
+            $devices = [];
+            $items = [];
         }
 
-        function toMonthThai($m)
-        {
-            $monthNamesThai = array(
-                "",
-                "มกราคม",
-                "กุมภาพันธ์",
-                "มีนาคม",
-                "เมษายน",
-                "พฤษภาคม",
-                "มิถุนายน",
-                "กรกฎาคม",
-                "สิงหาคม",
-                "กันยายน",
-                "ตุลาคม",
-                "พฤศจิกายน",
-                "ธันวาคม"
-            );
-            return $monthNamesThai[$m];
-        }
-        $dateWithdrawFromDB = $data['dateWithdraw']; // เปลี่ยนตามฐานข้อมูลของคุณ
+        // $sql = "SELECT od.*, dp.depart_name ,lw.work_name,dv.device_name,ad.fname,ad.lname,dw.withdraw_name
+        // FROM orderdata AS od
+        // INNER JOIN depart AS dp ON od.refDepart = dp.depart_id
+        // INNER JOIN listwork AS lw ON od.refWork = lw.work_id
+        // INNER JOIN device AS dv ON od.refDevice = dv.device_id
+        // INNER JOIN withdraw AS dw ON od.refWithdraw = dw.withdraw_id
+        // INNER JOIN admin AS ad ON od.refUsername = ad.username
+        //  WHERE od.id = :id";
+        // $stmt = $conn->prepare($sql);
+        // $stmt->bindParam(":id", $id);
+        // $stmt->execute();
+        // $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp
-        $timestamp = strtotime($dateWithdrawFromDB);
+        // $Device2 = "";
+        // $Device3 = "";
 
-        // ดึงเดือน
-        $monthNumber = date('n', $timestamp);
+        // if ($data['numberDevice2'] == "") {
+        //     $Device2 = "";
+        // } else {
+        //     $Device2 = ', ' . $data["numberDevice2"];
+        // }
+        // if ($data['numberDevice3'] == "") {
+        //     $Device3 = "";
+        // } else {
+        //     $Device3 = ', ' . $data["numberDevice3"];
+        // }
 
-        // แปลงเดือนเป็นภาษาไทย
-        $monthThai = toMonthThai($monthNumber);
+        // function toMonthThai($m)
+        // {
+        //     $monthNamesThai = array(
+        //         "",
+        //         "มกราคม",
+        //         "กุมภาพันธ์",
+        //         "มีนาคม",
+        //         "เมษายน",
+        //         "พฤษภาคม",
+        //         "มิถุนายน",
+        //         "กรกฎาคม",
+        //         "สิงหาคม",
+        //         "กันยายน",
+        //         "ตุลาคม",
+        //         "พฤศจิกายน",
+        //         "ธันวาคม"
+        //     );
+        //     return $monthNamesThai[$m];
+        // }
+        // $dateWithdrawFromDB = $data['dateWithdraw']; // เปลี่ยนตามฐานข้อมูลของคุณ
+
+        // // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp
+        // $timestamp = strtotime($dateWithdrawFromDB);
+
+        // // ดึงเดือน
+        // $monthNumber = date('n', $timestamp);
+
+        // // แปลงเดือนเป็นภาษาไทย
+        // $monthThai = toMonthThai($monthNumber);
 
         // แสดงผล
         ?>
@@ -196,71 +317,86 @@ $id = $_GET['workid'];
         <br>
         <br>
         <?php
-        $columns = [];
+        // $columns = [];
 
-        for ($i = 1; $i <= 15; $i++) {
-            $columns[] = "`list$i`, `quality$i`, `amount$i`, `price$i` , `unit$i`";
-        }
-        $columnString = implode(", ", $columns);
-        $sql = "SELECT `list1`, `list2`, `list3`, `list4`, `list5`, `list6`, `list7`, `list8`, `list9`, `list10`, `list11`, `list12`, `list13`, `list14` FROM `orderdata` WHERE id = :id";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(":id", $id);
-        $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        // for ($i = 1; $i <= 15; $i++) {
+        //     $columns[] = "`list$i`, `quality$i`, `amount$i`, `price$i` , `unit$i`";
+        // }
+        // $columnString = implode(", ", $columns);
+        // $sql = "SELECT `list1`, `list2`, `list3`, `list4`, `list5`, `list6`, `list7`, `list8`, `list9`, `list10`, `list11`, `list12`, `list13`, `list14` FROM `orderdata` WHERE id = :id";
+        // $stmt = $conn->prepare($sql);
+        // $stmt->bindParam(":id", $id);
+        // $stmt->execute();
+        // $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $filteredResult = array_filter($result, function ($value) {
-            return $value !== null && $value !== '';
-        });
+        // $filteredResult = array_filter($result, function ($value) {
+        //     return $value !== null && $value !== '';
+        // });
 
-        $columnCount = count($filteredResult);
+        // $columnCount = count($filteredResult);
 
-        $sql = "SELECT $columnString FROM `orderdata` WHERE id = :id";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(":id", $id);
-        $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        // $sql = "SELECT $columnString FROM `orderdata` WHERE id = :id";
+        // $stmt = $conn->prepare($sql);
+        // $stmt->bindParam(":id", $id);
+        // $stmt->execute();
+        // $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sum = 0;
-        for ($i = 1; $i <= 15; $i++) {
+        // $sum = 0;
+        // for ($i = 1; $i <= 15; $i++) {
 
-            $list = $result["list$i"];
-            $quality = $result["quality$i"];
-            $amount = $result["amount$i"];
-            $price = $result["price$i"];
-            $unit = $result["unit$i"];
+        //     $list = $result["list$i"];
+        //     $quality = $result["quality$i"];
+        //     $amount = $result["amount$i"];
+        //     $price = $result["price$i"];
+        //     $unit = $result["unit$i"];
 
-            $amount = intval($amount);
-            $price = intval($price);
+        //     $amount = intval($amount);
+        //     $price = intval($price);
 
 
-            // คำนวณ $sum
-            $currentSum = $amount * $price;
+        //     // คำนวณ $sum
+        //     $currentSum = $amount * $price;
 
-            $sum += intval($currentSum);
+        //     $sum += intval($currentSum);
 
-            // ตรวจสอบว่า $currentSum เป็น 0 หรือไม่
-            if ($currentSum == 0) {
-                $currentSum = ""; // กำหนดให้ $currentSum เป็นค่าว่าง
-            }
-            if ($result["list$i"] == "" || $result["quality$i"] == "" || $result["amount$i"] == "" || $result["price$i"] == "" || $result["unit$i"] == "") {
-                $list = "";
-                $quality = "";
-                $amount = "";
-                $price = "";
-                $unit = "";
-            }
-        }
+        //     // ตรวจสอบว่า $currentSum เป็น 0 หรือไม่
+        //     if ($currentSum == 0) {
+        //         $currentSum = ""; // กำหนดให้ $currentSum เป็นค่าว่าง
+        //     }
+        //     if ($result["list$i"] == "" || $result["quality$i"] == "" || $result["amount$i"] == "" || $result["price$i"] == "" || $result["unit$i"] == "") {
+        //         $list = "";
+        //         $quality = "";
+        //         $amount = "";
+        //         $price = "";
+        //         $unit = "";
+        //     }
+        // }
 
         function numberToThaiWords($number)
         {
             // อารบิก
             $digits = array(
-                '', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า'
+                '',
+                'หนึ่ง',
+                'สอง',
+                'สาม',
+                'สี่',
+                'ห้า',
+                'หก',
+                'เจ็ด',
+                'แปด',
+                'เก้า'
             );
 
             // ชื่อหลัก
             $units = array(
-                '', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน', 'ล้าน'
+                '',
+                'สิบ',
+                'ร้อย',
+                'พัน',
+                'หมื่น',
+                'แสน',
+                'ล้าน'
             );
 
             // แยกระหว่างจำนวนเต็มและทศนิยม
@@ -317,70 +453,76 @@ $id = $_GET['workid'];
                 </thead>
                 <tbody class="text-center">
                     <?php
-                    $sum = 0;
+                    // $sum = 0;
 
-                    for ($i = 1; $i <= 15; $i++) {
+                    // for ($i = 1; $i <= 15; $i++) {
 
-                        $list = $result["list$i"];
-                        $quality = $result["quality$i"];
-                        $amount = $result["amount$i"];
-                        $price = $result["price$i"];
-                        $unit = $result["unit$i"];
+                    //     $list = $result["list$i"];
+                    //     $quality = $result["quality$i"];
+                    //     $amount = $result["amount$i"];
+                    //     $price = $result["price$i"];
+                    //     $unit = $result["unit$i"];
 
-                        // คำนวณ $sum
-                        $amount = intval($amount);
-                        $price = intval($price);
-                        $currentSum = $amount * $price;
+                    //     // คำนวณ $sum
+                    //     $amount = intval($amount);
+                    //     $price = intval($price);
+                    //     $currentSum = $amount * $price;
 
-                        $sum += intval($currentSum);
+                    //     $sum += intval($currentSum);
 
-                        // ตรวจสอบว่า $currentSum เป็น 0 หรือไม่
-                        if ($currentSum == 0) {
-                            $currentSum = ""; // กำหนดให้ $currentSum เป็นค่าว่าง
-                        }
-                        if ($result["list$i"] == "" || $result["quality$i"] == "" || $result["amount$i"] == "" || $result["price$i"] == "") {
-                            $list = "";
-                            $quality = "";
-                            $amount = "";
-                            $price = "";
-                            $unit = "";
-                        }
-                        $deviceModelName = "";
-                        if (!empty($list)) {
-                            $sqlDeviceModel = "SELECT models_name FROM device_models WHERE models_id = :models_id";
-                            $stmtDeviceModel = $conn->prepare($sqlDeviceModel);
-                            $stmtDeviceModel->bindParam(":models_id", $list);
-                            $stmtDeviceModel->execute();
-                            $deviceModelResult = $stmtDeviceModel->fetch(PDO::FETCH_ASSOC);
-                            $deviceModelName = $deviceModelResult['models_name'];
-                        }
+                    //     // ตรวจสอบว่า $currentSum เป็น 0 หรือไม่
+                    //     if ($currentSum == 0) {
+                    //         $currentSum = ""; // กำหนดให้ $currentSum เป็นค่าว่าง
+                    //     }
+                    //     if ($result["list$i"] == "" || $result["quality$i"] == "" || $result["amount$i"] == "" || $result["price$i"] == "") {
+                    //         $list = "";
+                    //         $quality = "";
+                    //         $amount = "";
+                    //         $price = "";
+                    //         $unit = "";
+                    //     }
+                    //     $deviceModelName = "";
+                    //     if (!empty($list)) {
+                    //         $sqlDeviceModel = "SELECT models_name FROM device_models WHERE models_id = :models_id";
+                    //         $stmtDeviceModel = $conn->prepare($sqlDeviceModel);
+                    //         $stmtDeviceModel->bindParam(":models_id", $list);
+                    //         $stmtDeviceModel->execute();
+                    //         $deviceModelResult = $stmtDeviceModel->fetch(PDO::FETCH_ASSOC);
+                    //         $deviceModelName = $deviceModelResult['models_name'];
+                    //     }
+                    $rowCount = count($items);
+                    $emptyRows = 15 - $rowCount;
+                    $index = 0;
+                    foreach ($items as $item):
                     ?>
                         <tr class="empty-row">
-                            <th style="font-weight: normal;" class="arabicNumber" scope="row"><?= $i; ?></th>
-                            <td style="font-weight: normal;text-align:left;"><?= $deviceModelName ?></td>
-                            <td style="font-weight: normal;text-align:left;"><?= nl2br($quality) ?></td>
-                            <td style="font-weight: normal;"><?= $unit ?></td>
-                            <td style="font-weight: normal;" class="arabicNumber"><?= $amount ?></td>
-                            <td style="font-weight: normal;" class="arabicNumber">
-                                <?php if ($price == "") {
-                                    echo $price;
-                                } else {
-                                    echo number_format($price);
-                                } ?>
-                            </td>
-                            <td style="font-weight: normal;" class="arabicNumber" id="number<?= $i ?>">
-
-                                <?php if ($currentSum == "") {
-                                    echo $currentSum;
-                                } else {
-                                    echo number_format($currentSum);
-                                } ?>
-                            </td>
+                            <th style="font-weight: normal;" class="arabicNumber" scope="row"><?= $index + 1 ?></th>
+                            <td style="font-weight: normal;text-align:left;"><?= $item['list'] ?></td>
+                            <td style="font-weight: normal;text-align:left;"><?= nl2br($item['quality']) ?></td>
+                            <td style="font-weight: normal;"><?= $item['unit'] ?></td>
+                            <td style="font-weight: normal;" class="arabicNumber"><?= $item['amount'] ?></td>
+                            <td style="font-weight: normal;" class="arabicNumber"><?= $item['price'] ?></td>
+                            <td style="font-weight: normal;" class="arabicNumber" id="number<?= $i ?>"><?= $item['total'] ?></td>
                         </tr>
                     <?php
-                    }
+                        $index++;
+                    endforeach;
+                    for ($i = 0; $i < $emptyRows; $i++):
                     ?>
-                    <td colspan="6" style="font-weight: normal; text-align: left;" class="arabicNumber">ราคาทั้งสิ้น...............<?= number_format($sum)?>...............บาท (...............<?= $thaiWords ?>...............)</td>
+                        <tr class="empty-row">
+                            <th style="font-weight: normal;" class="arabicNumber" scope="row"><?= $index + 1 ?></th>
+                            <td style="font-weight: normal; text-align:left;"></td>
+                            <td style="font-weight: normal; text-align:left;"></td>
+                            <td style="font-weight: normal;" class="arabicNumber"></td>
+                            <td style="font-weight: normal;" class="arabicNumber"></td>
+                            <td style="font-weight: normal;" class="arabicNumber"></td>
+                            <td style="font-weight: normal;" class="arabicNumber"></td>
+                        </tr>
+                    <?php
+                        $index++; // Increment index for each empty row
+                    endfor;
+                    ?>
+                    <td colspan="6" style="font-weight: normal; text-align: left;" class="arabicNumber">ราคาทั้งสิ้น...............<?= number_format($sum) ?>...............บาท (...............<?= $thaiWords ?>...............)</td>
 
                 </tbody>
             </table>

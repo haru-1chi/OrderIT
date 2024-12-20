@@ -33,6 +33,12 @@ if (!isset($_SESSION["admin_log"])) {
     .ui-autocomplete {
       z-index: 1055 !important;
     }
+
+    .container-custom {
+      max-width: 1500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
   </style>
 </head>
 
@@ -162,79 +168,6 @@ ORDER BY nd.id, oi.id
     $items = [];
   }
 
-  $columns = [];
-
-  for ($i = 1; $i <= 15; $i++) {
-    $columns[] = "`list$i`, `quality$i`, `amount$i`, `price$i` , `unit$i`";
-  }
-  $columnString = implode(", ", $columns);
-
-  $sql = "SELECT $columnString FROM `orderdata` WHERE id = :numberWork";
-  $stmt = $conn->prepare($sql);
-  $stmt->bindParam(":numberWork", $numberWork);
-  $stmt->execute();
-  $result = $stmt->fetch(PDO::FETCH_ASSOC);
-  $sum = 0;
-
-  for ($i = 1; $i <= 15; $i++) {
-    $list = $result["list$i"];
-    $quality = $result["quality$i"];
-    $amount = $result["amount$i"];
-    $price = $result["price$i"];
-    $amount = intval($amount);
-    $price = intval($price);
-    // คำนวณ $sum
-    $currentSum = $amount * $price;
-
-    $sum += intval($currentSum);
-    // ตรวจสอบว่า $currentSum เป็น 0 หรือไม่
-    if ($currentSum == "-" || $currentSum == 0) {
-      $currentSum = ""; // กำหนดให้ $currentSum เป็นค่าว่าง
-    }
-    if ($result["list$i"] == "-" || $result["quality$i"] == "-" || $result["amount$i"] == "-" || $result["price$i"] == "-" || $result["unit$i"] == "-") {
-      $list = "";
-      $quality = "";
-      $amount = "";
-      $price = "";
-      $unit = "";
-    }
-  }
-
-  $sql = "SELECT od.*, dp.depart_name, lw.work_name, dv.device_name, ad.fname, ad.lname";
-
-  for ($i = 1; $i <= 15; $i++) {
-    $sql .= ", dm{$i}.models_name AS model{$i}";
-  }
-
-  $sql .= " FROM orderdata AS od
-    INNER JOIN depart AS dp ON od.refDepart = dp.depart_id
-    INNER JOIN listwork AS lw ON od.refWork = lw.work_id
-    INNER JOIN device AS dv ON od.refDevice = dv.device_id
-    INNER JOIN admin AS ad ON od.refUsername = ad.username";
-
-  for ($i = 1; $i <= 15; $i++) {
-    $sql .= " LEFT JOIN device_models AS dm{$i} ON od.list{$i} = dm{$i}.models_id";
-  }
-  $sql .= " WHERE od.id = :numberWork";
-  $stmt = $conn->prepare($sql);
-  $stmt->bindParam(":numberWork", $numberWork);
-  $stmt->execute();
-  $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
-  $Device2 = "";
-  $Device3 = "";
-
-  if (isset($data['numberDevice2']) == "-" || isset($data['numberDevice2']) == "") {
-    $Device2 = "";
-  } else {
-    $Device2 = ', ' . $data["numberDevice2"];
-  }
-  if (isset($data['numberDevice3']) == "-" || isset($data['numberDevice3']) == "") {
-    $Device3 = "";
-  } else {
-    $Device3 = ', ' . $data["numberDevice3"];
-  }
-
   function toMonthThai($m)
   {
     $monthNamesThai = array(
@@ -281,22 +214,11 @@ ORDER BY nd.id, oi.id
 
     return $formattedDate;
   }
-
-  $dateWithdrawFromDB = $data['dateWithdraw'];
-  $receiptDateFromDB = $data['receiptDate'];
-  $deliveryDateFromDB = $data['deliveryDate'];
-  $closeDateFromDB = $data['closeDate'];
-
-  // แปลงวันที่ในรูปแบบ Y-m-d เป็นรูปแบบไทย
-  $dateWithdrawThai = formatDateThai($dateWithdrawFromDB);
-  $receiptThai = formatDateThai($receiptDateFromDB);
-  $deliveryThai = formatDateThai($deliveryDateFromDB);
-  $closeThai = formatDateThai($closeDateFromDB);
   ?>
 
 
-  <div class="container mt-5">
-    <div class="container mt-5">
+  <div class="container-custom mt-5">
+    <div class="mt-5">
       <?php if (isset($_SESSION['error'])) { ?>
         <div class="alert alert-danger" role="alert">
           <?php
@@ -327,9 +249,9 @@ ORDER BY nd.id, oi.id
       <div class="d-flex justify-content-end">
         <button type="button" class="btn btn-success mb-2" data-bs-toggle="modal" data-bs-target="#requisitionModal">+ สร้างใบเบิก</button>
       </div>
-      <div class="row">
+      <div class="row ">
         <div class="col-sm-12 col-md-12 col-lg-6">
-          <div class="row">
+          <div class="row me-1">
             <div class="card col-sm-12">
               <form action="" method="GET">
                 <div class="row p-3">
@@ -523,7 +445,7 @@ ORDER BY os.status;
             ?>
 
               <div class="col-sm-6">
-                <div class="card text-white me-3 mb-3" style="max-width: 18rem; background-color: <?= $color ?>">
+                <div class="card text-white mb-3" style="background-color: <?= $color ?>">
                   <div class="card-body">
                     <h1 class="card-title" style="font-size: 50px;"><?= $count ?></h1>
                     <h5 class="m-0"><?= htmlspecialchars($textS) ?></h5>
@@ -582,15 +504,22 @@ ORDER BY os.status;
               <div class="col-6">
                 <label>หมายเลขพัสดุ / ครุภัณฑ์</label>
                 <div id="device-number-container-main">
-                  <?php foreach ($devices as $index => $device): ?>
+                  <?php if (!empty($devices)) { ?>
+                    <?php foreach ($devices as $index => $device): ?>
+                      <div class="d-flex device-number-row">
+                        <input type="text" name="update_number_device[<?= $order['id'] ?>][<?= $device['numberDevice_id'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($device['numberDevice']) ?>" disabled>
+                        <button type="button" class="btn btn-warning p-2 ms-3 mb-2 remove-field"
+                          data-device-id="<?= $device['numberDevice_id'] ?>"
+                          data-row-id="<?= $order['id'] ?>"
+                          style="display: none; visibility: <?= $index === 0 ? 'hidden' : 'visible' ?>;">ลบ</button>
+                      </div>
+                    <?php endforeach; ?>
+                  <?php  } else { ?>
                     <div class="d-flex device-number-row">
-                      <input type="text" name="update_number_device[<?= $order['id'] ?>][<?= $device['numberDevice_id'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($device['numberDevice']) ?>" disabled>
-                      <button type="button" class="btn btn-warning p-2 ms-3 mb-2 remove-field"
-                        data-device-id="<?= $device['numberDevice_id'] ?>"
-                        data-row-id="<?= $order['id'] ?>"
-                        style="display: none; visibility: <?= $index === 0 ? 'hidden' : 'visible' ?>;">ลบ</button>
+                      <input type="text" name="device_numbers[]" class="form-control mb-2" value="" disabled>
+                      <button type="button" class="btn btn-danger p-2 ms-3 remove-field" style="visibility: hidden;">ลบ</button>
                     </div>
-                  <?php endforeach; ?>
+                  <?php } ?>
                 </div>
                 <div class="d-flex justify-content-end">
                   <button type="button" id="add-device-number-main" class="btn btn-success mt-2 align-self-end" style="display: none;">+ เพิ่มหมายเลขครุภัณฑ์</button>
@@ -728,53 +657,96 @@ ORDER BY os.status;
               </thead>
 
               <tbody id="table-body-main" class="text-center">
-                <?php foreach ($items as $index => $item): ?>
+                <?php if (!empty($items)) { ?>
+                  <?php foreach ($items as $index => $item): ?>
+                    <tr>
+                      <td><?= $index + 1 ?></td>
+                      <td>
+                        <select
+                          disabled
+                          style="width: 150px"
+                          class="form-select device-select"
+                          name="update_list[<?= $order['id'] ?>][<?= $item['item_id'] ?>]">
+                          <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+                          <?php
+                          $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
+                          $deviceStmt = $conn->prepare($deviceSql);
+                          $deviceStmt->execute();
+                          $devices = $deviceStmt->fetchAll(PDO::FETCH_ASSOC);
+                          $deviceOptions = '';
+                          foreach ($devices as $device) {
+                            $deviceOptions .= "<option value='{$device['models_id']}'>{$device['models_name']}</option>";
+                            $selected = $device['models_id'] == $item['list'] ? 'selected' : '';
+                            echo "<option value='{$device['models_id']}' $selected>{$device['models_name']}</option>";
+                          }
+                          ?>
+                        </select>
+                      </td>
+                      <td>
+                        <textarea disabled class="form-control" name="update_quality[<?= $order['id'] ?>][<?= $item['item_id'] ?>]"><?= htmlspecialchars($item['quality']) ?></textarea>
+                      </td>
+                      <td>
+                        <input disabled name="update_amount[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['amount']) ?>" style="width: 3rem;" type="text" class="form-control">
+                      </td>
+                      <td>
+                        <input disabled name="update_price[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['price']) ?>" style="width: 4rem;" type="text" class="form-control">
+                      </td>
+                      <td>
+                        <input disabled value="<?= htmlspecialchars($item['total']) ?>" style="width: 4rem;" type="text" class="form-control no-toggle">
+                      </td>
+                      <td>
+                        <input disabled name="update_unit[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['unit']) ?>" style="width: 5rem;" type="text" class="form-control">
+                      </td>
+                      <td>
+                        <button type="button" class="btn btn-warning remove-row"
+                          data-items-id="<?= $item['item_id'] ?>"
+                          data-items-row-id="<?= $order['id'] ?>"
+                          style="display: none;">ลบ</button>
+                      </td>
+                    </tr>
+                  <?php endforeach; ?>
+                <?php  } else { ?>
                   <tr>
-                    <td><?= $index + 1 ?></td>
+                    <th scope="row">1</th>
                     <td>
                       <select
-                        disabled
+                      disabled
                         style="width: 120px"
                         class="form-select device-select"
-                        name="update_list[<?= $order['id'] ?>][<?= $item['item_id'] ?>]">
+                        name="list[]">
                         <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+                        <!-- Populate options dynamically -->
                         <?php
-                        $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
-                        $deviceStmt = $conn->prepare($deviceSql);
-                        $deviceStmt->execute();
-                        $devices = $deviceStmt->fetchAll(PDO::FETCH_ASSOC);
-                        $deviceOptions = '';
-                        foreach ($devices as $device) {
-                          $deviceOptions .= "<option value='{$device['models_id']}'>{$device['models_name']}</option>";
-                          $selected = $device['models_id'] == $item['list'] ? 'selected' : '';
-                          echo "<option value='{$device['models_id']}' $selected>{$device['models_name']}</option>";
+                        $sql = "SELECT * FROM device_models ORDER BY models_name ASC";
+                        $stmt = $conn->prepare($sql);
+                        $stmt->execute();
+                        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                        foreach ($result as $d) {
+                        ?>
+                          <option value="<?= $d['models_id'] ?>"><?= $d['models_name'] ?></option>
+                        <?php
                         }
                         ?>
                       </select>
                     </td>
                     <td>
-                      <textarea disabled class="form-control" name="update_quality[<?= $order['id'] ?>][<?= $item['item_id'] ?>]"><?= htmlspecialchars($item['quality']) ?></textarea>
+                      <textarea disabled class="form-control" name="quality[]"></textarea>
                     </td>
                     <td>
-                      <input disabled name="update_amount[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['amount']) ?>" style="width: 3rem;" type="text" class="form-control">
+                      <input disabled name="amount[]" value="" style="width: 3rem;" type="text" class="form-control">
                     </td>
                     <td>
-                      <input disabled name="update_price[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['price']) ?>" style="width: 4rem;" type="text" class="form-control">
+                      <input disabled name="price[]" value="" style="width: 4rem;" type="text" class="form-control">
                     </td>
                     <td>
-                      <input disabled value="<?= htmlspecialchars($item['total']) ?>" style="width: 4rem;" type="text" class="form-control no-toggle">
-                    </td>
-                    <td>
-                      <input disabled name="update_unit[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['unit']) ?>" style="width: 5rem;" type="text" class="form-control">
+                      <input disabled name="unit[]" value="" style="width: 5rem;" type="text" class="form-control">
                     </td>
                     <td>
                       <button type="button" class="btn btn-warning remove-row"
-                        data-items-id="<?= $item['item_id'] ?>"
-                        data-items-row-id="<?= $order['id'] ?>"
                         style="display: none;">ลบ</button>
                     </td>
                   </tr>
-                <?php endforeach; ?>
+                <?php } ?>
               </tbody>
             </table>
             <div class="d-flex justify-content-end">
@@ -999,7 +971,13 @@ ORDER BY os.status;
                 </div>
               </div>
 
-              <div class="col-sm-12">
+              <div class="col-sm-6">
+                <div class="mb-3">
+                  <label id="basic-addon1">อาการรับแจ้ง</label>
+                  <input type="text" name="report" class="form-control">
+                </div>
+              </div>
+              <div class="col-sm-6">
                 <div class="mb-3">
                   <label id="basic-addon1">เหตุผลและความจำเป็น</label>
                   <input type="text" name="reason" class="form-control">
@@ -1375,7 +1353,14 @@ ORDER BY os.status;
                   </div>
                 </div>
 
-                <div class="col-sm-12">
+                <div class="col-sm-6">
+                  <div class="mb-3">
+                    <label id="basic-addon1">อาการรับแจ้ง</label>
+                    <input type="text" name="report" class="form-control" value="<?= $rowData['report'] ?>">
+                  </div>
+                </div>
+
+                <div class="col-sm-6">
                   <div class="mb-3">
                     <label id="basic-addon1">เหตุผลและความจำเป็น</label>
                     <input type="text" name="reason" class="form-control" value="<?= $rowData['reason'] ?>">
@@ -1635,7 +1620,7 @@ ORDER BY os.status;
     }
 
     document.addEventListener("click", function(e) {
-      const deviceOptions = `<?= $deviceOptions ?>`;
+      const deviceOptions = `<?= $deviceOptions ?>`; //bug here
 
       if (e.target && e.target.id.startsWith('add-row-')) {
         const modalId = e.target.id.split('-').pop();
@@ -1659,37 +1644,6 @@ ORDER BY os.status;
             <td><input style="width: 5rem;" type="text" name="unit[]" class="form-control"></td>
             <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
         `;
-        //         } else if (modalId == "modal") {
-        //           newRow.innerHTML = `
-        //             <td>${rowIndex}</td>
-        // <td>
-        //           <select style="width: 120px" class="form-select device-select" name="list[]">
-        //             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-        //             ${deviceOptions}
-        //           </select>
-        //         </td>
-        //             <td><textarea class="form-control" name="quality[]"></textarea></td>
-        //             <td><input style="width: 3rem;" type="text" name="amount[]" class="form-control"></td>
-        //             <td><input style="width: 4rem;" type="text" name="price[]" class="form-control"></td>
-        //             <td><input style="width: 5rem;" type="text" name="unit[]" class="form-control"></td>
-        //             <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
-        //         `;
-        //         } else if (modalId == "copied") {
-        //           newRow.innerHTML = `
-        //             <td class="text-center">${rowIndex}</td>
-        // <td>
-        //           <select style="width: 120px; margin: 0 auto;" class="form-select device-select" name="copied_list[]">
-        //             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-        //             ${deviceOptions}
-        //           </select>
-        //         </td>
-        //             <td><textarea class="form-control" name="copied_quality[]"></textarea></td>
-        //             <td><input style="width: 3rem; margin: 0 auto;" type="text" name="copied_amount[]" class="form-control"></td>
-        //             <td><input style="width: 4rem; margin: 0 auto;" type="text" name="copied_price[]" class="form-control"></td>
-        //             <td><input style="width: 4rem; margin: 0 auto;" type="text" name="copied_unit[]" class="form-control"></td>
-        //             <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
-        //         `;
-        //         }
         tableBody.appendChild(newRow);
 
         const amountInput = newRow.querySelector('input[name="amount[]"]');
@@ -1919,7 +1873,27 @@ ORDER BY os.status;
       });
     });
   </script>
+  <script>
+    // ฟังก์ชันสำหรับแปลงปีคริสต์ศักราชเป็นปีพุทธศักราช
+    function convertToBuddhistYear(englishYear) {
+      return englishYear;
+    }
 
+    // ดึงอินพุทธศักราชปัจจุบัน
+    const currentGregorianYear = new Date().getFullYear();
+    const currentBuddhistYear = convertToBuddhistYear(currentGregorianYear);
+
+    // หากคุณมีหลาย input ที่ต้องการกำหนดค่า
+    const thaiDateInputs = document.querySelectorAll('.thaiDateInput');
+
+    thaiDateInputs.forEach((input) => {
+      // แปลงปีปัจจุบันเป็นปีพุทธศักราชแล้วกำหนดค่าให้กับ input
+      const currentDate = new Date();
+      input.value = currentBuddhistYear + '-' +
+        ('0' + (currentDate.getMonth() + 1)).slice(-2) + '-' +
+        ('0' + currentDate.getDate()).slice(-2);
+    });
+  </script>
   <?php SC5() ?>
 </body>
 

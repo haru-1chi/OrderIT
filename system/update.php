@@ -310,7 +310,7 @@ if (isset($_POST['updateData'])) {
                 $sql = "INSERT INTO order_items (order_id, list, quality, amount, price, unit)  
                         VALUES (:order_id, :list, :quality, :amount, :price, :unit)";
                 $stmt = $conn->prepare($sql);
-                
+
                 $stmt->bindParam(':order_id', $id, PDO::PARAM_INT);
                 $stmt->bindParam(':list', $list, PDO::PARAM_INT);
                 $stmt->bindParam(':quality', $_POST['quality'][$index], PDO::PARAM_STR);
@@ -445,6 +445,14 @@ if (isset($_POST['updateStatus3'])) {
 
     // แปลง ID ที่เลือกเป็นตัวเลข
     $selectedRows = array_map('intval', $_POST['selectedRows3']);
+
+    echo '<pre>';
+    var_dump([
+        'selectedRows' => $selectedRows,
+        'selectedRows3' => $_POST['selectedRows3'],
+    ]);
+    echo '</pre>';
+    exit();
 
     // ทำการอัพเดทฐานข้อมูลสำหรับทุกรายการที่เลือก
     $sql = "UPDATE orderdata SET status = 4 WHERE id IN (" . implode(',', $selectedRows) . ")";

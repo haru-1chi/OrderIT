@@ -334,7 +334,8 @@ function generateNumberWork($conn)
 
     if ($result) {
         $latestNumberWork = $result['numberWork'];
-        list($numerator, $denominator) = explode('/', $latestNumberWork);
+        $cleanNumberWork = str_replace(' S', '', $latestNumberWork);
+        list($numerator, $denominator) = explode('/', $cleanNumberWork);
     } else {
         // Default if no numberWork exists
         $numerator = 0;
@@ -385,33 +386,33 @@ if (isset($_POST['submit'])) {
     $prices = $_POST['price'];
     $units = $_POST['unit'];
 
-    echo '<pre>';
-    var_dump([
-        'numberWork' => $numberWork,
-        'dateWithdraw' => $dateWithdraw,
-        'refWithdraw' => $refWithdraw,
-        'refWork' => $refWork,
-        'refDevice' => $refDevice,
+    // echo '<pre>';
+    // var_dump([
+    //     'numberWork' => $numberWork,
+    //     'dateWithdraw' => $dateWithdraw,
+    //     'refWithdraw' => $refWithdraw,
+    //     'refWork' => $refWork,
+    //     'refDevice' => $refDevice,
 
-        'numberDevices' => $numberDevices,
+    //     'numberDevices' => $numberDevices,
 
-        'refDepart' => $refDepart,
-        'refUsername' => $refUsername,
-        'report' => $report,
-        'reason' => $reason,
-        'refOffer' => $refOffer,
-        'quotation' => $quotation,
-        'status' => $status,
-        'note' => $note,
+    //     'refDepart' => $refDepart,
+    //     'refUsername' => $refUsername,
+    //     'report' => $report,
+    //     'reason' => $reason,
+    //     'refOffer' => $refOffer,
+    //     'quotation' => $quotation,
+    //     'status' => $status,
+    //     'note' => $note,
 
-        'lists' => $lists,
-        'qualities' => $qualities,
-        'amounts' => $amounts,
-        'prices' => $prices,
-        'units' => $units,
-    ]);
-    echo '</pre>';
-    exit();
+    //     'lists' => $lists,
+    //     'qualities' => $qualities,
+    //     'amounts' => $amounts,
+    //     'prices' => $prices,
+    //     'units' => $units,
+    // ]);
+    // echo '</pre>';
+    // exit();
     if (empty($refDepart)) {
         $_SESSION["error"] = "บันทีกข้อไม่สำเร็จ";
         $_SESSION["warning"] = "กรุณากดเลือกหน่วยงานหลังพิมพ์";
@@ -483,7 +484,7 @@ if (isset($_POST['submit'])) {
                 $conn->commit();
 
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-                header("location: ../create.php");
+                header("location: ../check.php");
             } else {
                 throw new Exception("Insert into orderdata_new failed.");
             }
@@ -1484,87 +1485,109 @@ WHERE id_ref = :id_ref";
     }
 }
 if (isset($_POST['CheckAll'])) {
-
-    $numberWork = $_POST["numberWork"];
-    $dateWithdraw = $_POST["dateWithdraw"];
+    $numberWork = generateNumberWork($conn) . ' S'; //gen numberWork โดยการเติมลงท้ายด้วย S
+    $dateWithdraw = $_POST["dateWithdraw"]; //วันที่ปัจจุบัน
     $refWithdraw = 23;
     $refWork = 10;
     $refDevice = 17;
-    $numberDevice1 = "-";
-    $numberDevice2 = "-";
-    $numberDevice3 = "-";
     $reason = $_POST['reason'];
     $report = "เบิกอะไหล่รายสัปดาห์ตามเอกสารแนบ";
     $refDepart = 3;
     $refUsername = $_POST["username"];
-    $refOffer = 1;
+    $refOffer = 4;
     $quotation = "-";
-    $receiptDate = $_POST["dateWithdraw"];
-    $deliveryDate = $_POST["dateWithdraw"];
-    $closeDate = $_POST["dateWithdraw"];
+    // $receiptDate = $_POST["dateWithdraw"];
+    // $deliveryDate = $_POST["dateWithdraw"];
+    // $closeDate = $_POST["dateWithdraw"];
     $note = "-";
     $status = 3;
+    date_default_timezone_set('Asia/Bangkok');
+    $timestamp = date('Y-m-d H:i:s');
 
-    for ($i = 1; $i <= 15; $i++) {
-        ${"list$i"} = $_POST["list$i"];
-        ${"quality$i"} = $_POST["quality$i"];
-        ${"amount$i"} = $_POST["amount$i"];
-        ${"price$i"} = $_POST["price$i"];
-        ${"unit$i"} = "";
-    }
+    $lists = $_POST['list'];
+    $qualities = $_POST['quality'];
+    $amounts = $_POST['amount'];
+    $prices = $_POST['price'];
 
+    // echo '<pre>';
+    // var_dump([
+    //     'numberWork' => $numberWork,
+    //     'dateWithdraw' => $dateWithdraw,
+    //     'refUsername' => $refUsername,
+    //     'refWithdraw' => $refWithdraw,
+    //     'refWork' => $refWork,
+    //     'refDevice' => $refDevice,
+    //     'reason' => $reason,
+    //     'report' => $report,
+    //     // 'numberDevices' => $numberDevices,
+
+    //     'refDepart' => $refDepart,
+    //     'refOffer' => $refOffer,
+    //     'quotation' => $quotation,
+    //     'status' => $status,
+    //     'note' => $note,
+
+    //     'lists' => $lists,
+    //     'qualities' => $qualities,
+    //     'amounts' => $amounts,
+    //     'prices' => $prices,
+    // ]);
+    // echo '</pre>';
+    // exit();
 
     try {
-        $sql = "INSERT INTO orderdata (numberWork, dateWithdraw, refWithdraw, refWork, refDevice, ";
-        for ($i = 1; $i <= 15; $i++) {
-            $sql .= "list$i, quality$i, amount$i, price$i, unit$i";
-            if ($i < 15) {
-                $sql .= ", ";
-            }
-        }
-        $sql .= ", reason, report, refDepart, refUsername, refOffer, quotation, receiptDate, deliveryDate, closeDate, note, status, numberDevice1, numberDevice2, numberDevice3) ";
-        $sql .= "VALUES (:numberWork, :dateWithdraw, :refWithdraw, :refWork, :refDevice, ";
-        for ($i = 1; $i <= 15; $i++) {
-            $sql .= ":list$i, :quality$i, :amount$i, :price$i, :unit$i";
-            if ($i < 15) {
-                $sql .= ", ";
-            }
-        }
-        $sql .= ", :reason, :report, :refDepart, :refUsername, :refOffer, :quotation, :receiptDate, :deliveryDate, :closeDate, :note, :status,:numberDevice1,:numberDevice2,:numberDevice3)";
+        $conn->beginTransaction();
+        $sql = "INSERT INTO orderdata_new (numberWork, dateWithdraw, refWithdraw, refWork, refDevice, reason, report, refDepart, refUsername, refOffer, quotation, note) 
+                    VALUES (:numberWork, :dateWithdraw, :refWithdraw, :refWork, :refDevice, :reason, :report, :refDepart, :refUsername, :refOffer, :quotation, :note)";
 
         // เตรียมและสร้าง statement
         $stmt = $conn->prepare($sql);
 
-        // ผูกค่าข้อมูล
         $stmt->bindParam(':numberWork', $numberWork);
         $stmt->bindParam(':dateWithdraw', $dateWithdraw);
-        $stmt->bindParam(':refWithdraw', $refWithdraw);  // เพิ่มบรรทัดนี้
-        $stmt->bindParam(':refWork', $refWork);          // เพิ่มบรรทัดนี้
+        $stmt->bindParam(':refWithdraw', $refWithdraw);
+        $stmt->bindParam(':refWork', $refWork);
         $stmt->bindParam(':refDevice', $refDevice);
-        for ($i = 1; $i <= 15; $i++) {
-            $stmt->bindParam(":list$i", ${"list$i"});
-            $stmt->bindParam(":quality$i", ${"quality$i"});
-            $stmt->bindParam(":amount$i", ${"amount$i"});
-            $stmt->bindParam(":price$i", ${"price$i"});
-            $stmt->bindParam(":unit$i", ${"unit$i"});
-        }
         $stmt->bindParam(':reason', $reason);
         $stmt->bindParam(':report', $report);
         $stmt->bindParam(':refDepart', $refDepart);
         $stmt->bindParam(':refUsername', $refUsername);
         $stmt->bindParam(':refOffer', $refOffer);
         $stmt->bindParam(':quotation', $quotation);
-        $stmt->bindParam(':receiptDate', $receiptDate);
-        $stmt->bindParam(':deliveryDate', $deliveryDate);
-        $stmt->bindParam(':closeDate', $closeDate);
         $stmt->bindParam(':note', $note);
-        $stmt->bindParam(':status', $status);
-        $stmt->bindParam(':numberDevice1', $numberDevice1);
-        $stmt->bindParam(':numberDevice2', $numberDevice2);
-        $stmt->bindParam(':numberDevice3', $numberDevice3);
 
         // ทำการเพิ่มข้อมูล
         if ($stmt->execute()) {
+            $orderId = $conn->lastInsertId();
+
+            $itemSql = "INSERT INTO order_items (order_id, list, quality, amount, price
+            -- , unit
+            ) 
+            VALUES (:order_id, :list, :quality, :amount, :price
+            -- , :unit
+            )";
+            $itemStmt = $conn->prepare($itemSql);
+
+            foreach ($lists as $index => $list) {
+                $itemStmt->bindParam(':order_id', $orderId);
+                $itemStmt->bindParam(':list', $list);
+                $itemStmt->bindParam(':quality', $qualities[$index]);
+                $itemStmt->bindParam(':amount', $amounts[$index]);
+                $itemStmt->bindParam(':price', $prices[$index]);
+                // $itemStmt->bindParam(':unit', $units[$index]);
+                $itemStmt->execute();
+            }
+
+            $statusSql = "INSERT INTO order_status (order_id, status, timestamp) 
+                VALUES (:order_id, :status, :timestamp)";
+            $statusStmt = $conn->prepare($statusSql);
+            $statusStmt->bindParam(':order_id', $orderId);
+            $statusStmt->bindParam(':status', $status);
+            $statusStmt->bindParam(':timestamp', $timestamp);
+            $statusStmt->execute();
+
+            $conn->commit();
+
             $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
             $_SESSION["warning"] = "เมื่อเพิ่มข้อมูลเรียบร้อยแล้ว หลังจากบันทึกแล้วกรุณาปิดงานด้วย";
             header("location: ../checkAll.php");
