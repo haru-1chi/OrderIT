@@ -43,6 +43,11 @@ if (!isset($_SESSION["admin_log"])) {
             color: #000;
         }
 
+        #dataAllUncomplete tbody tr td {
+            background-color: #f2f7ff;
+            color: #000;
+        }
+
         .ui-autocomplete {
             z-index: 1055 !important;
         }
@@ -1450,7 +1455,7 @@ if (!isset($_SESSION["admin_log"])) {
                 </div>
 
                 <hr>
-                <table id="dataAll" class="table table-primary">
+                <table id="dataAllUncomplete" class="table table-primary">
                     <thead>
                         <tr>
                             <th class="text-center" scope="col">ลำดับ</th>
@@ -2960,14 +2965,18 @@ foreach ($result as $d) {
     </script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-    <!-- <script>
+    <script>
     $('#dataAll').DataTable({
         order: [
             [10, 'asc']
         ] // assuming you want to sort the first column in ascending order
     });
-  
-</script> -->
+    $('#dataAllUncomplete').DataTable({
+        order: [
+            [10, 'asc']
+        ] // assuming you want to sort the first column in ascending order
+    });
+</script>
     <?php SC5() ?>
 </body>
 

@@ -249,7 +249,7 @@ ORDER BY nd.id, oi.id
       <div class="d-flex justify-content-end">
         <button type="button" class="btn btn-success mb-2" data-bs-toggle="modal" data-bs-target="#requisitionModal">+ สร้างใบเบิก</button>
       </div>
-      <div class="row ">
+      <div class="row">
         <div class="col-sm-12 col-md-12 col-lg-6">
           <div class="row me-1">
             <div class="card col-sm-12">
@@ -710,7 +710,7 @@ ORDER BY os.status;
                     <th scope="row">1</th>
                     <td>
                       <select
-                      disabled
+                        disabled
                         style="width: 120px"
                         class="form-select device-select"
                         name="list[]">
@@ -721,8 +721,11 @@ ORDER BY os.status;
                         $stmt = $conn->prepare($sql);
                         $stmt->execute();
                         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                        $deviceOptions = '';
                         foreach ($result as $d) {
+                          $deviceOptions .= "<option value='{$d['models_id']}'>{$d['models_name']}</option>";
                         ?>
+
                           <option value="<?= $d['models_id'] ?>"><?= $d['models_name'] ?></option>
                         <?php
                         }
@@ -737,6 +740,9 @@ ORDER BY os.status;
                     </td>
                     <td>
                       <input disabled name="price[]" value="" style="width: 4rem;" type="text" class="form-control">
+                    </td>
+                    <td>
+                      <input disabled style="width: 4rem;" type="text" class="form-control no-toggle">
                     </td>
                     <td>
                       <input disabled name="unit[]" value="" style="width: 5rem;" type="text" class="form-control">
@@ -1628,8 +1634,8 @@ ORDER BY os.status;
         const rowIndex = tableBody.querySelectorAll("tr").length + 1;
 
         const newRow = document.createElement("tr");
-        // if (modalId == "main") {
-        newRow.innerHTML = `
+        if (modalId == "main") {
+          newRow.innerHTML = `
             <td>${rowIndex}</td>
 <td>
           <select style="width: 120px" class="form-select device-select" name="list[]">
@@ -1644,6 +1650,22 @@ ORDER BY os.status;
             <td><input style="width: 5rem;" type="text" name="unit[]" class="form-control"></td>
             <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
         `;
+        } else {
+          newRow.innerHTML = `
+            <td>${rowIndex}</td>
+<td>
+          <select style="width: 120px" class="form-select device-select" name="list[]">
+            <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+            ${deviceOptions}
+          </select>
+        </td>
+            <td><textarea class="form-control" name="quality[]"></textarea></td>
+            <td><input style="width: 3rem;" type="text" name="amount[]" class="form-control"></td>
+            <td><input style="width: 4rem;" type="text" name="price[]" class="form-control"></td>
+            <td><input style="width: 5rem;" type="text" name="unit[]" class="form-control"></td>
+            <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
+        `;
+        }
         tableBody.appendChild(newRow);
 
         const amountInput = newRow.querySelector('input[name="amount[]"]');
@@ -1690,7 +1712,18 @@ ORDER BY os.status;
       }
     });
 
+    function calculateRowTotal(rowElement) {
+      const amountInput = rowElement.querySelector('input[name*="amount["]');
+      const priceInput = rowElement.querySelector('input[name*="price["]');
+      const totalInput = rowElement.querySelector('input.no-toggle');
 
+      const amount = parseFloat(amountInput?.value || 0);
+      const price = parseFloat(priceInput?.value || 0);
+
+      if (totalInput) {
+        totalInput.value = (amount * price); // Calculate and update sum
+      }
+    }
 
     function bindAutoList() {
       const deviceSelects = document.querySelectorAll(".device-select");
@@ -1732,6 +1765,7 @@ ORDER BY os.status;
                 rowElement.querySelector('input[name*="price[]"]').value = data.price;
                 rowElement.querySelector('input[name*="unit[]"]').value = data.unit;
               }
+              calculateRowTotal(rowElement);
             } else {
               alert("ไม่สามารถดึงข้อมูลได้");
             }
