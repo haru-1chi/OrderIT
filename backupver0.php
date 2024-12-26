@@ -646,6 +646,7 @@ ORDER BY os.status;
             <div class="d-flex justify-content-end align-items-center my-2">
               <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
             </div>
+
             <table id="pdf" style="width: 100%;" class="table">
               <thead class="text-center table-primary">
                 <tr>
@@ -715,7 +716,7 @@ ORDER BY os.status;
                     <td>
                       <select
                         disabled
-                        style="width: 150px; margin: 0 auto;"
+                        style="width: 120px"
                         class="form-select device-select"
                         name="list[]">
                         <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
@@ -740,16 +741,16 @@ ORDER BY os.status;
                       <textarea disabled class="form-control" name="quality[]"></textarea>
                     </td>
                     <td>
-                      <input disabled name="amount[]" value="" style="width: 3rem; margin: 0 auto;" type="text" class="form-control">
+                      <input disabled name="amount[]" value="" style="width: 3rem;" type="text" class="form-control">
                     </td>
                     <td>
-                      <input disabled name="price[]" value="" style="width: 5rem; margin: 0 auto;" type="text" class="form-control">
+                      <input disabled name="price[]" value="" style="width: 4rem;" type="text" class="form-control">
                     </td>
                     <td>
-                      <input disabled style="width: 5rem; margin: 0 auto;" type="text" class="form-control no-toggle">
+                      <input disabled style="width: 4rem;" type="text" class="form-control no-toggle">
                     </td>
                     <td>
-                      <input disabled name="unit[]" value="" style="width: 4rem; margin: 0 auto;" type="text" class="form-control">
+                      <input disabled name="unit[]" value="" style="width: 5rem;" type="text" class="form-control">
                     </td>
                     <td>
                       <button type="button" class="btn btn-warning remove-row"
@@ -1503,289 +1504,149 @@ ORDER BY os.status;
       </div>
     </div>
   </div>
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const editButton = document.getElementById("editData");
-      const saveButton = document.getElementById("saveData");
-      const addDeviceButton = document.getElementById("add-device-number-main");
-      const containerMain = document.querySelector("#device-number-container-main");
-      const removeFields = document.querySelectorAll(".remove-field");
-      const manageColumnHeader = document.querySelector("th[scope='col'][style='display: none;']");
-
-      // Attach event listeners
-      if (editButton) editButton.addEventListener("click", handleEdit);
-      if (saveButton) saveButton.addEventListener("click", confirmSave);
-
-      document.addEventListener("click", handleDynamicActions);
-
-      function handleEdit(event) {
-        event.preventDefault();
-        toggleVisibility(editButton, saveButton);
-        toggleEditMode();
-      }
-
-      function confirmSave(event) {
-        if (!confirm("คุณต้องการบันทึกใช่หรือไม่")) {
-          event.preventDefault();
-        }
-      }
-
-      function toggleVisibility(hideElement, showElement) {
-        hideElement.classList.add("d-none");
-        showElement.classList.remove("d-none");
-      }
-
-      function toggleEditMode() {
-        const isDisabled = containerMain.querySelector("input")?.disabled ?? true;
-        containerMain.querySelectorAll("input").forEach(input => (input.disabled = !isDisabled));
-        toggleDisplay([addDeviceButton, ...removeFields], isDisabled);
-        toggleDisplay([manageColumnHeader], !isDisabled, "table-cell");
-
-        const deviceInputs = document.querySelectorAll("#device-number-container-main input");
-        deviceInputs.forEach(function(input) {
-          input.disabled = !input.disabled;
-        });
-
-      }
-
-      function toggleDisplay(elements, condition, displayStyle = "inline-block") {
-        elements.forEach(el => {
-          if (el) el.style.display = condition ? displayStyle : "none";
-        });
-      }
-
-      function handleDynamicActions(event) {
-        const target = event.target;
-
-        if (target && target.id.startsWith("add-device-number-")) {
-          const modalId = target.id.split("-").pop();
-          const container = document.querySelector(`#device-number-container-${modalId}`);
-          addDeviceRow(container);
-        }
-
-        if (target && target.classList.contains("remove-field")) {
-          removeDeviceRow(target);
-        }
-      }
-
-      function addDeviceRow(container) {
-        if (!container) return;
-        const newRow = document.createElement("div");
-        newRow.className = "d-flex device-number-row";
-        newRow.innerHTML = `
-        <input type="text" name="device_numbers[]" class="form-control mb-2" value="">
-        <button type="button" class="btn btn-warning p-2 ms-3 remove-field mb-2">ลบ</button>
-      `;
-        container.appendChild(newRow);
-      }
-
-      function removeDeviceRow(button) {
-        const row = button.closest(".device-number-row");
-        if (!row) return;
-
-        const hiddenInput = row.querySelector("input[type='text']");
-        if (hiddenInput && hiddenInput.name.startsWith("update_number_device")) {
-          const modalId = button.getAttribute("data-row-id");
-          const deviceId = button.getAttribute("data-device-id");
-
-          const deletedInput = document.createElement("input");
-          deletedInput.type = "text";
-          deletedInput.name = `deleted_devices[${modalId}][${deviceId}]`;
-          deletedInput.value = hiddenInput.value;
-          containerMain.appendChild(deletedInput);
-        }
-
-        row.remove();
-      }
-    });
-  </script>
 
   <script>
+    //ฟังก์ชั่น sumTotal ที่ทำงานเฉพาะ main
+    function calculateSumTotal() {
+      let total = 0;
+      const sumInputs = document.querySelectorAll('input.no-toggle'); //กำหนดได้ว่าเป็น sumTotal ของ field ไหน
+      sumInputs.forEach(input => {
+        total += parseFloat(input.value) || 0; // Make sure to handle NaN if value is empty
+      });
+      // Update the total display
+      document.getElementById('total-amount').textContent = total.toLocaleString(); //กำหนดได้ว่าเป็น sumTotal ของ field ไหน
+    }
+
+    //alear บันทึก
     document.getElementById('saveData').addEventListener('click', function(event) {
       const isConfirmed = confirm('คุณต้องการบันทึกใช่หรือไม่');
       if (!isConfirmed) {
+        event.preventDefault(); // Prevents the form from submitting
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const editButton = document.getElementById("editData"); //* //x เอาออกจาก function นี้
+      const saveButton = document.getElementById("saveData");
+      const manageColumnHeader = document.querySelector("th[scope='col'][style='display: none;']");
+
+      //v device number field
+      const addDeviceButton = document.getElementById("add-device-number-main");
+      const removeFields = document.querySelectorAll(".remove-field");
+
+
+      editButton.addEventListener("click", function(event) { //*
         event.preventDefault();
+        toggleEditMode();
+      });
+
+      function toggleEditMode() { //toggle device field in case standard blank and edit mode
+
+        editButton.style.display = "none";
+        saveButton.style.display = "inline-block";
+
+        //v device number field
+        const deviceInputs = document.querySelectorAll("#device-number-container-main input");
+        const isDisabled = document.querySelector("#device-number-container-main input").disabled;
+        deviceInputs.forEach(function(input) {
+          input.disabled = !input.disabled; //ทำให้ device field can toggle
+        });
+        removeFields.forEach(function(button) {
+          button.style.display = isDisabled ? "inline-block" : "none"; //ปุ่ม ลบ device
+        });
+        addDeviceButton.style.display = isDisabled ? "inline-block" : "none"; //ปุ่ม เพิ่ม device
+        //^ device number field
+
+        manageColumnHeader.style.display = isDisabled ? "table-cell" : "none"; //ปุ่มเพิ่ม column list table //x เอาออกจาก function นี้
+
+        //field อื่นๆ
+        ["report", "reason", "note"].forEach(function(name) {
+          const input = document.querySelector(`input[name='${name}']`)
+          if (input) {
+            input.disabled = !input.disabled;
+          }
+        });
+
+        //table
+        const tableInputs = document.querySelectorAll(
+          "#table-body-main input, #table-body-main textarea, #table-body-main select"
+        );
+
+        tableInputs.forEach(function(input) {
+          if (!input.classList.contains("no-toggle")) {
+            input.disabled = !input.disabled;
+          }
+        });
+
+        const removeButtons = document.querySelectorAll(".remove-row");
+        const addRowButton = document.getElementById("add-row-main");
+        removeButtons.forEach(function(button) {
+          button.style.display = button.style.display === "none" ? "inline-block" : "none";
+        });
+        addRowButton.style.display = addRowButton.style.display === "none" ? "inline-block" : "none";
+
+        const tableRows = document.querySelectorAll("#table-body-main tr");
+        console.log(tableRows)
+        tableRows.forEach((row) => {
+          const amountInput = row.querySelector('input[name*="amount"]');
+          const priceInput = row.querySelector('input[name*="price"]');
+          const totalInput = row.querySelector('input.no-toggle');
+
+          // Add event listeners for real-time calculation
+          const calculateTotal = () => {
+            const amount = parseFloat(amountInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            totalInput.value = (amount * price);
+            calculateSumTotal()
+          };
+
+          amountInput.addEventListener("input", calculateTotal);
+          priceInput.addEventListener("input", calculateTotal);
+
+        });
       }
-    });
 
-    function calculateSumTotal(tableBodyId) {
-      let total = 0;
-      const sumInputs = document.querySelectorAll(`#${tableBodyId} input.no-toggle`);
-      sumInputs.forEach(input => {
-        total += parseFloat(input.value) || 0;
-      });
+      document.addEventListener('click', function(e) { //ตรวจจับ event คลิ๊ก 
+        const deviceOptions = `<?= $deviceOptions ?>`; //สำหรับ <select>
 
-      const totalAmount = document.getElementById('total-amount');
-      totalAmount.textContent = total.toLocaleString();
-
-      console.log(total)
-    }
-
-    function attachRowEvents(row, tableBodyId) {
-      const amountInput = row.querySelector('input[name*="amount"]');
-      const priceInput = row.querySelector('input[name*="price"]');
-      const totalInput = row.querySelector('input.no-toggle');
-
-      const calculateRowTotal = () => {
-        const amount = parseFloat(amountInput.value) || 0;
-        const price = parseFloat(priceInput.value) || 0;
-        totalInput.value = (amount * price);
-        calculateSumTotal(tableBodyId);
-
-
-      };
-
-      if (amountInput && priceInput) {
-        amountInput.addEventListener("input", calculateRowTotal);
-        priceInput.addEventListener("input", calculateRowTotal);
-      }
-      calculateRowTotal();
-    }
-
-    // Attach events to all existing rows in a table body
-    function attachEventsToTable(tableBodyId) {
-
-      const tableRows = document.querySelectorAll(`#${tableBodyId} tr`);
-      tableRows.forEach((row) => attachRowEvents(row, tableBodyId));
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
-      attachEventsToTable('table-body-main');
-      attachEventsToTable('table-body-modal');
-    });
-
-    document.addEventListener("DOMContentLoaded", function() {
-      // const editButton = document.getElementById("editData");
-      // const addDeviceButton = document.getElementById("add-device-number-main");
-      // const removeFields = document.querySelectorAll(".remove-field");
-      // const manageColumnHeader = document.querySelector("th[scope='col'][style='display: none;']");
-
-      // editButton.addEventListener("click", function(event) {
-      //   event.preventDefault();
-      //   toggleEditMode();
-      // });
-
-//       function toggleEditMode() {
-//         const isDisabled = document.querySelector("#device-number-container-main input").disabled;
-//         removeFields.forEach(function(button) {
-//           button.style.display = isDisabled ? "inline-block" : "none";
-//         });
-//         addDeviceButton.style.display = isDisabled ? "inline-block" : "none";
-//         manageColumnHeader.style.display = isDisabled ? "table-cell" : "none";
-//       }
-
-//       document.addEventListener('click', function(e) {
-//         if (e.target && e.target.id.startsWith('add-device-number-')) {
-//           const modalId = e.target.id.split('-').pop();
-//           const container = document.querySelector(`#device-number-container-${modalId}`);
-//           const newRow = document.createElement('div');
-//           newRow.className = 'd-flex device-number-row';
-//           newRow.innerHTML = `
-// <input type="text" name="device_numbers[]" class="form-control mb-2" value="">
-// <button type="button" class="btn btn-warning p-2 ms-3 remove-field mb-2">ลบ</button>
-//         `;
-
-//           container.appendChild(newRow);
-//         }
-
-//         if (e.target && e.target.classList.contains('remove-field')) {
-//           const row = e.target.closest('.device-number-row');
-//           const hiddenInput = row.querySelector('input[type="text"]');
-
-//           if (hiddenInput && hiddenInput.name.startsWith('update_number_device')) {
-//             const modalId = e.target.getAttribute('data-row-id');
-//             const deviceId = e.target.getAttribute('data-device-id');
-//             const container = document.querySelector(`#device-number-container-main`);
-//             console.log(container)
-//             const deletedInput = document.createElement('input');
-//             deletedInput.type = 'hidden';
-//             deletedInput.name = `deleted_devices[${modalId}][${deviceId}]`;
-//             deletedInput.value = hiddenInput.value;
-//             container.appendChild(deletedInput);
-//           }
-
-//           row.remove();
-//         }
-//       });
-    });
-
-    document.addEventListener("DOMContentLoaded", function() {
-      // var editButton = document.getElementById("editData");
-      // var saveButton = document.getElementById("saveData");
-
-      // editButton.addEventListener("click", function(event) {
-      //   event.preventDefault();
-      //   toggleButtons();
-      //   enableInputs();
-      // });
-
-      // function toggleButtons() {
-      //   editButton.style.display = "none";
-      //   saveButton.style.display = "inline-block";
-      // }
-
-    });
-
-    function enableInputs() {
-      const deviceInputs = document.querySelectorAll("#device-number-container-main input");
-      deviceInputs.forEach(function(input) {
-        input.disabled = !input.disabled;
-      });
-
-      ["report", "reason", "note"].forEach(function(name) {
-        var input = document.querySelector(`input[name='${name}']`)
-        if (input) {
-          input.disabled = !input.disabled;
+        if (e.target && e.target.id.startsWith('add-device-number-')) { //add-device-number
+          const modalId = e.target.id.split('-').pop();
+          const container = document.querySelector(`#device-number-container-${modalId}`); //แยกว่าเป็น field ของอะไร
+          const newRow = document.createElement('div');
+          newRow.className = 'd-flex device-number-row';
+          newRow.innerHTML = `
+<input type="text" name="device_numbers[]" class="form-control mb-2" value="">
+<button type="button" class="btn btn-warning p-2 ms-3 remove-field mb-2">ลบ</button>
+        `;
+          container.appendChild(newRow);
         }
-      });
 
-      const tableInputs = document.querySelectorAll(
-        "#table-body-main input, #table-body-main textarea, #table-body-main select"
-      );
+        if (e.target && e.target.classList.contains('remove-field')) { //remove-field
+          const row = e.target.closest('.device-number-row');
+          const hiddenInput = row.querySelector('input[type="text"]');
 
-      tableInputs.forEach(function(input) {
-        if (!input.classList.contains("no-toggle")) {
-          input.disabled = !input.disabled;
+          if (hiddenInput && hiddenInput.name.startsWith('update_number_device')) { //check ว่าเป็น field update มั้ย
+            // Case 1: Soft delete
+            const modalId = e.target.getAttribute('data-row-id');
+            const deviceId = e.target.getAttribute('data-device-id');
+            const container = document.querySelector(`#device-number-container-main`);
+            console.log(container)
+            const deletedInput = document.createElement('input');
+            deletedInput.type = 'hidden';
+            deletedInput.name = `deleted_devices[${modalId}][${deviceId}]`;
+            deletedInput.value = hiddenInput.value;
+            container.appendChild(deletedInput);
+          }
+
+          // Remove row for both cases, remove row ตามปกติ
+          row.remove();
         }
-      });
 
-      var removeButtons = document.querySelectorAll(".remove-row");
-      var addRowButton = document.getElementById("add-row-main");
-      removeButtons.forEach(function(button) {
-        button.style.display = button.style.display === "none" ? "inline-block" : "none";
-      });
-      addRowButton.style.display = addRowButton.style.display === "none" ? "inline-block" : "none";
-
-      const tableRows = document.querySelectorAll("#table-body-main tr");
-      console.log(tableRows)
-      tableRows.forEach((row) => {
-        const amountInput = row.querySelector('input[name*="amount"]');
-        const priceInput = row.querySelector('input[name*="price"]');
-        const totalInput = row.querySelector('input.no-toggle');
-
-        const calculateTotal = () => {
-          const amount = parseFloat(amountInput.value) || 0;
-          const price = parseFloat(priceInput.value) || 0;
-          totalInput.value = (amount * price);
-          calculateSumTotal()
-        };
-
-        amountInput.addEventListener("input", calculateTotal);
-        priceInput.addEventListener("input", calculateTotal);
-      });
-    }
-
-    document.addEventListener("click", function(e) {
-      const deviceOptions = `<?= $deviceOptions ?>`;
-
-      if (e.target && e.target.id.startsWith('add-row-')) {
-        const modalId = e.target.id.split('-').pop();
-        const tableBodyId = `table-body-${modalId}`;
-        const tableBody = document.querySelector(`#${tableBodyId}`);
-        const rowIndex = tableBody.querySelectorAll("tr").length + 1;
-
-        const newRow = document.createElement("tr");
-        if (modalId == "main") {
+        if (e.target && e.target.id.startsWith('add-row-')) { //เพิ่มแถว
+          const modalId = e.target.id.split('-').pop();
+          const tableBody = document.querySelector(`#table-body-${modalId}`);
+          const rowIndex = tableBody.querySelectorAll("tr").length + 1;
+          const newRow = document.createElement("tr");
           newRow.innerHTML = `
             <td>${rowIndex}</td>
 <td>
@@ -1801,53 +1662,48 @@ ORDER BY os.status;
             <td><input style="width: 4rem; margin: 0 auto;" type="text" name="unit[]" class="form-control"></td>
             <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
         `;
-        } else {
-          newRow.innerHTML = `
-            <td>${rowIndex}</td>
-<td>
-          <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="list[]">
-            <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-            ${deviceOptions}
-          </select>
-        </td>
-            <td><textarea class="form-control" name="quality[]"></textarea></td>
-            <td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[]" class="form-control"></td>
-            <td><input style="width: 5rem; margin: 0 auto;" type="text" name="price[]" class="form-control"></td>
-            <td><input disabled value="" style="width: 5rem;" type="text" class="form-control no-toggle"></td>
-            <td><input style="width: 4rem; margin: 0 auto;" type="text" name="unit[]" class="form-control"></td>
-            <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
-        `;
+
+          tableBody.appendChild(newRow);
+
+          //ทำ oop ได้
+          const amountInput = newRow.querySelector('input[name="amount[]"]');
+          const priceInput = newRow.querySelector('input[name="price[]"]');
+          const totalInput = newRow.querySelector('input.no-toggle');
+
+          const calculateTotal = () => {
+            const amount = parseFloat(amountInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            totalInput.value = (amount * price);
+            calculateSumTotal()
+          };
+
+          amountInput.addEventListener("input", calculateTotal);
+          priceInput.addEventListener("input", calculateTotal);
+
+          bindAutoList();
         }
-        tableBody.appendChild(newRow);
 
-        attachRowEvents(newRow, tableBodyId);
-        bindAutoList();
-      }
+        if (event.target && event.target.classList.contains("remove-row")) { //ลบแถว
+          var row = event.target.closest("tr");
+          var hiddenInput = row.querySelector('select');
 
-
-    });
-
-    document.addEventListener("click", function(event) {
-      if (event.target && event.target.classList.contains("remove-row")) {
-        var row = event.target.closest("tr");
-        var hiddenInput = row.querySelector('select');
-
-        if (hiddenInput && hiddenInput.name.startsWith('update_list')) {
-          var rowId = event.target.getAttribute('data-items-row-id');
-          var itemId = event.target.getAttribute('data-items-id');
-          var tableBody = document.querySelector(`#table-body-main`);
-          if (tableBody) {
-            var deletedInput = document.createElement('input');
-            deletedInput.type = 'hidden';
-            deletedInput.name = `deleted_items[${rowId}][${itemId}]`;
-            deletedInput.value = itemId;
-            tableBody.appendChild(deletedInput);
+          if (hiddenInput && hiddenInput.name.startsWith('update_list')) {
+            var rowId = event.target.getAttribute('data-items-row-id');
+            var itemId = event.target.getAttribute('data-items-id');
+            var tableBody = document.querySelector(`#table-body-main`);
+            if (tableBody) {
+              var deletedInput = document.createElement('input');
+              deletedInput.type = 'hidden';
+              deletedInput.name = `deleted_items[${rowId}][${itemId}]`;
+              deletedInput.value = itemId;
+              tableBody.appendChild(deletedInput);
+            }
           }
-        }
 
-        row.remove();
-        calculateSumTotal()
-      }
+          row.remove();
+          calculateSumTotal()
+        }
+      });
     });
 
     function calculateRowTotal(rowElement) {
@@ -1859,7 +1715,7 @@ ORDER BY os.status;
       const price = parseFloat(priceInput?.value || 0);
 
       if (totalInput) {
-        totalInput.value = (amount * price);
+        totalInput.value = (amount * price); // Calculate and update sum
       }
       calculateSumTotal()
     }
@@ -1867,11 +1723,12 @@ ORDER BY os.status;
     function bindAutoList() {
       const deviceSelects = document.querySelectorAll(".device-select");
       deviceSelects.forEach(function(select) {
-        select.removeEventListener("change", handleDeviceChange);
+        select.removeEventListener("change", handleDeviceChange); // Prevent duplicate binding
         select.addEventListener("change", handleDeviceChange);
       });
     }
 
+    // Handle the onchange event for device-select
     function handleDeviceChange(event) {
       const models_id = event.target.value;
       const rowElement = event.target.closest("tr");
@@ -1915,6 +1772,7 @@ ORDER BY os.status;
         });
       }
     }
+    calculateSumTotal()
     bindAutoList();
   </script>
 
