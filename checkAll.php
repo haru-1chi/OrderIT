@@ -122,10 +122,10 @@ if (!isset($_SESSION["admin_log"])) {
                        GROUP BY order_id
                    ) AS latest_status
                    ON CONCAT(os1.timestamp, os1.id) = latest_status.latest AND os1.order_id = latest_status.order_id
-                   WHERE os1.status = 3
+                   WHERE os1.status = 1
                ) AS os ON od.id = os.order_id
                WHERE 
-               os.status = 3 AND
+               os.status = 1 AND
                (nd.is_deleted = 0 OR nd.is_deleted IS NULL)
                AND (oi.is_deleted = 0 OR oi.is_deleted IS NULL)
                ORDER BY nd.id, oi.id
@@ -208,7 +208,9 @@ if (!isset($_SESSION["admin_log"])) {
                                 <?php if (count($group) > 1): ?>
                                     <td> <button style="width: 40px; height: 40px;" class="btn toggle-expand rounded-circle" data-numberwork="<?= $numberWork ?>">></button> </td>
                                 <?php else: ?>
-                                    <td></td>
+                                    <td>
+                                        <p style="display: none;">></p>
+                                    </td>
                                 <?php endif; ?>
                                 <td><?= $numberWork ?></td>
                                 <td style="text-align:left;" data-id="<?= $firstRow["list_id"] ?>"><?= $firstRow["list"] ?></td>
@@ -218,11 +220,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <td><button type="button" class="btn btn-primary confirm-status" data-order-id="<?= $firstRow['id'] ?>">ยืนยัน</button></td>
                                 <td><button type="button" class="btn btn-success copy-row">เพิ่ม</button></td>
                             </tr>
-                            <tr></tr>
-                            <!-- Hidden rows -->
                             <?php for ($i = 1; $i < count($group); $i++): $item = $group[$i]; ?>
                                 <tr class="text-center expand-row d-none" data-numberwork="<?= $numberWork ?>">
-                                    <td></td>
+                                    <td>
+                                        <p style="display: none;">></p>
+                                    </td>
                                     <td></td>
                                     <td style="text-align:left;" data-id="<?= $item["list_id"] ?>"><?= $item["list"] ?></td>
                                     <td style="text-align:left;"><?= $item["quality"] ?></td>
@@ -239,10 +241,13 @@ if (!isset($_SESSION["admin_log"])) {
             <div class="card col-sm-12 col-md-12 col-lg-6 p-3" style="width: 730px">
                 <h1>ใบเบิกประจำสัปดาห์</h1>
                 <form action="system/insert.php" method="POST">
-                    <div class="d-flex mb-3">
-                        <input type="text" name="reason" placeholder="เหตุผลและความจำเป็น" class="form-control" style="width: 300px">
-                        <button type="submit" name="CheckAll" class="ms-2 btn btn-primary">บันทึกข้อมูล</button>
-                        <p> รวมทั้งหมด <span id="total-amount">0</span> บาท</p>
+                    <div class="mb-3 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <input type="text" name="reason" placeholder="เหตุผลและความจำเป็น" class="form-control" style="width: 300px">
+                            <button type="submit" name="CheckAll" class="ms-2 btn btn-primary">บันทึกข้อมูล</button>
+                        </div>
+
+                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
                     </div>
                     <input type="hidden" name="dateWithdraw" class="form-control thaiDateInput">
                     <input type="hidden" name="numberWork" value="<?= $newValueToCheck ?>">
@@ -255,12 +260,13 @@ if (!isset($_SESSION["admin_log"])) {
                                 <th class="text-center">จำนวน</th>
                                 <th class="text-center">ราคา</th>
                                 <th class="text-center">รวม</th>
+                                <th class="text-center">หน่วย</th>
                                 <th class="text-center"></th>
                             </tr>
                         </thead>
                         <tbody id="table-body" class="text-center">
                             <tr class="text-center">
-                                <td style="width: 200px">
+                                <td style="width: 150px">
                                     <select class="form-select device-select" name="list[]" data-row="1">
                                         <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                                         <?php
@@ -276,10 +282,11 @@ if (!isset($_SESSION["admin_log"])) {
                                         ?>
                                     </select>
                                 </td>
-                                <td style="width: 250px"><textarea rows="2" maxlength="60" name="quality[]" class="form-control"></textarea></td>
+                                <td><textarea rows="2" maxlength="60" name="quality[]" class="form-control"></textarea></td>
                                 <td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[]" class="form-control"></td>
                                 <td><input style="width: 5rem; margin: 0 auto;" type="text" name="price[]" class="form-control"></td>
                                 <td><input disabled style="width: 5rem;" type="text" class="form-control sum"></td>
+                                <td><input disabled name="unit[]" value="" style="width: 4rem;" type="text" class="form-control"></td>
                                 <td><button type="button" class="btn btn-danger" style="visibility: hidden;">ลบ</button></td>
                             </tr>
                         </tbody>
@@ -298,9 +305,10 @@ if (!isset($_SESSION["admin_log"])) {
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             new DataTable('#example', {
-                paging: true,
+                paging: false,
                 searching: true,
-                responsive: true
+                responsive: true,
+                ordering: false
             });
         });
     </script>
@@ -340,7 +348,18 @@ if (!isset($_SESSION["admin_log"])) {
                 total += parseFloat(input.value) || 0; // Make sure to handle NaN if value is empty
             });
             // Update the total display
-            document.getElementById('total-amount').textContent = `${total}`;
+            document.getElementById('total-amount').textContent = total.toLocaleString();
+        }
+
+        function updateRowIndexes() {
+            const rows = document.querySelectorAll('#table-body tr');
+            rows.forEach((row, index) => {
+                const rowIndex = index + 1;
+                const select = row.querySelector('select.device-select');
+                if (select) {
+                    select.setAttribute('data-row', rowIndex); // Update data-row attribute
+                }
+            });
         }
 
         // Adding a row
@@ -369,6 +388,7 @@ if (!isset($_SESSION["admin_log"])) {
             <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
         `;
             tableBody.appendChild(newRow);
+            updateRowIndexes();
             calculateTotal();
         });
 
@@ -406,7 +426,7 @@ if (!isset($_SESSION["admin_log"])) {
 
                             const sumInput = existingRow.querySelector('input.sum');
                             sumInput.value = (parseFloat(existingAmountInput.value) || 0) * (parseFloat(existingPriceInput.value) || 0);
-                            
+
                             calculateTotal();
                         }
                     });
@@ -459,6 +479,7 @@ if (!isset($_SESSION["admin_log"])) {
                     
                         `;
                             tableBody.appendChild(newRow);
+                            updateRowIndexes();
                             calculateTotal();
                         }
                     }
@@ -471,6 +492,7 @@ if (!isset($_SESSION["admin_log"])) {
             if (e.target && e.target.classList.contains('remove-row')) {
                 e.target.parentElement.parentElement.remove();
                 rowIndex--; // Adjust rowIndex to ensure consistent indexing
+                updateRowIndexes();
                 calculateTotal();
             }
         });
@@ -535,14 +557,15 @@ if (!isset($_SESSION["admin_log"])) {
                 }
             });
         });
+        updateRowIndexes();
     </script>
     <script>
         document.querySelectorAll('.confirm-status').forEach(button => {
             button.addEventListener('click', function() {
                 const orderId = this.dataset.orderId;
-                const status = 3;
+                const status = 2;
 
-                if (confirm("Are you sure you want to update the status to '3'?")) {
+                if (confirm("คุณต้องการยืนยันสถานะ 'ส่งเอกสารไปยังพัสดุแล้ว' หรือไม่")) {
                     fetch('update_status.php', {
                             method: 'POST',
                             headers: {

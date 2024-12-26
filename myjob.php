@@ -61,7 +61,7 @@ if (!isset($_SESSION["admin_log"])) {
         }
 
         .withdraw-modal {
-            width: 650px;
+            width: 850px;
             height: fit-content;
         }
     </style>
@@ -967,16 +967,20 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     $stmt->execute();
                                                                     $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                                     ?>
+                                                                    <div class="d-flex justify-content-end align-items-center my-2">
+                                                                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                    </div>
                                                                     <table id="pdf" style="width: 100%;" class="table">
                                                                         <thead class="table-primary">
                                                                             <tr class="text-center">
-                                                                                <th style="text-align:center;width: 10%;">ลำดับ</th>
-                                                                                <th style="text-align:center;width: 10%;">รายการ</th>
-                                                                                <th style="text-align:center;width: 20%;">คุณสมบัติ</th>
-                                                                                <th style="text-align:center;width: 10%;">จำนวน</th>
-                                                                                <th style="text-align:center; width: 10%;">ราคา</th>
-                                                                                <th style="text-align:center; width: 10%;">หน่วย</th>
-                                                                                <th style="text-align:center; width: 10%;"></th>
+                                                                                <th scope="col">ลำดับ</th>
+                                                                                <th scope="col">รายการ</th>
+                                                                                <th scope="col">คุณสมบัติ</th>
+                                                                                <th scope="col">จำนวน</th>
+                                                                                <th scope="col">ราคา</th>
+                                                                                <th scope="col">รวม</th>
+                                                                                <th scope="col">หน่วย</th>
+                                                                                <th scope="col"></th>
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody id="table-body-<?= $row['id'] ?>">
@@ -988,7 +992,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 <tr class="text-center">
                                                                                     <th scope="row"><?= $rowNumber++; ?></th>
                                                                                     <td>
-                                                                                        <select style="width: 120px" class="form-select device-select" name="update_list[<?= $row['id'] ?>][<?= $item['id'] ?>]" data-row="1">
+                                                                                        <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="update_list[<?= $row['id'] ?>][<?= $item['id'] ?>]" data-row="1">
                                                                                             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                                                                                             <!-- Populate options dynamically -->
                                                                                             <?php
@@ -1004,9 +1008,10 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                         </select>
                                                                                     </td>
                                                                                     <td><textarea rows="2" maxlength="60" name="update_quality[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control"><?= htmlspecialchars($item['quality']); ?></textarea></td>
-                                                                                    <td><input style="width: 2rem; margin: 0 auto;" type="text" name="update_amount[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['amount']); ?>"></td>
-                                                                                    <td><input style="width: 4rem;" type="text" name="update_price[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['price']); ?>"></td>
-                                                                                    <td><input style="width: 4rem;" type="text" name="update_unit[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['unit']); ?>"></td>
+                                                                                    <td><input style="width: 3rem; margin: 0 auto;" type="text" name="update_amount[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['amount']); ?>"></td>
+                                                                                    <td><input style="width: 5rem; margin: 0 auto;" type="text" name="update_price[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['price']); ?>"></td>
+                                                                                    <td><input disabled value="" style="width: 5rem; margin: 0 auto;" type="text" class="form-control no-toggle"></td>
+                                                                                    <td><input style="width: 4rem; margin: 0 auto;" type="text" name="update_unit[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['unit']); ?>"></td>
                                                                                     <td><button type="button" class="btn btn-warning remove-row"
                                                                                             data-items-id="<?= $item['id'] ?>"
                                                                                             data-items-row-id="<?= $row['id'] ?>"
@@ -1314,16 +1319,20 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     </div>
                                                                 </div>
 
+                                                                <div class="d-flex justify-content-end align-items-center my-2">
+                                                                    <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                </div>
                                                                 <table id="pdf" style="width: 100%;" class="table">
                                                                     <thead class="table-primary">
                                                                         <tr class="text-center">
-                                                                            <th style="text-align:center;width: 10%;">ลำดับ</th>
-                                                                            <th style="text-align:center;width: 10%;">รายการ</th>
-                                                                            <th style="text-align:center;width: 20%;">คุณสมบัติ</th>
-                                                                            <th style="text-align:center;width: 10%;">จำนวน</th>
-                                                                            <th style="text-align:center; width: 10%;">ราคา</th>
-                                                                            <th style="text-align:center; width: 10%;">หน่วย</th>
-                                                                            <th style="text-align:center; width: 10%;"></th>
+                                                                            <th scope="col">ลำดับ</th>
+                                                                            <th scope="col">รายการ</th>
+                                                                            <th scope="col">คุณสมบัติ</th>
+                                                                            <th scope="col">จำนวน</th>
+                                                                            <th scope="col">ราคา</th>
+                                                                            <th scope="col">รวม</th>
+                                                                            <th scope="col">หน่วย</th>
+                                                                            <th scope="col"></th>
                                                                         </tr>
                                                                     </thead>
 
@@ -1331,7 +1340,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                         <tr class="text-center">
                                                                             <th scope="row">1</th>
                                                                             <td>
-                                                                                <select style="width: 120px" class="form-select device-select" name="list[<?= $row['id'] ?>][]" data-row="1">
+                                                                                <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="list[<?= $row['id'] ?>][]" data-row="1">
                                                                                     <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                                                                                     <!-- Populate options dynamically -->
                                                                                     <?php
@@ -1347,10 +1356,11 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                     ?>
                                                                                 </select>
                                                                             </td>
-                                                                            <td><textarea style="width: 150px" rows="2" maxlength="60" name="quality[<?= $row['id'] ?>][]" class="form-control"></textarea></td>
-                                                                            <td><input style="width: 2rem; margin: 0 auto;" type="text" name="amount[<?= $row['id'] ?>][]" class="form-control"></td>
-                                                                            <td><input style="width: 4rem;" type="text" name="price[<?= $row['id'] ?>][]" class="form-control"></td>
-                                                                            <td><input style="width: 4rem;" type="text" name="unit[<?= $row['id'] ?>][]" class="form-control"></td>
+                                                                            <td><textarea rows="2" maxlength="60" name="quality[<?= $row['id'] ?>][]" class="form-control"></textarea></td>
+                                                                            <td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[<?= $row['id'] ?>][]" class="form-control"></td>
+                                                                            <td><input style="width: 5rem; margin: 0 auto;" type="text" name="price[<?= $row['id'] ?>][]" class="form-control"></td>
+                                                                            <td><input disabled value="" style="width: 5rem;" type="text" class="form-control no-toggle"></td>
+                                                                            <td><input style="width: 4rem; margin: 0 auto;" type="text" name="unit[<?= $row['id'] ?>][]" class="form-control"></td>
                                                                             <td><button type="button" class="btn btn-danger" style="visibility: hidden;">ลบ</button></td>
                                                                         </tr>
 
@@ -2241,16 +2251,20 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     $stmt->execute();
                                                                     $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                                     ?>
+                                                                    <div class="d-flex justify-content-end align-items-center my-2">
+                                                                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                    </div>
                                                                     <table id="pdf" style="width: 100%;" class="table">
                                                                         <thead class="table-primary">
                                                                             <tr class="text-center">
-                                                                                <th style="text-align:center;width: 10%;">ลำดับ</th>
-                                                                                <th style="text-align:center;width: 10%;">รายการ</th>
-                                                                                <th style="text-align:center;width: 20%;">คุณสมบัติ</th>
-                                                                                <th style="text-align:center;width: 10%;">จำนวน</th>
-                                                                                <th style="text-align:center; width: 10%;">ราคา</th>
-                                                                                <th style="text-align:center; width: 10%;">หน่วย</th>
-                                                                                <th style="text-align:center; width: 10%;"></th>
+                                                                                <th scope="col">ลำดับ</th>
+                                                                                <th scope="col">รายการ</th>
+                                                                                <th scope="col">คุณสมบัติ</th>
+                                                                                <th scope="col">จำนวน</th>
+                                                                                <th scope="col">ราคา</th>
+                                                                                <th scope="col">รวม</th>
+                                                                                <th scope="col">หน่วย</th>
+                                                                                <th scope="col"></th>
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody id="table-body-<?= $row['id'] ?>">
@@ -2262,7 +2276,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 <tr class="text-center">
                                                                                     <th scope="row"><?= $rowNumber++; ?></th>
                                                                                     <td>
-                                                                                        <select style="width: 120px" class="form-select device-select" name="update_list[<?= $row['id'] ?>][<?= $item['id'] ?>]" data-row="1">
+                                                                                        <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="update_list[<?= $row['id'] ?>][<?= $item['id'] ?>]" data-row="1">
                                                                                             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                                                                                             <!-- Populate options dynamically -->
                                                                                             <?php
@@ -2278,9 +2292,10 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                         </select>
                                                                                     </td>
                                                                                     <td><textarea rows="2" maxlength="60" name="update_quality[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control"><?= htmlspecialchars($item['quality']); ?></textarea></td>
-                                                                                    <td><input style="width: 2rem; margin: 0 auto;" type="text" name="update_amount[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['amount']); ?>"></td>
-                                                                                    <td><input style="width: 4rem;" type="text" name="update_price[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['price']); ?>"></td>
-                                                                                    <td><input style="width: 4rem;" type="text" name="update_unit[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['unit']); ?>"></td>
+                                                                                    <td><input style="width: 3rem; margin: 0 auto;" type="text" name="update_amount[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['amount']); ?>"></td>
+                                                                                    <td><input style="width: 5rem; margin: 0 auto;" type="text" name="update_price[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['price']); ?>"></td>
+                                                                                    <td><input disabled value="" style="width: 5rem;" type="text" class="form-control no-toggle"></td>
+                                                                                    <td><input style="width: 4rem; margin: 0 auto;" type="text" name="update_unit[<?= $row['id'] ?>][<?= $item['id'] ?>]" class="form-control" value="<?= htmlspecialchars($item['unit']); ?>"></td>
                                                                                     <td><button type="button" class="btn btn-warning remove-row"
                                                                                             data-items-id="<?= $item['id'] ?>"
                                                                                             data-items-row-id="<?= $row['id'] ?>"
@@ -2587,16 +2602,20 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     </div>
                                                                 </div>
 
+                                                                <div class="d-flex justify-content-end align-items-center my-2">
+                                                                    <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                </div>
                                                                 <table id="pdf" style="width: 100%;" class="table">
                                                                     <thead class="table-primary">
                                                                         <tr class="text-center">
-                                                                            <th style="text-align:center;width: 10%;">ลำดับ</th>
-                                                                            <th style="text-align:center;width: 10%;">รายการ</th>
-                                                                            <th style="text-align:center;width: 20%;">คุณสมบัติ</th>
-                                                                            <th style="text-align:center;width: 10%;">จำนวน</th>
-                                                                            <th style="text-align:center; width: 10%;">ราคา</th>
-                                                                            <th style="text-align:center; width: 10%;">หน่วย</th>
-                                                                            <th style="text-align:center; width: 10%;"></th>
+                                                                            <th scope="col">ลำดับ</th>
+                                                                            <th scope="col">รายการ</th>
+                                                                            <th scope="col">คุณสมบัติ</th>
+                                                                            <th scope="col">จำนวน</th>
+                                                                            <th scope="col">ราคา</th>
+                                                                            <th scope="col">รวม</th>
+                                                                            <th scope="col">หน่วย</th>
+                                                                            <th scope="col"></th>
                                                                         </tr>
                                                                     </thead>
 
@@ -2604,7 +2623,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                         <tr class="text-center">
                                                                             <th scope="row">1</th>
                                                                             <td>
-                                                                                <select style="width: 120px" class="form-select device-select" name="list[<?= $row['id'] ?>][]" data-row="1">
+                                                                                <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="list[<?= $row['id'] ?>][]" data-row="1">
                                                                                     <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                                                                                     <!-- Populate options dynamically -->
                                                                                     <?php
@@ -2620,10 +2639,11 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                     ?>
                                                                                 </select>
                                                                             </td>
-                                                                            <td><textarea style="width: 150px" rows="2" maxlength="60" name="quality[<?= $row['id'] ?>][]" class="form-control"></textarea></td>
-                                                                            <td><input style="width: 2rem; margin: 0 auto;" type="text" name="amount[<?= $row['id'] ?>][]" class="form-control"></td>
-                                                                            <td><input style="width: 4rem;" type="text" name="price[<?= $row['id'] ?>][]" class="form-control"></td>
-                                                                            <td><input style="width: 4rem;" type="text" name="unit[<?= $row['id'] ?>][]" class="form-control"></td>
+                                                                            <td><textarea rows="2" maxlength="60" name="quality[<?= $row['id'] ?>][]" class="form-control"></textarea></td>
+                                                                            <td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[<?= $row['id'] ?>][]" class="form-control"></td>
+                                                                            <td><input style="width: 5rem; margin: 0 auto;" type="text" name="price[<?= $row['id'] ?>][]" class="form-control"></td>
+                                                                            <td><input disabled value="" style="width: 5rem;" type="text" class="form-control no-toggle"></td>
+                                                                            <td><input style="width: 4rem; margin: 0 auto;" type="text" name="unit[<?= $row['id'] ?>][]" class="form-control"></td>
                                                                             <td><button type="button" class="btn btn-danger" style="visibility: hidden;">ลบ</button></td>
                                                                         </tr>
 
@@ -2808,7 +2828,7 @@ if (!isset($_SESSION["admin_log"])) {
                 newRow.innerHTML = `
 <th scope="row">${rowIndex}</th>
 <td>
-<select style="width: 120px" class="form-select device-select" name="list[${modalId}][]" data-row="${rowIndex}">
+<select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="list[${modalId}][]" data-row="${rowIndex}">
 <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
 <?php
 foreach ($result as $d) {
@@ -2820,9 +2840,10 @@ foreach ($result as $d) {
 </select>
 </td>
 <td><textarea rows="2" maxlength="60" name="quality[${modalId}][]" class="form-control"></textarea></td>
-<td><input style="width: 2rem; margin: 0 auto;" type="text" name="amount[${modalId}][]" class="form-control"></td>
-<td><input style="width: 4rem;" type="text" name="price[${modalId}][]" class="form-control"></td>
-<td><input style="width: 4rem;" type="text" name="unit[${modalId}][]" class="form-control"></td>
+<td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[${modalId}][]" class="form-control"></td>
+<td><input style="width: 5rem; margin: 0 auto;" name="price[${modalId}][]" class="form-control"></td>
+<td><input disabled value="" style="width: 5rem;" type="text" class="form-control no-toggle"></td>
+<td><input style="width: 4rem; margin: 0 auto;" type="text" name="unit[${modalId}][]" class="form-control"></td>
 <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
         `;
                 tableBody.appendChild(newRow);
@@ -2966,17 +2987,17 @@ foreach ($result as $d) {
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script>
-    $('#dataAll').DataTable({
-        order: [
-            [10, 'asc']
-        ] // assuming you want to sort the first column in ascending order
-    });
-    $('#dataAllUncomplete').DataTable({
-        order: [
-            [10, 'asc']
-        ] // assuming you want to sort the first column in ascending order
-    });
-</script>
+        $('#dataAll').DataTable({
+            order: [
+                [10, 'asc']
+            ] // assuming you want to sort the first column in ascending order
+        });
+        $('#dataAllUncomplete').DataTable({
+            order: [
+                [10, 'asc']
+            ] // assuming you want to sort the first column in ascending order
+        });
+    </script>
     <?php SC5() ?>
 </body>
 

@@ -476,7 +476,7 @@ ORDER BY os.status;
                 <input type="hidden" name="numberWork" value="<?= $numberWork ?>">
                 <button type="button" class="btn btn-primary me-3" data-bs-toggle="modal" data-bs-target="#copiedRequisitionModal">คัดลอกไปยังใบเบิกใหม่</button>
                 <button id="editData" type="button" class="btn btn-warning p-2" style="display: inline-block;">แก้ไข</button>
-                <button id="saveData" type="submit" name="updateData" class="btn btn-success p-2 me-3" style="display: none;">บันทึก</button>
+                <button id="saveData" type="submit" name="updateData" class="btn btn-success p-2" style="display: none;">บันทึก</button>
               </div>
 
             </div>
@@ -634,14 +634,18 @@ ORDER BY os.status;
                 ?>
               </tbody>
             </table>
-            <h4>รายการเบิก</h4>
+
+            <h4 class="m-0">รายการเบิก</h4>
 
             <a href="แบบฟอร์มคำขอส่งซ่อมบำรุงอุปกรณ์คอมพิวเตอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบซ่อม</a>
-            <a target="_blank" href="ใบเบิก.php?workid=<?= $numberWork ?>" class="btn btn-primary p-2">ใบเบิกครุภัณฑ์</a>
+            <a href="ใบเบิก.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบเบิกครุภัณฑ์</a>
             <a href="พิมพ์ใบครุภัณฑ์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบกำหนดคุณสมบัติ</a>
             <a href="เอกสารคณะกรรมการ.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">เอกสารคณะกรรมการ</a>
             <a href="พิมพ์สติ๊กเกอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">สติ๊กเกอร์งาน</a>
 
+            <div class="d-flex justify-content-end align-items-center my-2">
+              <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+            </div>
             <table id="pdf" style="width: 100%;" class="table">
               <thead class="text-center table-primary">
                 <tr>
@@ -689,13 +693,13 @@ ORDER BY os.status;
                         <input disabled name="update_amount[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['amount']) ?>" style="width: 3rem;" type="text" class="form-control">
                       </td>
                       <td>
-                        <input disabled name="update_price[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['price']) ?>" style="width: 4rem;" type="text" class="form-control">
+                        <input disabled name="update_price[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['price']) ?>" style="width: 5rem;" type="text" class="form-control">
                       </td>
                       <td>
-                        <input disabled value="<?= htmlspecialchars($item['total']) ?>" style="width: 4rem;" type="text" class="form-control no-toggle">
+                        <input disabled value="<?= htmlspecialchars($item['total']) ?>" style="width: 5rem;" type="text" class="form-control no-toggle">
                       </td>
                       <td>
-                        <input disabled name="update_unit[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['unit']) ?>" style="width: 5rem;" type="text" class="form-control">
+                        <input disabled name="update_unit[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['unit']) ?>" style="width: 4rem;" type="text" class="form-control">
                       </td>
                       <td>
                         <button type="button" class="btn btn-warning remove-row"
@@ -711,7 +715,7 @@ ORDER BY os.status;
                     <td>
                       <select
                         disabled
-                        style="width: 120px"
+                        style="width: 150px; margin: 0 auto;"
                         class="form-select device-select"
                         name="list[]">
                         <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
@@ -736,16 +740,16 @@ ORDER BY os.status;
                       <textarea disabled class="form-control" name="quality[]"></textarea>
                     </td>
                     <td>
-                      <input disabled name="amount[]" value="" style="width: 3rem;" type="text" class="form-control">
+                      <input disabled name="amount[]" value="" style="width: 3rem; margin: 0 auto;" type="text" class="form-control">
                     </td>
                     <td>
-                      <input disabled name="price[]" value="" style="width: 4rem;" type="text" class="form-control">
+                      <input disabled name="price[]" value="" style="width: 5rem; margin: 0 auto;" type="text" class="form-control">
                     </td>
                     <td>
-                      <input disabled style="width: 4rem;" type="text" class="form-control no-toggle">
+                      <input disabled style="width: 5rem; margin: 0 auto;" type="text" class="form-control no-toggle">
                     </td>
                     <td>
-                      <input disabled name="unit[]" value="" style="width: 5rem;" type="text" class="form-control">
+                      <input disabled name="unit[]" value="" style="width: 4rem; margin: 0 auto;" type="text" class="form-control">
                     </td>
                     <td>
                       <button type="button" class="btn btn-warning remove-row"
@@ -1039,7 +1043,9 @@ ORDER BY os.status;
                   <input value="-" type="text" name="note" class="form-control">
                 </div>
               </div>
-
+              <div class="d-flex justify-content-end align-items-center my-2">
+                <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+              </div>
               <table id="pdf" style="width: 100%;" class="table">
                 <thead class="table-primary">
                   <tr class="text-center">
@@ -1048,6 +1054,7 @@ ORDER BY os.status;
                     <th scope="col">คุณสมบัติ</th>
                     <th scope="col">จำนวน</th>
                     <th scope="col">ราคา</th>
+                    <th scope="col">รวม</th>
                     <th scope="col">หน่วย</th>
                     <th scope="col"></th>
                   </tr>
@@ -1058,7 +1065,7 @@ ORDER BY os.status;
                     <th scope="row">1</th>
                     <td>
                       <select
-                        style="width: 120px"
+                        style="width: 150px; margin: 0 auto;"
                         class="form-select device-select"
                         name="list[]">
                         <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
@@ -1077,21 +1084,19 @@ ORDER BY os.status;
                       </select>
                     </td>
                     <td>
-                      <textarea class="form-control" name="quality[]"></textarea>
+                      <textarea rows="2" maxlength="60" class="form-control" name="quality[]"></textarea>
                     </td>
                     <td>
-                      <input name="amount[]" value="" style="width: 3rem;" type="text" class="form-control">
+                      <input name="amount[]" value="" style="width: 3rem; margin: 0 auto;" type="text" class="form-control">
                     </td>
                     <td>
-                      <input name="price[]" value="" style="width: 4rem;" type="text" class="form-control">
+                      <input name="price[]" value="" style="width: 5rem; margin: 0 auto;" type="text" class="form-control">
                     </td>
+                    <td><input disabled value="" style="width: 5rem;" type="text" class="form-control no-toggle"></td>
                     <td>
-                      <input name="unit[]" value="" style="width: 5rem;" type="text" class="form-control">
+                      <input name="unit[]" value="" style="width: 4rem; margin: 0 auto;" type="text" class="form-control">
                     </td>
-                    <td>
-                      <button type="button" class="btn btn-warning remove-row"
-                        style="display: none;">ลบ</button>
-                    </td>
+                    <td><button type="button" class="btn btn-warning remove-row" style="visibility: hidden;">ลบ</button></td>
                   </tr>
                 </tbody>
               </table>
@@ -1432,16 +1437,20 @@ ORDER BY os.status;
                 $stmt->execute();
                 $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 ?>
+                <div class="d-flex justify-content-end align-items-center my-2">
+                  <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                </div>
                 <table id="pdf" style="width: 100%;" class="table">
                   <thead class="table-primary">
                     <tr class="text-center">
-                      <th style="text-align:center;width: 10%;">ลำดับ</th>
-                      <th style="text-align:center;width: 10%;">รายการ</th>
-                      <th style="text-align:center;width: 20%;">คุณสมบัติ</th>
-                      <th style="text-align:center;width: 10%;">จำนวน</th>
-                      <th style="text-align:center; width: 10%;">ราคา</th>
-                      <th style="text-align:center; width: 10%;">หน่วย</th>
-                      <th style="text-align:center; width: 10%;"></th>
+                      <th scope="col">ลำดับ</th>
+                      <th scope="col">รายการ</th>
+                      <th scope="col">คุณสมบัติ</th>
+                      <th scope="col">จำนวน</th>
+                      <th scope="col">ราคา</th>
+                      <th scope="col">รวม</th>
+                      <th scope="col">หน่วย</th>
+                      <th scope="col"></th>
                     </tr>
                   </thead>
                   <tbody id="table-body-copied">
@@ -1453,7 +1462,7 @@ ORDER BY os.status;
                       <tr class="text-center">
                         <th scope="row"><?= $rowNumber++; ?></th>
                         <td>
-                          <select style="width: 120px; margin: 0 auto;" class="form-select device-select" name="list[]" data-row="1">
+                          <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="list[]" data-row="1">
                             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                             <!-- Populate options dynamically -->
                             <?php
@@ -1470,10 +1479,10 @@ ORDER BY os.status;
                         </td>
                         <td><textarea rows="2" maxlength="60" name="quality[]" class="form-control"><?= htmlspecialchars($item['quality']); ?></textarea></td>
                         <td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[]" class="form-control" value="<?= htmlspecialchars($item['amount']); ?>"></td>
-                        <td><input style="width: 4rem; margin: 0 auto;" type="text" name="price[]" class="form-control" value="<?= htmlspecialchars($item['price']); ?>"></td>
+                        <td><input style="width: 5rem; margin: 0 auto;" type="text" name="price[]" class="form-control" value="<?= htmlspecialchars($item['price']); ?>"></td>
+                        <td><input disabled value="" style="width: 5rem;" type="text" class="form-control no-toggle"></td>
                         <td><input style="width: 4rem; margin: 0 auto;" type="text" name="unit[]" class="form-control" value="<?= htmlspecialchars($item['unit']); ?>"></td>
-                        <td><button type="button" class="btn btn-warning remove-row"
-                            style="visibility: <?= $isFirstRow ? 'hidden' : 'visible' ?>;">ลบ</button></td>
+                        <td><button type="button" class="btn btn-warning remove-row" style="visibility: <?= $isFirstRow ? 'hidden' : 'visible' ?>;">ลบ</button></td>
                       </tr>
                     <?php
                       $isFirstRow = false;
@@ -1496,6 +1505,22 @@ ORDER BY os.status;
   </div>
 
   <script>
+    function calculateSumTotal() {
+      let total = 0;
+      const sumInputs = document.querySelectorAll(`#${tableBodyId} input.no-toggle`);
+      sumInputs.forEach(input => {
+        total += parseFloat(input.value) || 0;
+      });
+      document.getElementById('total-amount').textContent = total.toLocaleString();
+    }
+
+    document.getElementById('saveData').addEventListener('click', function(event) {
+      const isConfirmed = confirm('คุณต้องการบันทึกใช่หรือไม่');
+      if (!isConfirmed) {
+        event.preventDefault();
+      }
+    });
+
     document.addEventListener("DOMContentLoaded", function() {
       const editButton = document.getElementById("editData");
       const addDeviceButton = document.getElementById("add-device-number-main");
@@ -1522,17 +1547,10 @@ ORDER BY os.status;
           const container = document.querySelector(`#device-number-container-${modalId}`);
           const newRow = document.createElement('div');
           newRow.className = 'd-flex device-number-row';
-          //           if (modalId == "copied") {
-          //             newRow.innerHTML = `
-          // <input type="text" name="copied_device_numbers[]" class="form-control mb-2" value="">
-          // <button type="button" class="btn btn-warning p-2 ms-3 remove-field mb-2">ลบ</button>
-          //         `;
-          //           } else {
           newRow.innerHTML = `
 <input type="text" name="device_numbers[]" class="form-control mb-2" value="">
 <button type="button" class="btn btn-warning p-2 ms-3 remove-field mb-2">ลบ</button>
         `;
-          // }
 
           container.appendChild(newRow);
         }
@@ -1542,10 +1560,10 @@ ORDER BY os.status;
           const hiddenInput = row.querySelector('input[type="text"]');
 
           if (hiddenInput && hiddenInput.name.startsWith('update_number_device')) {
-            // Case 1: Soft delete
             const modalId = e.target.getAttribute('data-row-id');
             const deviceId = e.target.getAttribute('data-device-id');
-            const container = document.querySelector(`#device-number-container`);
+            const container = document.querySelector(`#device-number-container-main`);
+            console.log(container)
             const deletedInput = document.createElement('input');
             deletedInput.type = 'hidden';
             deletedInput.name = `deleted_devices[${modalId}][${deviceId}]`;
@@ -1553,7 +1571,6 @@ ORDER BY os.status;
             container.appendChild(deletedInput);
           }
 
-          // Remove row for both cases
           row.remove();
         }
       });
@@ -1564,14 +1581,14 @@ ORDER BY os.status;
       var saveButton = document.getElementById("saveData");
 
       editButton.addEventListener("click", function(event) {
-        event.preventDefault(); // ป้องกัน default behavior ของการ click ลิงก์หรือ submit form
+        event.preventDefault();
         toggleButtons();
         enableInputs();
       });
 
       function toggleButtons() {
         editButton.style.display = "none";
-        saveButton.style.display = "inline-block"; // Change to inline-block to match layout
+        saveButton.style.display = "inline-block";
       }
 
     });
@@ -1613,11 +1630,11 @@ ORDER BY os.status;
         const priceInput = row.querySelector('input[name*="price"]');
         const totalInput = row.querySelector('input.no-toggle');
 
-        // Add event listeners for real-time calculation
         const calculateTotal = () => {
           const amount = parseFloat(amountInput.value) || 0;
           const price = parseFloat(priceInput.value) || 0;
-          totalInput.value = (amount * price); // Calculate total and update
+          totalInput.value = (amount * price);
+          calculateSumTotal()
         };
 
         amountInput.addEventListener("input", calculateTotal);
@@ -1626,7 +1643,7 @@ ORDER BY os.status;
     }
 
     document.addEventListener("click", function(e) {
-      const deviceOptions = `<?= $deviceOptions ?>`; //bug here
+      const deviceOptions = `<?= $deviceOptions ?>`;
 
       if (e.target && e.target.id.startsWith('add-row-')) {
         const modalId = e.target.id.split('-').pop();
@@ -1638,31 +1655,32 @@ ORDER BY os.status;
           newRow.innerHTML = `
             <td>${rowIndex}</td>
 <td>
-          <select style="width: 120px" class="form-select device-select" name="list[]">
+          <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="list[]">
             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
             ${deviceOptions}
           </select>
         </td>
             <td><textarea class="form-control" name="quality[]"></textarea></td>
-            <td><input style="width: 3rem;" type="text" name="amount[]" class="form-control"></td>
-            <td><input style="width: 4rem;" type="text" name="price[]" class="form-control"></td>
-            <td><input disabled style="width: 4rem;" type="text" class="form-control no-toggle"></td>
-            <td><input style="width: 5rem;" type="text" name="unit[]" class="form-control"></td>
+            <td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[]" class="form-control"></td>
+            <td><input style="width: 5rem; margin: 0 auto;" type="text" name="price[]" class="form-control"></td>
+            <td><input disabled style="width: 5rem;" type="text" class="form-control no-toggle"></td>
+            <td><input style="width: 4rem; margin: 0 auto;" type="text" name="unit[]" class="form-control"></td>
             <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
         `;
         } else {
           newRow.innerHTML = `
             <td>${rowIndex}</td>
 <td>
-          <select style="width: 120px" class="form-select device-select" name="list[]">
+          <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="list[]">
             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
             ${deviceOptions}
           </select>
         </td>
             <td><textarea class="form-control" name="quality[]"></textarea></td>
-            <td><input style="width: 3rem;" type="text" name="amount[]" class="form-control"></td>
-            <td><input style="width: 4rem;" type="text" name="price[]" class="form-control"></td>
-            <td><input style="width: 5rem;" type="text" name="unit[]" class="form-control"></td>
+            <td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[]" class="form-control"></td>
+            <td><input style="width: 5rem; margin: 0 auto;" type="text" name="price[]" class="form-control"></td>
+            <td><input disabled value="" style="width: 5rem;" type="text" class="form-control no-toggle"></td>
+            <td><input style="width: 4rem; margin: 0 auto;" type="text" name="unit[]" class="form-control"></td>
             <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
         `;
         }
@@ -1676,6 +1694,7 @@ ORDER BY os.status;
           const amount = parseFloat(amountInput.value) || 0;
           const price = parseFloat(priceInput.value) || 0;
           totalInput.value = (amount * price);
+          calculateSumTotal()
         };
 
         amountInput.addEventListener("input", calculateTotal);
@@ -1687,17 +1706,15 @@ ORDER BY os.status;
 
     });
 
-    // Remove Row
     document.addEventListener("click", function(event) {
       if (event.target && event.target.classList.contains("remove-row")) {
         var row = event.target.closest("tr");
         var hiddenInput = row.querySelector('select');
 
         if (hiddenInput && hiddenInput.name.startsWith('update_list')) {
-          // Case 1: Soft delete for saved rows
           var rowId = event.target.getAttribute('data-items-row-id');
           var itemId = event.target.getAttribute('data-items-id');
-          var tableBody = document.querySelector(`#table-body`);
+          var tableBody = document.querySelector(`#table-body-main`);
           if (tableBody) {
             var deletedInput = document.createElement('input');
             deletedInput.type = 'hidden';
@@ -1707,8 +1724,8 @@ ORDER BY os.status;
           }
         }
 
-        // Case 2: Direct removal of unsaved rows
         row.remove();
+        calculateSumTotal()
       }
     });
 
@@ -1721,19 +1738,19 @@ ORDER BY os.status;
       const price = parseFloat(priceInput?.value || 0);
 
       if (totalInput) {
-        totalInput.value = (amount * price); // Calculate and update sum
+        totalInput.value = (amount * price);
       }
+      calculateSumTotal()
     }
 
     function bindAutoList() {
       const deviceSelects = document.querySelectorAll(".device-select");
       deviceSelects.forEach(function(select) {
-        select.removeEventListener("change", handleDeviceChange); // Prevent duplicate binding
+        select.removeEventListener("change", handleDeviceChange);
         select.addEventListener("change", handleDeviceChange);
       });
     }
 
-    // Handle the onchange event for device-select
     function handleDeviceChange(event) {
       const models_id = event.target.value;
       const rowElement = event.target.closest("tr");
@@ -1766,6 +1783,7 @@ ORDER BY os.status;
                 rowElement.querySelector('input[name*="unit[]"]').value = data.unit;
               }
               calculateRowTotal(rowElement);
+              calculateSumTotal()
             } else {
               alert("ไม่สามารถดึงข้อมูลได้");
             }
@@ -1776,6 +1794,7 @@ ORDER BY os.status;
         });
       }
     }
+    calculateSumTotal()
     bindAutoList();
   </script>
 
