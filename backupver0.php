@@ -644,7 +644,7 @@ ORDER BY os.status;
             <a href="พิมพ์สติ๊กเกอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">สติ๊กเกอร์งาน</a>
 
             <div class="d-flex justify-content-end align-items-center my-2">
-              <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+              <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-main" class="fs-4 fw-bold text-primary">0</span> บาท</p>
             </div>
 
             <table id="pdf" style="width: 100%;" class="table">
@@ -1045,7 +1045,7 @@ ORDER BY os.status;
                 </div>
               </div>
               <div class="d-flex justify-content-end align-items-center my-2">
-                <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-modal" class="fs-4 fw-bold text-primary">0</span> บาท</p>
               </div>
               <table id="pdf" style="width: 100%;" class="table">
                 <thead class="table-primary">
@@ -1439,7 +1439,7 @@ ORDER BY os.status;
                 $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 ?>
                 <div class="d-flex justify-content-end align-items-center my-2">
-                  <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                  <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-copied" class="fs-4 fw-bold text-primary">0</span> บาท</p>
                 </div>
                 <table id="pdf" style="width: 100%;" class="table">
                   <thead class="table-primary">
@@ -1481,7 +1481,7 @@ ORDER BY os.status;
                         <td><textarea rows="2" maxlength="60" name="quality[]" class="form-control"><?= htmlspecialchars($item['quality']); ?></textarea></td>
                         <td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[]" class="form-control" value="<?= htmlspecialchars($item['amount']); ?>"></td>
                         <td><input style="width: 5rem; margin: 0 auto;" type="text" name="price[]" class="form-control" value="<?= htmlspecialchars($item['price']); ?>"></td>
-                        <td><input disabled value="" style="width: 5rem;" type="text" class="form-control no-toggle"></td>
+                        <td><input disabled value="<?= htmlspecialchars($item['amount'] * $item['price']) ?>" style="width: 5rem;" type="text" class="form-control no-toggle"></td>
                         <td><input style="width: 4rem; margin: 0 auto;" type="text" name="unit[]" class="form-control" value="<?= htmlspecialchars($item['unit']); ?>"></td>
                         <td><button type="button" class="btn btn-warning remove-row" style="visibility: <?= $isFirstRow ? 'hidden' : 'visible' ?>;">ลบ</button></td>
                       </tr>
@@ -1507,14 +1507,27 @@ ORDER BY os.status;
 
   <script>
     //ฟังก์ชั่น sumTotal ที่ทำงานเฉพาะ main
-    function calculateSumTotal() {
+    // function calculateSumTotal() {
+    //   let total = 0;
+    //   const sumInputs = document.querySelectorAll('input.no-toggle'); //กำหนดได้ว่าเป็น sumTotal ของ field ไหน
+    //   sumInputs.forEach(input => {
+    //     total += parseFloat(input.value) || 0; // Make sure to handle NaN if value is empty
+    //   });
+    //   // Update the total display
+    //   document.getElementById('total-amount').textContent = total.toLocaleString(); //กำหนดได้ว่าเป็น sumTotal ของ field ไหน
+    // }
+
+    function calculateSumTotal(tableBodyId, totalAmountId) {
       let total = 0;
-      const sumInputs = document.querySelectorAll('input.no-toggle'); //กำหนดได้ว่าเป็น sumTotal ของ field ไหน
-      sumInputs.forEach(input => {
-        total += parseFloat(input.value) || 0; // Make sure to handle NaN if value is empty
-      });
-      // Update the total display
-      document.getElementById('total-amount').textContent = total.toLocaleString(); //กำหนดได้ว่าเป็น sumTotal ของ field ไหน
+      const tableBody = document.getElementById(tableBodyId);
+      if (tableBody) {
+        const sumInputs = tableBody.querySelectorAll('input.no-toggle'); // Target only inputs within the specific table body
+        sumInputs.forEach(input => {
+          total += parseFloat(input.value) || 0; // Ensure NaN values are treated as 0
+        });
+        // Update the corresponding total display
+        document.getElementById(totalAmountId).textContent = total.toLocaleString();
+      }
     }
 
     //alear บันทึก
@@ -1534,6 +1547,11 @@ ORDER BY os.status;
       const addDeviceButton = document.getElementById("add-device-number-main");
       const removeFields = document.querySelectorAll(".remove-field");
 
+      const tableRows = document.querySelectorAll('[id^="table-body-"] tr');
+      console.log(tableRows)
+      tableRows.forEach((row) => {
+        calculateRowTotal(row)
+      });
 
       editButton.addEventListener("click", function(event) { //*
         event.preventDefault();
@@ -1584,26 +1602,6 @@ ORDER BY os.status;
           button.style.display = button.style.display === "none" ? "inline-block" : "none";
         });
         addRowButton.style.display = addRowButton.style.display === "none" ? "inline-block" : "none";
-
-        const tableRows = document.querySelectorAll("#table-body-main tr");
-        console.log(tableRows)
-        tableRows.forEach((row) => {
-          const amountInput = row.querySelector('input[name*="amount"]');
-          const priceInput = row.querySelector('input[name*="price"]');
-          const totalInput = row.querySelector('input.no-toggle');
-
-          // Add event listeners for real-time calculation
-          const calculateTotal = () => {
-            const amount = parseFloat(amountInput.value) || 0;
-            const price = parseFloat(priceInput.value) || 0;
-            totalInput.value = (amount * price);
-            calculateSumTotal()
-          };
-
-          amountInput.addEventListener("input", calculateTotal);
-          priceInput.addEventListener("input", calculateTotal);
-
-        });
       }
 
       document.addEventListener('click', function(e) { //ตรวจจับ event คลิ๊ก 
@@ -1662,24 +1660,9 @@ ORDER BY os.status;
             <td><input style="width: 4rem; margin: 0 auto;" type="text" name="unit[]" class="form-control"></td>
             <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
         `;
-
           tableBody.appendChild(newRow);
 
-          //ทำ oop ได้
-          const amountInput = newRow.querySelector('input[name="amount[]"]');
-          const priceInput = newRow.querySelector('input[name="price[]"]');
-          const totalInput = newRow.querySelector('input.no-toggle');
-
-          const calculateTotal = () => {
-            const amount = parseFloat(amountInput.value) || 0;
-            const price = parseFloat(priceInput.value) || 0;
-            totalInput.value = (amount * price);
-            calculateSumTotal()
-          };
-
-          amountInput.addEventListener("input", calculateTotal);
-          priceInput.addEventListener("input", calculateTotal);
-
+          calculateRowTotal(newRow)
           bindAutoList();
         }
 
@@ -1706,18 +1689,32 @@ ORDER BY os.status;
       });
     });
 
-    function calculateRowTotal(rowElement) {
-      const amountInput = rowElement.querySelector('input[name*="amount["]');
-      const priceInput = rowElement.querySelector('input[name*="price["]');
+    function calculateRowTotalAutoList(rowElement) {
+      const amountInput = rowElement.querySelector('input[name*="amount"]');
+      const priceInput = rowElement.querySelector('input[name*="price"]');
       const totalInput = rowElement.querySelector('input.no-toggle');
 
       const amount = parseFloat(amountInput?.value || 0);
       const price = parseFloat(priceInput?.value || 0);
+      totalInput.value = (amount * price);
 
-      if (totalInput) {
-        totalInput.value = (amount * price); // Calculate and update sum
-      }
       calculateSumTotal()
+    }
+
+    function calculateRowTotal(rowElement) {
+      const amountInput = rowElement.querySelector('input[name*="amount"]');
+      const priceInput = rowElement.querySelector('input[name*="price"]');
+      const totalInput = rowElement.querySelector('input.no-toggle');
+
+      const calculateTotal = () => {
+        const amount = parseFloat(amountInput?.value) || 0;
+        const price = parseFloat(priceInput?.value) || 0;
+        totalInput.value = (amount * price);
+        calculateSumTotal()
+      };
+
+      amountInput.addEventListener("input", calculateTotal);
+      priceInput.addEventListener("input", calculateTotal);
     }
 
     function bindAutoList() {
@@ -1760,7 +1757,7 @@ ORDER BY os.status;
                 rowElement.querySelector('input[name*="price[]"]').value = data.price;
                 rowElement.querySelector('input[name*="unit[]"]').value = data.unit;
               }
-              calculateRowTotal(rowElement);
+              calculateRowTotalAutoList(rowElement);
               calculateSumTotal()
             } else {
               alert("ไม่สามารถดึงข้อมูลได้");
