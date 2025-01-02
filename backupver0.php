@@ -1517,17 +1517,20 @@ ORDER BY os.status;
     //   document.getElementById('total-amount').textContent = total.toLocaleString(); //กำหนดได้ว่าเป็น sumTotal ของ field ไหน
     // }
 
-    function calculateSumTotal(tableBodyId, totalAmountId) {
+    function calculateSumTotal(tableBodyId) {
       let total = 0;
-      const tableBody = document.getElementById(tableBodyId);
-      if (tableBody) {
-        const sumInputs = tableBody.querySelectorAll('input.no-toggle'); // Target only inputs within the specific table body
-        sumInputs.forEach(input => {
-          total += parseFloat(input.value) || 0; // Ensure NaN values are treated as 0
-        });
-        // Update the corresponding total display
-        document.getElementById(totalAmountId).textContent = total.toLocaleString();
+      const sumInputs = document.querySelectorAll(`#${tableBodyId} input.no-toggle`);
+      sumInputs.forEach(input => {
+        total += parseFloat(input.value) || 0;
+      });
+
+      // Dynamically get the specific total-amount element
+      const totalAmount = document.querySelector(`#total-amount-${tableBodyId.split('-').pop()}`);
+      if (totalAmount) {
+        totalAmount.textContent = total.toLocaleString();
       }
+
+      console.log(`Total for ${tableBodyId}: `, total);
     }
 
     //alear บันทึก
@@ -1539,7 +1542,7 @@ ORDER BY os.status;
     });
 
     document.addEventListener("DOMContentLoaded", function() {
-      const editButton = document.getElementById("editData"); //* //x เอาออกจาก function นี้
+      const editButton = document.getElementById("editData");
       const saveButton = document.getElementById("saveData");
       const manageColumnHeader = document.querySelector("th[scope='col'][style='display: none;']");
 
@@ -1548,15 +1551,19 @@ ORDER BY os.status;
       const removeFields = document.querySelectorAll(".remove-field");
 
       const tableRows = document.querySelectorAll('[id^="table-body-"] tr');
-      console.log(tableRows)
       tableRows.forEach((row) => {
-        calculateRowTotal(row)
+        const tableBodyId = row.closest('tbody').id;
+        calculateRowTotal(row, tableBodyId);
       });
 
       editButton.addEventListener("click", function(event) { //*
         event.preventDefault();
         toggleEditMode();
       });
+
+      calculateSumTotal('table-body-main')
+      calculateSumTotal('table-body-modal')
+      calculateSumTotal('table-body-copied')
 
       function toggleEditMode() { //toggle device field in case standard blank and edit mode
 
@@ -1598,10 +1605,11 @@ ORDER BY os.status;
 
         const removeButtons = document.querySelectorAll(".remove-row");
         const addRowButton = document.getElementById("add-row-main");
+        
         removeButtons.forEach(function(button) {
-          button.style.display = button.style.display === "none" ? "inline-block" : "none";
+          button.style.display = isDisabled ? "inline-block" : "none";
         });
-        addRowButton.style.display = addRowButton.style.display === "none" ? "inline-block" : "none";
+        addRowButton.style.display = isDisabled ? "inline-block" : "none";
       }
 
       document.addEventListener('click', function(e) { //ตรวจจับ event คลิ๊ก 
@@ -1662,34 +1670,36 @@ ORDER BY os.status;
         `;
           tableBody.appendChild(newRow);
 
-          calculateRowTotal(newRow)
+          calculateRowTotal(newRow, `table-body-${modalId}`);
           bindAutoList();
         }
 
         if (event.target && event.target.classList.contains("remove-row")) { //ลบแถว
           var row = event.target.closest("tr");
-          var hiddenInput = row.querySelector('select');
+          const tableBody = row.closest("tbody");
+          const tableBodyId = tableBody.id;
 
+          var hiddenInput = row.querySelector('select');
           if (hiddenInput && hiddenInput.name.startsWith('update_list')) {
             var rowId = event.target.getAttribute('data-items-row-id');
             var itemId = event.target.getAttribute('data-items-id');
-            var tableBody = document.querySelector(`#table-body-main`);
-            if (tableBody) {
+            var mainTableBody = document.querySelector(`#table-body-main`);
+            if (mainTableBody) {
               var deletedInput = document.createElement('input');
               deletedInput.type = 'hidden';
               deletedInput.name = `deleted_items[${rowId}][${itemId}]`;
               deletedInput.value = itemId;
-              tableBody.appendChild(deletedInput);
+              mainTableBody.appendChild(deletedInput);
             }
           }
 
           row.remove();
-          calculateSumTotal()
+          calculateSumTotal(tableBodyId)
         }
       });
     });
 
-    function calculateRowTotalAutoList(rowElement) {
+    function calculateRowTotalAutoList(rowElement, tableBodyId) {
       const amountInput = rowElement.querySelector('input[name*="amount"]');
       const priceInput = rowElement.querySelector('input[name*="price"]');
       const totalInput = rowElement.querySelector('input.no-toggle');
@@ -1698,23 +1708,28 @@ ORDER BY os.status;
       const price = parseFloat(priceInput?.value || 0);
       totalInput.value = (amount * price);
 
-      calculateSumTotal()
+      calculateSumTotal(tableBodyId);
     }
 
-    function calculateRowTotal(rowElement) {
-      const amountInput = rowElement.querySelector('input[name*="amount"]');
-      const priceInput = rowElement.querySelector('input[name*="price"]');
-      const totalInput = rowElement.querySelector('input.no-toggle');
+    function calculateRowTotal(row, tableBodyId) {
+      const amountInput = row.querySelector('input[name*="amount"]');
+      const priceInput = row.querySelector('input[name*="price"]');
+      const totalInput = row.querySelector('input.no-toggle');
 
-      const calculateTotal = () => {
-        const amount = parseFloat(amountInput?.value) || 0;
-        const price = parseFloat(priceInput?.value) || 0;
-        totalInput.value = (amount * price);
-        calculateSumTotal()
+      const calculate = () => {
+        const amount = parseFloat(amountInput.value) || 0;
+        const price = parseFloat(priceInput.value) || 0;
+        totalInput.value = (amount * price); // Ensure toFixed for consistent formatting
+        calculateSumTotal(tableBodyId); // Update the table's total
       };
 
-      amountInput.addEventListener("input", calculateTotal);
-      priceInput.addEventListener("input", calculateTotal);
+      // Attach event listeners for recalculating row totals
+      if (amountInput && priceInput) {
+        amountInput.addEventListener("input", calculate);
+        priceInput.addEventListener("input", calculate);
+      }
+
+      calculate(); // Initial calculation when the row is added
     }
 
     function bindAutoList() {
@@ -1757,8 +1772,7 @@ ORDER BY os.status;
                 rowElement.querySelector('input[name*="price[]"]').value = data.price;
                 rowElement.querySelector('input[name*="unit[]"]').value = data.unit;
               }
-              calculateRowTotalAutoList(rowElement);
-              calculateSumTotal()
+              calculateRowTotalAutoList(rowElement, `table-body-${modalId}`);
             } else {
               alert("ไม่สามารถดึงข้อมูลได้");
             }
@@ -1769,7 +1783,6 @@ ORDER BY os.status;
         });
       }
     }
-    calculateSumTotal()
     bindAutoList();
   </script>
 
