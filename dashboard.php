@@ -35,7 +35,7 @@ if (!isset($_SESSION["admin_log"])) {
     <?php bs5() ?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-    <!-- <script>
+    <script>
         // Function to reload the page
         function refreshPage() {
             location.reload();
@@ -43,7 +43,7 @@ if (!isset($_SESSION["admin_log"])) {
 
         // Set timeout to refresh the page every 1 minute (60000 milliseconds)
         setTimeout(refreshPage, 30000);
-    </script> -->
+    </script>
     <style>
         body {
             background-color: #F9FDFF;
@@ -332,6 +332,13 @@ if (!isset($_SESSION["admin_log"])) {
                                 foreach ($result as $row) {
                                     $timeString = $row['time_report'];
                                     $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
+                                
+                                    $takeTimeString = $row['take'];
+                                    if (empty($takeTimeString) || $takeTimeString === '00:00:00.000000') {
+                                        $takeFormatted = '-';
+                                    } else {
+                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . ' น.';
+                                    }
                                 ?>
                                     <tr class="text-center">
                                         <td><?= $row['id'] ?></td>
@@ -340,7 +347,7 @@ if (!isset($_SESSION["admin_log"])) {
                                         <td><?= $row['report'] ?></td>
                                         <td><?= $row['depart_name'] ?></td>
                                         <td><?= $timeFormatted ?></td>
-                                        <td><?= $row['take'] ?></td>
+                                        <td><?= $takeFormatted ?></td>
                                     </tr>
                                 <?php
                                 }
@@ -513,6 +520,13 @@ if (!isset($_SESSION["admin_log"])) {
                                 foreach ($result as $row) {
                                     $timeString = $row['time_report'];
                                     $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
+
+                                    $takeTimeString = $row['take'];
+                                    if (empty($takeTimeString) || $takeTimeString === '00:00:00.000000') {
+                                        $takeFormatted = '-';
+                                    } else {
+                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . ' น.';
+                                    }
                                     if ($row['status'] == 5) {
 
                                 ?>
@@ -536,7 +550,7 @@ if (!isset($_SESSION["admin_log"])) {
                                             <td><?= $row['report'] ?></td>
                                             <td><?= $row['depart_name'] ?></td>
                                             <td><?= $timeFormatted ?></td>
-                                            <td><?= $row['take'] ?></td>
+                                            <td><?= $takeFormatted ?></td>
 
                                         </tr>
                                 <?php }
@@ -578,6 +592,13 @@ if (!isset($_SESSION["admin_log"])) {
                                 foreach ($result as $row) {
                                     $timeString = $row['time_report'];
                                     $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
+
+                                    $takeTimeString = $row['take'];
+                                    if (empty($takeTimeString) || $takeTimeString === '00:00:00.000000') {
+                                        $takeFormatted = '-';
+                                    } else {
+                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . ' น.';
+                                    }
                                     if ($row['status'] == 3) {
                                 ?>
                                         <tr class="text-center">
@@ -600,7 +621,7 @@ if (!isset($_SESSION["admin_log"])) {
                                             <td><?= $row['report'] ?></td>
                                             <td><?= $row['depart_name'] ?></td>
                                             <td><?= $timeFormatted ?></td>
-                                            <td><?= $row['take'] ?></td>
+                                            <td><?= $takeFormatted ?></td>
 
                                         </tr>
                                 <?php }
@@ -641,10 +662,13 @@ if (!isset($_SESSION["admin_log"])) {
                                 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                                 foreach ($result as $row) {
+                                    $takeTimeString = $row['take'];
                                     $closeTimeString = $row['close_date'];
-                                    if (empty($closeTimeString) || $closeTimeString === '00:00:00.000000') {
-                                        $closeTimeFormatted = '-'; // Placeholder for null/invalid times
+                                    if (empty($closeTimeString) || $closeTimeString === '00:00:00.000000' || empty($takeTimeString) || $takeTimeString === '00:00:00.000000') {
+                                        $takeFormatted = '-';
+                                        $closeTimeFormatted = '-';
                                     } else {
+                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . ' น.';
                                         $closeTimeFormatted = date('H:i', strtotime($closeTimeString)) . ' น.';
                                     }
                                     if ($row['status'] == 4) {
@@ -667,7 +691,7 @@ if (!isset($_SESSION["admin_log"])) {
                                             </td>
                                             <td><?= $row['report'] ?></td>
                                             <td><?= $row['depart_name'] ?></td>
-                                            <td><?= $row['take'] ?></td>
+                                            <td><?= $takeFormatted ?></td>
                                             <td><?= $closeTimeFormatted ?></td>
                                         </tr>
                                 <?php }

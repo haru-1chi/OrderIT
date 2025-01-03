@@ -173,7 +173,6 @@ if (!isset($_SESSION["admin_log"])) {
                     $devices = array_values($devices);
                     $items = array_values($items);
                 } else {
-                    echo "No records found.";
                     $order = [];
                     $devices = [];
                     $items = [];
@@ -189,6 +188,7 @@ if (!isset($_SESSION["admin_log"])) {
                             <th class="text-center">คุณสมบัติ</th>
                             <th class="text-center">จำนวน</th>
                             <th class="text-center">ราคา</th>
+                            <th class="text-center" style="display: none;">หน่วย</th>
                             <th class="text-center">ส่งแล้ว</th>
                             <th class="text-center">เพิ่มไปยังใบเบิกประจำสัปดาห์</th>
                         </tr>
@@ -204,7 +204,7 @@ if (!isset($_SESSION["admin_log"])) {
                             $firstRow = $group[0];
                         ?>
                             <!-- First row with toggle button -->
-                            <tr class="text-center">
+                            <tr class="text-center" data-unit="<?= $firstRow['unit'] ?>">
                                 <?php if (count($group) > 1): ?>
                                     <td> <button style="width: 40px; height: 40px;" class="btn toggle-expand rounded-circle" data-numberwork="<?= $numberWork ?>">></button> </td>
                                 <?php else: ?>
@@ -217,11 +217,17 @@ if (!isset($_SESSION["admin_log"])) {
                                 <td style="text-align:left;"><?= $firstRow["quality"] ?></td>
                                 <td><?= $firstRow["amount"] ?></td>
                                 <td><?= $firstRow["price"] ?></td>
+                                <td style="display: none;"><?= $firstRow["unit"] ?></td>
                                 <td><button type="button" class="btn btn-primary confirm-status" data-order-id="<?= $firstRow['id'] ?>">ยืนยัน</button></td>
-                                <td><button type="button" class="btn btn-success copy-row">เพิ่ม</button></td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input copy-row-switch" type="checkbox" data-numberwork="<?= $numberWork ?>" id="switch-<?= $numberWork ?>">
+                                        <label class="form-check-label" for="switch-<?= $numberWork ?>"></label>
+                                    </div>
+                                </td>
                             </tr>
                             <?php for ($i = 1; $i < count($group); $i++): $item = $group[$i]; ?>
-                                <tr class="text-center expand-row d-none" data-numberwork="<?= $numberWork ?>">
+                                <tr class="text-center expand-row d-none" data-numberwork="<?= $numberWork ?>" data-unit="<?= $item['unit'] ?>">
                                     <td>
                                         <p style="display: none;">></p>
                                     </td>
@@ -230,6 +236,7 @@ if (!isset($_SESSION["admin_log"])) {
                                     <td style="text-align:left;"><?= $item["quality"] ?></td>
                                     <td><?= $item["amount"] ?></td>
                                     <td><?= $item["price"] ?></td>
+                                    <td style="display: none;"><?= $item["unit"] ?></td>
                                     <td></td>
                                     <td></td>
                                 </tr>
@@ -286,7 +293,7 @@ if (!isset($_SESSION["admin_log"])) {
                                 <td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[]" class="form-control"></td>
                                 <td><input style="width: 5rem; margin: 0 auto;" type="text" name="price[]" class="form-control"></td>
                                 <td><input disabled style="width: 5rem;" type="text" class="form-control sum"></td>
-                                <td><input disabled name="unit[]" value="" style="width: 4rem;" type="text" class="form-control"></td>
+                                <td><input name="unit[]" style="width: 4rem;" type="text" class="form-control"></td>
                                 <td><button type="button" class="btn btn-danger" style="visibility: hidden;">ลบ</button></td>
                             </tr>
                         </tbody>
@@ -385,12 +392,156 @@ if (!isset($_SESSION["admin_log"])) {
             <td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[]" class="form-control"></td>
             <td><input style="width: 5rem; margin: 0 auto;" type="text" name="price[]" class="form-control"></td>
             <td><input disabled style="width: 5rem;" type="text" class="form-control sum"></td>
+            <td><input name="unit[]" style="width: 4rem;" type="text" class="form-control"></td>
             <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
         `;
             tableBody.appendChild(newRow);
             updateRowIndexes();
             calculateTotal();
         });
+
+        //case ที่เหลือ แทนที่/ย้อนกลับแถวแรกที่ว่าง, เพิ่ม/ลบจำนวน
+        const toggledStates = new Map(); //เก็บค่าสำหรับ
+        document.querySelector('#example').addEventListener('change', function(e) {
+            if (e.target && e.target.classList.contains('copy-row-switch')) {
+                const switchElement = e.target;
+                const isChecked = switchElement.checked;
+                const numberWork = switchElement.getAttribute('data-numberwork');
+
+                if (isChecked) {
+                    // Toggle ON: Copy rows
+                    const row = switchElement.closest('tr');
+                    const relatedRows = Array.from(document.querySelectorAll(`tr[data-numberwork="${numberWork}"]`));
+                    relatedRows.unshift(row);
+
+                    // Store related rows in Map for later removal
+                    toggledStates.set(numberWork, relatedRows);
+                    relatedRows.forEach(row => {
+                        const listId = row.querySelector('td:nth-child(3)').getAttribute('data-id');
+                        const listName = row.querySelector('td:nth-child(3)').textContent.trim();
+                        const quality = row.querySelector('td:nth-child(4)').textContent.trim();
+                        const amount = parseInt(row.querySelector('td:nth-child(5)').textContent.trim(), 10) || 0;
+                        const price = parseFloat(row.querySelector('td:nth-child(6)').textContent.trim()) || 0;
+                        const unit = row.querySelector('td:nth-child(7)').textContent.trim();
+
+                        const tableBody = document.querySelector('#table-body');
+                        const existingRows = Array.from(tableBody.querySelectorAll('tr'));
+
+                        let isUpdated = false;
+
+                        existingRows.forEach(existingRow => {
+                            const existingName = existingRow.querySelector('select option:checked').textContent.trim();
+                            const existingQuality = existingRow.querySelector('textarea').value.trim();
+                            const existingAmountInput = existingRow.querySelector('input[name="amount[]"]');
+                            const existingPriceInput = existingRow.querySelector('input[name="price[]"]');
+
+                            if (existingName === listName && existingQuality === quality) {
+                                const existingAmount = parseInt(existingAmountInput.value, 10) || 0;
+                                existingAmountInput.value = existingAmount + amount; // Update the amount
+                                isUpdated = true;
+
+                                const sumInput = existingRow.querySelector('input.sum');
+                                sumInput.value = (parseFloat(existingAmountInput.value) || 0) * (parseFloat(existingPriceInput.value) || 0);
+
+                                calculateTotal();
+                            }
+                        });
+
+                        if (!isUpdated) {
+                            const firstRow = tableBody.querySelector('tr');
+                            const isFirstRowEmpty = firstRow && !(
+                                firstRow.querySelector('select').value ||
+                                firstRow.querySelector('textarea').value.trim() ||
+                                firstRow.querySelector('input[name="amount[]"]').value.trim() ||
+                                firstRow.querySelector('input[name="price[]"]').value.trim() ||
+                                firstRow.querySelector('input[name="unit[]"]').value.trim()
+                            );
+                            if (isFirstRowEmpty) {
+                                tableBody.removeChild(firstRow);
+                                const newRow = createRow(listId, listName, quality, amount, price, unit, numberWork);
+                                tableBody.appendChild(newRow);
+                                updateRowIndexes();
+                                calculateTotal();
+                            } else {
+                                // Create a new row if no match is found
+                                const newRow = createRow(listId, listName, quality, amount, price, unit, numberWork);
+                                tableBody.appendChild(newRow);
+                                updateRowIndexes();
+                                calculateTotal();
+                            }
+                        }
+                    });
+                } else {
+                    // Toggle OFF: Undo copy rows
+                    const rowsToRemove = toggledStates.get(numberWork);
+                    if (rowsToRemove) {
+                        // Remove from toggledStates
+                        const tableBody = document.querySelector('#table-body');
+                        const existingRows = Array.from(tableBody.querySelectorAll('tr'));
+                        if (existingRows) {
+                            existingRows.forEach(existingRow => {
+                                const existingName = existingRow.querySelector('select option:checked').textContent.trim();
+                                const existingQuality = existingRow.querySelector('textarea').value.trim();
+                                const existingAmountInput = existingRow.querySelector('input[name="amount[]"]');
+                                const existingPriceInput = existingRow.querySelector('input[name="price[]"]');
+
+                                rowsToRemove.forEach(row => {
+                                    const listName = row.querySelector('td:nth-child(3)').textContent.trim();
+                                    const quality = row.querySelector('td:nth-child(4)').textContent.trim();
+                                    const amount = parseInt(row.querySelector('td:nth-child(5)').textContent.trim(), 10) || 0;
+
+                                    if (existingName === listName && existingQuality === quality) {
+                                        const existingAmount = parseInt(existingAmountInput.value, 10) || 0;
+                                        existingAmountInput.value = existingAmount - amount; // Subtract the amount
+                                        const sumInput = existingRow.querySelector('input.sum');
+                                        sumInput.value = (parseFloat(existingAmountInput.value) || 0) * (parseFloat(existingPriceInput.value) || 0);
+
+                                        // Check if existingAmountInput is 0, remove the row
+                                        if (parseInt(existingAmountInput.value, 10) === 0) {
+                                            existingRow.remove();
+                                        }
+                                        calculateTotal();
+                                    }
+                                });
+                            });
+                        }
+                    }
+
+                    // Check if the table body has no rows
+                    const tableBody = document.querySelector('#table-body');
+                    if (tableBody.querySelectorAll('tr').length === 0) {
+                        // Create an empty row
+                        const newRow = createRow(null, null, '', '', '', '', null);
+                        tableBody.appendChild(newRow);
+                        calculateTotal();
+                    }
+                }
+            }
+        });
+
+        function createRow(listId, listName, quality, amount, price, unit, numberWork) {
+            const newRow = document.createElement('tr');
+            newRow.className = 'text-center copied-row';
+            newRow.setAttribute('data-numberwork', numberWork);
+            newRow.innerHTML = `
+    <td>
+        <select class="form-select device-select" name="list[]" data-row="0">
+            <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+            <?php foreach ($result as $d): ?>
+                <option value="<?= $d['models_id'] ?>" ${listId === '<?= $d['models_id'] ?>' ? 'selected' : ''}>
+                    <?= $d['models_name'] ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </td>
+    <td><textarea rows="2" maxlength="60" name="quality[]" class="form-control">${quality}</textarea></td>
+    <td><input value="${amount}" style="width: 3rem; margin: 0 auto;" type="text" name="amount[]" class="form-control"></td>
+    <td><input value="${price}" style="width: 5rem; margin: 0 auto;" type="text" name="price[]" class="form-control"></td>
+    <td><input disabled style="width: 5rem;" type="text" class="form-control sum" value="${amount * price}"></td>
+    <td><input value="${unit}" name="unit[]" style="width: 4rem;" type="text" class="form-control"></td>
+    <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>`;
+            return newRow;
+        }
 
         // Event listener for copying a row (copy-row button)
         document.querySelector('#example').addEventListener('click', function(e) {
@@ -459,7 +610,8 @@ if (!isset($_SESSION["admin_log"])) {
                         } else {
                             // Create a new row if no match is found
                             const newRow = document.createElement('tr');
-                            newRow.className = 'text-center';
+                            newRow.className = 'text-center copied-row';
+                            newRow.setAttribute('data-numberwork', numberWork);
                             newRow.innerHTML = `
                         <td>
                             <select class="form-select device-select" name="list[]" data-row="${rowIndex}">
@@ -476,7 +628,7 @@ if (!isset($_SESSION["admin_log"])) {
                         <td><input value="${price}" style="width: 5rem; margin: 0 auto;" type="text" name="price[]" class="form-control"></td>
                         <td><input disabled style="width: 5rem;" type="text" class="form-control sum" value="${amount*price}"></td>
                         <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
-                    
+
                         `;
                             tableBody.appendChild(newRow);
                             updateRowIndexes();
@@ -486,6 +638,100 @@ if (!isset($_SESSION["admin_log"])) {
                 });
             }
         });
+
+        // document.querySelector('#example').addEventListener('click', function(e) {
+        //     if (e.target && e.target.classList.contains('copy-row')) {
+        //         const row = e.target.closest('tr');
+        //         const numberWork = row.querySelector('td:nth-child(2)').textContent.trim();
+
+        //         const relatedRows = Array.from(document.querySelectorAll(`tr[data-numberwork="${numberWork}"]`));
+        //         relatedRows.unshift(row);
+
+        //         relatedRows.forEach(row => {
+        //             const listId = row.querySelector('td:nth-child(3)').getAttribute('data-id');
+        //             const listName = row.querySelector('td:nth-child(3)').textContent.trim();
+        //             const quality = row.querySelector('td:nth-child(4)').textContent.trim();
+        //             const amount = parseInt(row.querySelector('td:nth-child(5)').textContent.trim(), 10) || 0;
+        //             const price = parseFloat(row.querySelector('td:nth-child(6)').textContent.trim()) || 0;
+
+        //             const tableBody = document.querySelector('#table-body');
+        //             const existingRows = Array.from(tableBody.querySelectorAll('tr'));
+
+        //             let isUpdated = false;
+
+        //             existingRows.forEach(existingRow => {
+        //                 const existingName = existingRow.querySelector('select option:checked').textContent.trim();
+        //                 const existingQuality = existingRow.querySelector('textarea').value.trim();
+        //                 const existingAmountInput = existingRow.querySelector('input[name="amount[]"]');
+        //                 const existingPriceInput = existingRow.querySelector('input[name="price[]"]');
+
+        //                 if (existingName === listName && existingQuality === quality) {
+        //                     const existingAmount = parseInt(existingAmountInput.value, 10) || 0;
+        //                     existingAmountInput.value = existingAmount + amount; // Update the amount
+        //                     isUpdated = true;
+
+        //                     const sumInput = existingRow.querySelector('input.sum');
+        //                     sumInput.value = (parseFloat(existingAmountInput.value) || 0) * (parseFloat(existingPriceInput.value) || 0);
+
+        //                     calculateTotal();
+        //                 }
+        //             });
+
+        //             if (!isUpdated) {
+        //                 const firstRow = tableBody.querySelector('tr');
+        //                 const isFirstRowEmpty = firstRow && !(
+        //                     firstRow.querySelector('select').value ||
+        //                     firstRow.querySelector('textarea').value.trim() ||
+        //                     firstRow.querySelector('input[name="amount[]"]').value.trim() ||
+        //                     firstRow.querySelector('input[name="price[]"]').value.trim()
+        //                 );
+
+        //                 if (isFirstRowEmpty) {
+        //                     const select = firstRow.querySelector('select');
+        //                     const amountInput = firstRow.querySelector('input[name="amount[]"]');
+        //                     const priceInput = firstRow.querySelector('input[name="price[]"]');
+
+        //                     select.value = listId;
+        //                     firstRow.querySelector('textarea').value = quality;
+        //                     firstRow.querySelector('input[name="amount[]"]').value = amount;
+        //                     firstRow.querySelector('input[name="price[]"]').value = price;
+        //                     const sumInput = firstRow.querySelector('input.sum');
+
+        //                     amountInput.value = amount;
+        //                     priceInput.value = price;
+
+        //                     sumInput.value = (parseFloat(amountInput.value) || 0) * (parseFloat(priceInput.value) || 0);
+        //                     calculateTotal();
+        //                 } else {
+        //                     // Create a new row if no match is found
+        //                     const newRow = document.createElement('tr');
+        //                     newRow.className = 'text-center';
+        //                     newRow.innerHTML = `
+        //                 <td>
+        //                     <select class="form-select device-select" name="list[]" data-row="${rowIndex}">
+        //                         <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+        //                         <?php foreach ($result as $d): ?>
+        //                             <option value="<?= $d['models_id'] ?>" ${listId === '<?= $d['models_id'] ?>' ? 'selected' : ''}>
+        //                                 <?= $d['models_name'] ?>
+        //                             </option>
+        //                         <?php endforeach; ?>
+        //                     </select>
+        //                 </td>
+        //                 <td><textarea rows="2" maxlength="60" name="quality[]" class="form-control">${quality}</textarea></td>
+        //                 <td><input value="${amount}" style="width: 3rem; margin: 0 auto;" type="text" name="amount[]" class="form-control"></td>
+        //                 <td><input value="${price}" style="width: 5rem; margin: 0 auto;" type="text" name="price[]" class="form-control"></td>
+        //                 <td><input disabled style="width: 5rem;" type="text" class="form-control sum" value="${amount*price}"></td>
+        //                 <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
+
+        //                 `;
+        //                     tableBody.appendChild(newRow);
+        //                     updateRowIndexes();
+        //                     calculateTotal();
+        //                 }
+        //             }
+        //         });
+        //     }
+        // });
 
         // Remove row functionality
         document.getElementById('table-body').addEventListener('click', function(e) {

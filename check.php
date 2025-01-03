@@ -82,7 +82,7 @@ if (!isset($_SESSION["admin_log"])) {
   $d = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
   // Step 2: Default to the latest numberWork if none is provided
-  $numberWork = $_GET['numberWork'] ?? $d[0]['numberWork'];
+  $numberWork = $_GET['numberWork'] ?? $d[0]['numberWork'] ?? null;
 
   $sql = "
 SELECT 
@@ -162,7 +162,6 @@ ORDER BY nd.id, oi.id
     $devices = array_values($devices);
     $items = array_values($items);
   } else {
-    echo "No records found.";
     $order = [];
     $devices = [];
     $items = [];
@@ -465,305 +464,324 @@ ORDER BY os.status;
         </div>
 
         <div class="card col-sm-12 col-md-12 col-lg-6">
-          <form action="system/update.php" method="POST">
-            <div class="d-flex justify-content-between align-items-center my-3">
-              <div>
-                <h4><?= $numberWork ?></h4>
+          <?php
+          if (!empty($order)) {
+
+          ?>
+            <form action="system/update.php" method="POST">
+              <div class="d-flex justify-content-between align-items-center my-3">
+                <div>
+                  <h4><?= $numberWork ?></h4>
+                </div>
+
+                <div>
+                  <input type="hidden" name="id" value="<?= $order['id'] ?>">
+                  <input type="hidden" name="numberWork" value="<?= $numberWork ?>">
+                  <button type="button" class="btn btn-primary me-3" data-bs-toggle="modal" data-bs-target="#copiedRequisitionModal">คัดลอกไปยังใบเบิกใหม่</button>
+                  <button id="editData" type="button" class="btn btn-warning p-2" style="display: inline-block;">แก้ไข</button>
+                  <button id="saveData" type="submit" name="updateData" class="btn btn-success p-2" style="display: none;">บันทึก</button>
+                </div>
+
               </div>
 
-              <div>
-                <input type="hidden" name="id" value="<?= $order['id'] ?>">
-                <input type="hidden" name="numberWork" value="<?= $numberWork ?>">
-                <button type="button" class="btn btn-primary me-3" data-bs-toggle="modal" data-bs-target="#copiedRequisitionModal">คัดลอกไปยังใบเบิกใหม่</button>
-                <button id="editData" type="button" class="btn btn-warning p-2" style="display: inline-block;">แก้ไข</button>
-                <button id="saveData" type="submit" name="updateData" class="btn btn-success p-2" style="display: none;">บันทึก</button>
+              <div class="row">
+                <div class="col-6">
+                  <label>วันที่ออกใบเบิก</label>
+                  <input type="date" class="form-control"
+                    value="<?= $order['dateWithdraw'] ?? '' ?>" disabled>
+                </div>
+
+                <div class="col-6">
+                  <label>ผู้รับเรื่อง</label>
+                  <input type="text" class="form-control"
+                    value="<?= $order['refUsername'] ?? '' ?>" disabled>
+                </div>
               </div>
 
-            </div>
-
-            <div class="row">
-              <div class="col-6">
-                <label>วันที่ออกใบเบิก</label>
-                <input type="date" class="form-control"
-                  value="<?= $order['dateWithdraw'] ?? '' ?>" disabled>
-              </div>
-
-              <div class="col-6">
-                <label>ผู้รับเรื่อง</label>
-                <input type="text" class="form-control"
-                  value="<?= $order['refUsername'] ?? '' ?>" disabled>
-              </div>
-            </div>
-
-            <div class="row">
-              <div class="col-6">
-                <label>ส่งซ่อมอุปกรณ์ คอมพิวเตอร์</label>
-                <input type="text" class="form-control"
-                  value="<?= $order['device_name'] ?? '' ?>" disabled>
-              </div>
-              <div class="col-6">
-                <label>หมายเลขพัสดุ / ครุภัณฑ์</label>
-                <div id="device-number-container-main">
-                  <?php if (!empty($devices)) { ?>
-                    <?php foreach ($devices as $index => $device): ?>
+              <div class="row">
+                <div class="col-6">
+                  <label>ส่งซ่อมอุปกรณ์ คอมพิวเตอร์</label>
+                  <input type="text" class="form-control"
+                    value="<?= $order['device_name'] ?? '' ?>" disabled>
+                </div>
+                <div class="col-6">
+                  <label>หมายเลขพัสดุ / ครุภัณฑ์</label>
+                  <div id="device-number-container-main">
+                    <?php if (!empty($devices)) { ?>
+                      <?php foreach ($devices as $index => $device): ?>
+                        <div class="d-flex device-number-row">
+                          <input type="text" name="update_number_device[<?= $order['id'] ?>][<?= $device['numberDevice_id'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($device['numberDevice']) ?>" disabled>
+                          <button type="button" class="btn btn-warning p-2 ms-3 mb-2 remove-field"
+                            data-device-id="<?= $device['numberDevice_id'] ?>"
+                            data-row-id="<?= $order['id'] ?>"
+                            style="display: none; visibility: <?= $index === 0 ? 'hidden' : 'visible' ?>;">ลบ</button>
+                        </div>
+                      <?php endforeach; ?>
+                    <?php  } else { ?>
                       <div class="d-flex device-number-row">
-                        <input type="text" name="update_number_device[<?= $order['id'] ?>][<?= $device['numberDevice_id'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($device['numberDevice']) ?>" disabled>
-                        <button type="button" class="btn btn-warning p-2 ms-3 mb-2 remove-field"
-                          data-device-id="<?= $device['numberDevice_id'] ?>"
-                          data-row-id="<?= $order['id'] ?>"
-                          style="display: none; visibility: <?= $index === 0 ? 'hidden' : 'visible' ?>;">ลบ</button>
+                        <input type="text" name="device_numbers[]" class="form-control mb-2" value="" disabled>
+                        <button type="button" class="btn btn-danger p-2 ms-3 remove-field" style="visibility: hidden;">ลบ</button>
                       </div>
-                    <?php endforeach; ?>
-                  <?php  } else { ?>
-                    <div class="d-flex device-number-row">
-                      <input type="text" name="device_numbers[]" class="form-control mb-2" value="" disabled>
-                      <button type="button" class="btn btn-danger p-2 ms-3 remove-field" style="visibility: hidden;">ลบ</button>
-                    </div>
-                  <?php } ?>
-                </div>
-                <div class="d-flex justify-content-end">
-                  <button type="button" id="add-device-number-main" class="btn btn-success mt-2 align-self-end" style="display: none;">+ เพิ่มหมายเลขครุภัณฑ์</button>
+                    <?php } ?>
+                  </div>
+                  <div class="d-flex justify-content-end">
+                    <button type="button" id="add-device-number-main" class="btn btn-success mt-2 align-self-end" style="display: none;">+ เพิ่มหมายเลขครุภัณฑ์</button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="row">
-              <div class="col-12">
-                <label>อาการที่รับแจ้ง</label>
-                <input type="text" class="form-control" name="report"
-                  value="<?= $order['report'] ?>" disabled>
+              <div class="row">
+                <div class="col-12">
+                  <label>อาการที่รับแจ้ง</label>
+                  <input type="text" class="form-control" name="report"
+                    value="<?= $order['report'] ?>" disabled>
+                </div>
               </div>
-            </div>
 
-            <div class="row">
-              <div class="col-6">
-                <label>รายละเอียด</label>
-                <input type="text" class="form-control" name="reason"
-                  value="<?= $order['reason'] ?>" disabled>
+              <div class="row">
+                <div class="col-6">
+                  <label>รายละเอียด</label>
+                  <input type="text" class="form-control" name="reason"
+                    value="<?= $order['reason'] ?>" disabled>
+                </div>
+                <div class="col-6">
+                  <label>หน่วยงานที่แจ้ง</label>
+                  <input type="text" class="form-control"
+                    value="<?= $order['depart_name'] ?>" disabled>
+                </div>
               </div>
-              <div class="col-6">
-                <label>หน่วยงานที่แจ้ง</label>
-                <input type="text" class="form-control"
-                  value="<?= $order['depart_name'] ?>" disabled>
-              </div>
-            </div>
 
-            <div class="row">
-              <div class="col-12">
-                <label>หมายเหตุ</label>
-                <input type="text" class="form-control" name="note"
-                  value="<?= $order['note'] ?>" disabled>
+              <div class="row">
+                <div class="col-12">
+                  <label>หมายเหตุ</label>
+                  <input type="text" class="form-control" name="note"
+                    value="<?= $order['note'] ?>" disabled>
+                </div>
               </div>
-            </div>
-            <?php
-            $order_id = $order['id'];
-            $sql = "
+              <?php
+              $order_id = $order['id'];
+              $sql = "
     SELECT status, timestamp 
     FROM order_status 
     WHERE order_id = :order_id 
     ORDER BY status";
-            $stmt = $conn->prepare(query: $sql);
-            $stmt->execute(['order_id' => $order_id]);
-            $statuses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+              $stmt = $conn->prepare(query: $sql);
+              $stmt->execute(['order_id' => $order_id]);
+              $statuses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Check if the order is canceled (status = 6 exists)
-            $isCanceled = in_array(6, array_column($statuses, 'status'));
+              // Check if the order is canceled (status = 6 exists)
+              $isCanceled = in_array(6, array_column($statuses, 'status'));
 
-            // Define status names
-            $statusNames = [
-              1 => "รอรับเอกสารจากหน่วยงาน",
-              2 => "รอส่งเอกสารไปพัสดุ",
-              3 => "รอพัสดุสั่งของ",
-              4 => "รอหมายเลขครุภัณฑ์",
-              5 => "ปิดงาน",
-              6 => "ยกเลิก"
-            ];
+              // Define status names
+              $statusNames = [
+                1 => "รอรับเอกสารจากหน่วยงาน",
+                2 => "รอส่งเอกสารไปพัสดุ",
+                3 => "รอพัสดุสั่งของ",
+                4 => "รอหมายเลขครุภัณฑ์",
+                5 => "ปิดงาน",
+                6 => "ยกเลิก"
+              ];
 
-            // Current status from records
-            $currentStatus = !empty($statuses) ? max(array_column($statuses, 'status')) : 0;
-            ?>
-            <h4 class="mt-3">สถานะ</h4>
-            <table id="pdf" style="width: 100%;" class="table">
-              <thead class="table-warning">
-                <tr class="text-center">
-                  <th scope="col">สถานะ</th>
-                  <th scope="col">วันที่อัพเดตสถานะ</th>
-                  <th scope="col">ปุ่มยืนยัน</th>
-                </tr>
-              </thead>
-              <tbody class="text-center">
-                <?php
-                foreach ($statusNames as $key => $name) {
-                  $record = array_filter($statuses, fn($row) => $row['status'] == $key);
-                  $timestamp = $record ? reset($record)['timestamp'] : null;
+              // Current status from records
+              $currentStatus = !empty($statuses) ? max(array_column($statuses, 'status')) : 0;
+              ?>
+              <h4 class="mt-3">สถานะ</h4>
+              <table id="pdf" style="width: 100%;" class="table">
+                <thead class="table-warning">
+                  <tr class="text-center">
+                    <th scope="col">สถานะ</th>
+                    <th scope="col">วันที่อัพเดตสถานะ</th>
+                    <th scope="col">ปุ่มยืนยัน</th>
+                  </tr>
+                </thead>
+                <tbody class="text-center">
+                  <?php
+                  foreach ($statusNames as $key => $name) {
+                    $record = array_filter($statuses, fn($row) => $row['status'] == $key);
+                    $timestamp = $record ? reset($record)['timestamp'] : null;
 
-                  echo "<tr>";
-                  echo "<td>{$name}</td>";
-                  echo "<td>" . ($timestamp
-                    ? date('d/m/Y', strtotime($timestamp))
-                    : (($key == $currentStatus + 1 || $key == 6) && !$isCanceled ? date('d/m/Y') : '-')) . "</td>";
-                  echo "<td>";
+                    echo "<tr>";
+                    echo "<td>{$name}</td>";
+                    echo "<td>" . ($timestamp
+                      ? date('d/m/Y', strtotime($timestamp))
+                      : (($key == $currentStatus + 1 || $key == 6) && !$isCanceled ? date('d/m/Y') : '-')) . "</td>";
+                    echo "<td>";
 
-                  if ($isCanceled) {
-                    if ($key == 6) {
-                      echo "<p class='text-danger'>ยกเลิกใบเบิกแล้ว</p>";
+                    if ($isCanceled) {
+                      if ($key == 6) {
+                        echo "<p class='text-danger'>ยกเลิกใบเบิกแล้ว</p>";
+                      } else {
+                        if ($timestamp) {
+                          echo "<p>ยืนยันแล้ว</p>";
+                        } else {
+                          echo "<p >-</p>";
+                        }
+                      }
                     } else {
                       if ($timestamp) {
                         echo "<p>ยืนยันแล้ว</p>";
-                      } else {
-                        echo "<p >-</p>";
+                      } elseif ($key == $currentStatus + 1 && $key <= 5) {
+                        echo "<button type='button' class='btn mb-3 btn-success confirm-btn' data-status='{$key}' data-order-id='{$order_id}'>รอการยืนยัน</button>";
+                      } elseif ($key > $currentStatus + 1 && $key <= 5) {
+                        echo "<button type='button' class='btn mb-3 btn-secondary' disabled>รอดำเนินการก่อนหน้า</button>";
                       }
                     }
-                  } else {
-                    if ($timestamp) {
-                      echo "<p>ยืนยันแล้ว</p>";
-                    } elseif ($key == $currentStatus + 1 && $key <= 5) {
-                      echo "<button type='button' class='btn mb-3 btn-success confirm-btn' data-status='{$key}' data-order-id='{$order_id}'>รอการยืนยัน</button>";
-                    } elseif ($key > $currentStatus + 1 && $key <= 5) {
-                      echo "<button type='button' class='btn mb-3 btn-secondary' disabled>รอดำเนินการก่อนหน้า</button>";
+
+                    if ($key == 6 && !$isCanceled) {
+                      echo "<button type='button' class='btn mb-3 btn-danger cancel-btn' data-status='6' data-order-id='{$order_id}'>ยกเลิกใบเบิก</button>";
                     }
+
+                    echo "</td>";
+                    echo "</tr>";
                   }
+                  ?>
+                </tbody>
+              </table>
 
-                  if ($key == 6 && !$isCanceled) {
-                    echo "<button type='button' class='btn mb-3 btn-danger cancel-btn' data-status='6' data-order-id='{$order_id}'>ยกเลิกใบเบิก</button>";
-                  }
+              <h4 class="m-0">รายการเบิก</h4>
 
-                  echo "</td>";
-                  echo "</tr>";
-                }
-                ?>
-              </tbody>
-            </table>
+              <a href="แบบฟอร์มคำขอส่งซ่อมบำรุงอุปกรณ์คอมพิวเตอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบซ่อม</a>
+              <a href="ใบเบิก.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบเบิกครุภัณฑ์</a>
+              <a href="พิมพ์ใบครุภัณฑ์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบกำหนดคุณสมบัติ</a>
+              <a href="เอกสารคณะกรรมการ.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">เอกสารคณะกรรมการ</a>
+              <a href="พิมพ์สติ๊กเกอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">สติ๊กเกอร์งาน</a>
 
-            <h4 class="m-0">รายการเบิก</h4>
+              <div class="d-flex justify-content-end align-items-center my-2">
+                <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-main" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+              </div>
 
-            <a href="แบบฟอร์มคำขอส่งซ่อมบำรุงอุปกรณ์คอมพิวเตอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบซ่อม</a>
-            <a href="ใบเบิก.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบเบิกครุภัณฑ์</a>
-            <a href="พิมพ์ใบครุภัณฑ์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบกำหนดคุณสมบัติ</a>
-            <a href="เอกสารคณะกรรมการ.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">เอกสารคณะกรรมการ</a>
-            <a href="พิมพ์สติ๊กเกอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">สติ๊กเกอร์งาน</a>
+              <table id="pdf" style="width: 100%;" class="table">
+                <thead class="text-center table-primary">
+                  <tr>
+                    <th scope="col">ลำดับ</th>
+                    <th scope="col">รายการ</th>
+                    <th scope="col">คุณสมบัติ</th>
+                    <th scope="col">จำนวน</th>
+                    <th scope="col">ราคา</th>
+                    <th scope="col">รวม</th>
+                    <th scope="col">หน่วย</th>
+                    <th scope="col" style="display: none;"></th>
+                  </tr>
+                </thead>
 
-            <div class="d-flex justify-content-end align-items-center my-2">
-              <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-main" class="fs-4 fw-bold text-primary">0</span> บาท</p>
-            </div>
-
-            <table id="pdf" style="width: 100%;" class="table">
-              <thead class="text-center table-primary">
-                <tr>
-                  <th scope="col">ลำดับ</th>
-                  <th scope="col">รายการ</th>
-                  <th scope="col">คุณสมบัติ</th>
-                  <th scope="col">จำนวน</th>
-                  <th scope="col">ราคา</th>
-                  <th scope="col">รวม</th>
-                  <th scope="col">หน่วย</th>
-                  <th scope="col" style="display: none;"></th>
-                </tr>
-              </thead>
-
-              <tbody id="table-body-main" class="text-center">
-                <?php if (!empty($items)) { ?>
-                  <?php foreach ($items as $index => $item): ?>
+                <tbody id="table-body-main" class="text-center">
+                  <?php if (!empty($items)) { ?>
+                    <?php foreach ($items as $index => $item): ?>
+                      <tr>
+                        <td><?= $index + 1 ?></td>
+                        <td>
+                          <select
+                            disabled
+                            style="width: 150px"
+                            class="form-select device-select"
+                            name="update_list[<?= $order['id'] ?>][<?= $item['item_id'] ?>]">
+                            <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+                            <?php
+                            $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
+                            $deviceStmt = $conn->prepare($deviceSql);
+                            $deviceStmt->execute();
+                            $devices = $deviceStmt->fetchAll(PDO::FETCH_ASSOC);
+                            $deviceOptions = '';
+                            foreach ($devices as $device) {
+                              $deviceOptions .= "<option value='{$device['models_id']}'>{$device['models_name']}</option>";
+                              $selected = $device['models_id'] == $item['list'] ? 'selected' : '';
+                              echo "<option value='{$device['models_id']}' $selected>{$device['models_name']}</option>";
+                            }
+                            ?>
+                          </select>
+                        </td>
+                        <td>
+                          <textarea disabled class="form-control" name="update_quality[<?= $order['id'] ?>][<?= $item['item_id'] ?>]"><?= htmlspecialchars($item['quality']) ?></textarea>
+                        </td>
+                        <td>
+                          <input disabled name="update_amount[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['amount']) ?>" style="width: 3rem;" type="text" class="form-control">
+                        </td>
+                        <td>
+                          <input disabled name="update_price[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['price']) ?>" style="width: 5rem;" type="text" class="form-control">
+                        </td>
+                        <td>
+                          <input disabled value="<?= htmlspecialchars($item['total']) ?>" style="width: 5rem;" type="text" class="form-control no-toggle">
+                        </td>
+                        <td>
+                          <input disabled name="update_unit[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['unit']) ?>" style="width: 4rem;" type="text" class="form-control">
+                        </td>
+                        <td>
+                          <button type="button" class="btn btn-warning remove-row"
+                            data-items-id="<?= $item['item_id'] ?>"
+                            data-items-row-id="<?= $order['id'] ?>"
+                            style="display: none;">ลบ</button>
+                        </td>
+                      </tr>
+                    <?php endforeach; ?>
+                  <?php  } else { ?>
                     <tr>
-                      <td><?= $index + 1 ?></td>
+                      <th scope="row">1</th>
                       <td>
                         <select
                           disabled
-                          style="width: 150px"
+                          style="width: 120px"
                           class="form-select device-select"
-                          name="update_list[<?= $order['id'] ?>][<?= $item['item_id'] ?>]">
+                          name="list[]">
                           <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+                          <!-- Populate options dynamically -->
                           <?php
-                          $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
-                          $deviceStmt = $conn->prepare($deviceSql);
-                          $deviceStmt->execute();
-                          $devices = $deviceStmt->fetchAll(PDO::FETCH_ASSOC);
+                          $sql = "SELECT * FROM device_models ORDER BY models_name ASC";
+                          $stmt = $conn->prepare($sql);
+                          $stmt->execute();
+                          $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                           $deviceOptions = '';
-                          foreach ($devices as $device) {
-                            $deviceOptions .= "<option value='{$device['models_id']}'>{$device['models_name']}</option>";
-                            $selected = $device['models_id'] == $item['list'] ? 'selected' : '';
-                            echo "<option value='{$device['models_id']}' $selected>{$device['models_name']}</option>";
+                          foreach ($result as $d) {
+                            $deviceOptions .= "<option value='{$d['models_id']}'>{$d['models_name']}</option>";
+                          ?>
+
+                            <option value="<?= $d['models_id'] ?>"><?= $d['models_name'] ?></option>
+                          <?php
                           }
                           ?>
                         </select>
                       </td>
                       <td>
-                        <textarea disabled class="form-control" name="update_quality[<?= $order['id'] ?>][<?= $item['item_id'] ?>]"><?= htmlspecialchars($item['quality']) ?></textarea>
+                        <textarea disabled class="form-control" name="quality[]"></textarea>
                       </td>
                       <td>
-                        <input disabled name="update_amount[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['amount']) ?>" style="width: 3rem;" type="text" class="form-control">
+                        <input disabled name="amount[]" value="" style="width: 3rem;" type="text" class="form-control">
                       </td>
                       <td>
-                        <input disabled name="update_price[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['price']) ?>" style="width: 5rem;" type="text" class="form-control">
+                        <input disabled name="price[]" value="" style="width: 4rem;" type="text" class="form-control">
                       </td>
                       <td>
-                        <input disabled value="<?= htmlspecialchars($item['total']) ?>" style="width: 5rem;" type="text" class="form-control no-toggle">
+                        <input disabled style="width: 4rem;" type="text" class="form-control no-toggle">
                       </td>
                       <td>
-                        <input disabled name="update_unit[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['unit']) ?>" style="width: 4rem;" type="text" class="form-control">
+                        <input disabled name="unit[]" value="" style="width: 5rem;" type="text" class="form-control">
                       </td>
                       <td>
                         <button type="button" class="btn btn-warning remove-row"
-                          data-items-id="<?= $item['item_id'] ?>"
-                          data-items-row-id="<?= $order['id'] ?>"
                           style="display: none;">ลบ</button>
                       </td>
                     </tr>
-                  <?php endforeach; ?>
-                <?php  } else { ?>
-                  <tr>
-                    <th scope="row">1</th>
-                    <td>
-                      <select
-                        disabled
-                        style="width: 120px"
-                        class="form-select device-select"
-                        name="list[]">
-                        <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-                        <!-- Populate options dynamically -->
-                        <?php
-                        $sql = "SELECT * FROM device_models ORDER BY models_name ASC";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->execute();
-                        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                        $deviceOptions = '';
-                        foreach ($result as $d) {
-                          $deviceOptions .= "<option value='{$d['models_id']}'>{$d['models_name']}</option>";
-                        ?>
-
-                          <option value="<?= $d['models_id'] ?>"><?= $d['models_name'] ?></option>
-                        <?php
-                        }
-                        ?>
-                      </select>
-                    </td>
-                    <td>
-                      <textarea disabled class="form-control" name="quality[]"></textarea>
-                    </td>
-                    <td>
-                      <input disabled name="amount[]" value="" style="width: 3rem;" type="text" class="form-control">
-                    </td>
-                    <td>
-                      <input disabled name="price[]" value="" style="width: 4rem;" type="text" class="form-control">
-                    </td>
-                    <td>
-                      <input disabled style="width: 4rem;" type="text" class="form-control no-toggle">
-                    </td>
-                    <td>
-                      <input disabled name="unit[]" value="" style="width: 5rem;" type="text" class="form-control">
-                    </td>
-                    <td>
-                      <button type="button" class="btn btn-warning remove-row"
-                        style="display: none;">ลบ</button>
-                    </td>
-                  </tr>
-                <?php } ?>
-              </tbody>
-            </table>
-            <div class="d-flex justify-content-end">
-              <button type="button" id="add-row-main" class="btn btn-success" style="display: none;">+ เพิ่มแถว</button>
-            </div>
-          </form>
+                  <?php } ?>
+                </tbody>
+              </table>
+              <div class="d-flex justify-content-end">
+                <button type="button" id="add-row-main" class="btn btn-success" style="display: none;">+ เพิ่มแถว</button>
+              </div>
+            </form>
+          <?php
+          } else {
+            $sql = "SELECT * FROM device_models ORDER BY models_name ASC";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $deviceOptions = '';
+            foreach ($result as $d) {
+              $deviceOptions .= "<option value='{$d['models_id']}'>{$d['models_name']}</option>";
+            }
+          ?>
+            <h2 class="mt-4 text-center">*ไม่พบข้อมูล*</h2>
+          <?php
+          }
+          ?>
         </div>
       </div>
     </div>
@@ -868,6 +886,11 @@ ORDER BY os.status;
                   <input type="hidden" id="departId" name="depart_id">
                 </div>
 
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
+
+                <!-- Add SweetAlert2 JS -->
+                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
+
                 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
                 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
                 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -876,6 +899,7 @@ ORDER BY os.status;
                   $(function() {
                     function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
                       let inputChanged = false;
+                      let alertShown = false; // Flag to track if the alert has been shown already
 
                       $(inputId).autocomplete({
                           source: function(request, response) {
@@ -906,7 +930,6 @@ ORDER BY os.status;
                         };
 
                       $(inputId).on("autocompletefocus", function(event, ui) {
-                        // You can log or do something here but won't change the input value
                         console.log("Item highlighted: ", ui.item.label);
                         return false;
                       });
@@ -916,7 +939,7 @@ ORDER BY os.status;
                       });
 
                       $(inputId).on("blur", function() {
-                        if (inputChanged) {
+                        if (inputChanged && !alertShown) {
                           const userInput = $(this).val().trim();
                           if (userInput === "") return;
 
@@ -929,6 +952,8 @@ ORDER BY os.status;
                           });
 
                           if (!found) {
+                            alertShown = true; // Prevent the alert from firing again
+                            // Show SweetAlert to confirm insert data
                             Swal.fire({
                               title: confirmMessage,
                               icon: "info",
@@ -952,9 +977,10 @@ ORDER BY os.status;
                                   }
                                 });
                               } else {
-                                $(inputId).val(""); // Clear input
+                                $(inputId).val(""); // Clear input if canceled
                                 $(hiddenInputId).val("");
                               }
+                              alertShown = false; // Reset the flag after the action
                             });
                           }
                         }
@@ -1534,7 +1560,7 @@ ORDER BY os.status;
     }
 
     //alear บันทึก
-    document.getElementById('saveData').addEventListener('click', function(event) {
+    document.getElementById('saveData')?.addEventListener('click', function(event) {
       const isConfirmed = confirm('คุณต้องการบันทึกใช่หรือไม่');
       if (!isConfirmed) {
         event.preventDefault(); // Prevents the form from submitting
@@ -1556,7 +1582,7 @@ ORDER BY os.status;
         calculateRowTotal(row, tableBodyId);
       });
 
-      editButton.addEventListener("click", function(event) { //*
+      editButton?.addEventListener("click", function(event) { //*
         event.preventDefault();
         toggleEditMode();
       });
@@ -1636,7 +1662,6 @@ ORDER BY os.status;
             const modalId = e.target.getAttribute('data-row-id');
             const deviceId = e.target.getAttribute('data-device-id');
             const container = document.querySelector(`#device-number-container-main`);
-            console.log(container)
             const deletedInput = document.createElement('input');
             deletedInput.type = 'hidden';
             deletedInput.name = `deleted_devices[${modalId}][${deviceId}]`;
@@ -1772,7 +1797,7 @@ ORDER BY os.status;
                 rowElement.querySelector('input[name*="price[]"]').value = data.price;
                 rowElement.querySelector('input[name*="unit[]"]').value = data.unit;
               }
-              calculateRowTotalAutoList(rowElement, `table-body-${modalId}`);
+              calculateRowTotalAutoList(rowElement, `table-body-${mode_field}`);
             } else {
               alert("ไม่สามารถดึงข้อมูลได้");
             }

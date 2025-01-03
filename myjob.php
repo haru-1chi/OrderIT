@@ -306,13 +306,13 @@ if (!isset($_SESSION["admin_log"])) {
                                                         <div class="row">
                                                             <div class="col-4">
                                                                 <label>เวลาแจ้ง</label>
-                                                                <input type="time" class="form-control"
+                                                                <input type="text" class="form-control"
                                                                     value="<?= date('H:i', strtotime($row['time_report'])) ?>" disabled>
                                                             </div>
                                                             <div class="col-4">
                                                                 <label>เวลารับงาน</label>
                                                                 <input type="text" class="form-control"
-                                                                    value="<?= $row['take'] ?>" disabled>
+                                                                    value="<?= date('H:i', strtotime($row['take']))  ?>" disabled>
                                                             </div>
                                                             <div class="col-4">
                                                                 <label>เวลาปิดงาน (ถ้ามี)</label>
@@ -386,7 +386,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     aria-label="Default select example">
                                                                     <option value="<?= $row['device'] ?: '' ?>"
                                                                         selected>
-                                                                        <?= !empty($row['device']) ? $row['device'] : 'ไม่มี' ?>
+                                                                        <?= !empty($row['device']) ? $row['device'] : '-' ?>
                                                                     </option>
                                                                     <?php
                                                                     $sql = "SELECT * FROM workinglist";
@@ -424,8 +424,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                         <div class="row">
                                                             <div class="col-12">
                                                                 <label>รายละเอียด<span style="color: red;">*</span></label>
-                                                                <input value="<?= $row['description'] ?>" type="text"
-                                                                    class="form-control" name="description">
+                                                                <textarea class="form-control " name="description" rows="2"><?= $row['description'] ?></textarea>
                                                             </div>
                                                         </div>
                                                         <div class="row">
@@ -472,7 +471,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <select class="form-select" name="sla"
                                                                     aria-label="Default select example">
                                                                     <option value="<?= $row['sla'] ?: '' ?>" selected>
-                                                                        <?= !empty($row['sla']) ? $row['sla'] : 'ไม่มี' ?>
+                                                                        <?= !empty($row['sla']) ? $row['sla'] : '-' ?>
                                                                     </option>
                                                                     <?php
                                                                     $sql = "SELECT * FROM sla";
@@ -500,7 +499,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <select class="form-select" name="kpi"
                                                                     aria-label="Default select example">
                                                                     <option value="<?= $row['kpi'] ?: '' ?>" selected>
-                                                                        <?= !empty($row['kpi']) ? $row['kpi'] : 'ไม่มี' ?>
+                                                                        <?= !empty($row['kpi']) ? $row['kpi'] : '-' ?>
                                                                     </option>
                                                                     <?php
                                                                     $sql = "SELECT * FROM kpi";
@@ -534,7 +533,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     $data = $stmt->fetchAll(PDO::FETCH_ASSOC); ?>
                                                                     <option value="<?= $row['problem'] ?: '' ?>"
                                                                         selected>
-                                                                        <?= !empty($row['problem']) ? $row['problem'] : 'ไม่มี' ?>
+                                                                        <?= !empty($row['problem']) ? $row['problem'] : '-' ?>
                                                                     </option>
                                                                     <?php foreach ($data as $d) {
                                                                         if ($row['problem'] != $d['problemName']) { ?>
@@ -754,6 +753,11 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 value="<?= $rowData['refDepart'] ?>">
                                                                         </div>
 
+                                                                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
+
+                                                                        <!-- Add SweetAlert2 JS -->
+                                                                        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
+
                                                                         <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
                                                                         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
                                                                         <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -762,6 +766,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                             $(function() {
                                                                                 function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
                                                                                     let inputChanged = false;
+                                                                                    let alertShown = false; // Flag to track if the alert has been shown already
 
                                                                                     $(inputId).autocomplete({
                                                                                             source: function(request, response) {
@@ -792,7 +797,6 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                         };
 
                                                                                     $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                        // You can log or do something here but won't change the input value
                                                                                         console.log("Item highlighted: ", ui.item.label);
                                                                                         return false;
                                                                                     });
@@ -802,7 +806,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                     });
 
                                                                                     $(inputId).on("blur", function() {
-                                                                                        if (inputChanged) {
+                                                                                        if (inputChanged && !alertShown) {
                                                                                             const userInput = $(this).val().trim();
                                                                                             if (userInput === "") return;
 
@@ -815,6 +819,8 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                             });
 
                                                                                             if (!found) {
+                                                                                                alertShown = true; // Prevent the alert from firing again
+                                                                                                // Show SweetAlert to confirm insert data
                                                                                                 Swal.fire({
                                                                                                     title: confirmMessage,
                                                                                                     icon: "info",
@@ -838,9 +844,10 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                                             }
                                                                                                         });
                                                                                                     } else {
-                                                                                                        $(inputId).val(""); // Clear input
+                                                                                                        $(inputId).val(""); // Clear input if canceled
                                                                                                         $(hiddenInputId).val("");
                                                                                                     }
+                                                                                                    alertShown = false; // Reset the flag after the action
                                                                                                 });
                                                                                             }
                                                                                         }
@@ -873,7 +880,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     </div>
                                                                     <div class="col-sm-6">
                                                                         <div class="mb-3">
-                                                                            <label id="basic-addon1">อาการรับแจ้ง</label>
+                                                                            <label id="basic-addon1">อาการรับแจ้ง </label>
                                                                             <input type="text" name="report" class="form-control" value="<?= $rowData['report'] ?>">
                                                                         </div>
                                                                     </div>
@@ -968,7 +975,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                                     ?>
                                                                     <div class="d-flex justify-content-end align-items-center my-2">
-                                                                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
                                                                     </div>
                                                                     <table id="pdf" style="width: 100%;" class="table">
                                                                         <thead class="table-primary">
@@ -1132,6 +1139,11 @@ if (!isset($_SESSION["admin_log"])) {
                                                                             value="<?= $row['department'] ?>">
                                                                     </div>
 
+                                                                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
+
+                                                                    <!-- Add SweetAlert2 JS -->
+                                                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
+
                                                                     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
                                                                     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
                                                                     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -1140,6 +1152,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                         $(function() {
                                                                             function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
                                                                                 let inputChanged = false;
+                                                                                let alertShown = false; // Flag to track if the alert has been shown already
 
                                                                                 $(inputId).autocomplete({
                                                                                         source: function(request, response) {
@@ -1170,7 +1183,6 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                     };
 
                                                                                 $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                    // You can log or do something here but won't change the input value
                                                                                     console.log("Item highlighted: ", ui.item.label);
                                                                                     return false;
                                                                                 });
@@ -1180,7 +1192,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 });
 
                                                                                 $(inputId).on("blur", function() {
-                                                                                    if (inputChanged) {
+                                                                                    if (inputChanged && !alertShown) {
                                                                                         const userInput = $(this).val().trim();
                                                                                         if (userInput === "") return;
 
@@ -1193,6 +1205,8 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                         });
 
                                                                                         if (!found) {
+                                                                                            alertShown = true; // Prevent the alert from firing again
+                                                                                            // Show SweetAlert to confirm insert data
                                                                                             Swal.fire({
                                                                                                 title: confirmMessage,
                                                                                                 icon: "info",
@@ -1216,9 +1230,10 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                                         }
                                                                                                     });
                                                                                                 } else {
-                                                                                                    $(inputId).val(""); // Clear input
+                                                                                                    $(inputId).val(""); // Clear input if canceled
                                                                                                     $(hiddenInputId).val("");
                                                                                                 }
+                                                                                                alertShown = false; // Reset the flag after the action
                                                                                             });
                                                                                         }
                                                                                     }
@@ -1253,7 +1268,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="col-sm-6">
                                                                     <div class="mb-3">
                                                                         <label id="basic-addon1">อาการรับแจ้ง</label>
-                                                                        <input type="text" name="report" class="form-control" value="<?= $rowData['report'] ?>">
+                                                                        <input type="text" name="report" class="form-control">
                                                                     </div>
                                                                 </div>
 
@@ -1320,7 +1335,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 </div>
 
                                                                 <div class="d-flex justify-content-end align-items-center my-2">
-                                                                    <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                    <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
                                                                 </div>
                                                                 <table id="pdf" style="width: 100%;" class="table">
                                                                     <thead class="table-primary">
@@ -1591,13 +1606,13 @@ if (!isset($_SESSION["admin_log"])) {
                                                         <div class="row">
                                                             <div class="col-4">
                                                                 <label>เวลาแจ้ง</label>
-                                                                <input type="time" class="form-control"
+                                                                <input type="text" class="form-control"
                                                                     value="<?= date('H:i', strtotime($row['time_report'])) ?>" disabled>
                                                             </div>
                                                             <div class="col-4">
                                                                 <label>เวลารับงาน</label>
                                                                 <input type="text" class="form-control"
-                                                                    value="<?= $row['take'] ?>" disabled>
+                                                                    value="<?= date('H:i', strtotime($row['take']))  ?>" disabled>
                                                             </div>
                                                             <div class="col-4">
                                                                 <label>เวลาปิดงาน (ถ้ามี)</label>
@@ -1671,7 +1686,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     aria-label="Default select example">
                                                                     <option value="<?= $row['device'] ?: '' ?>"
                                                                         selected>
-                                                                        <?= !empty($row['device']) ? $row['device'] : 'ไม่มี' ?>
+                                                                        <?= !empty($row['device']) ? $row['device'] : '-' ?>
                                                                     </option>
                                                                     <?php
                                                                     $sql = "SELECT * FROM workinglist";
@@ -1709,8 +1724,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                         <div class="row">
                                                             <div class="col-12">
                                                                 <label>รายละเอียด<span style="color: red;">*</span></label>
-                                                                <input value="<?= $row['description'] ?>" type="text"
-                                                                    class="form-control" name="description">
+                                                                <textarea class="form-control " name="description" rows="2"><?= $row['description'] ?></textarea>
                                                             </div>
                                                         </div>
                                                         <div class="row">
@@ -1757,7 +1771,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <select class="form-select" name="sla"
                                                                     aria-label="Default select example">
                                                                     <option value="<?= $row['sla'] ?: '' ?>" selected>
-                                                                        <?= !empty($row['sla']) ? $row['sla'] : 'ไม่มี' ?>
+                                                                        <?= !empty($row['sla']) ? $row['sla'] : '-' ?>
                                                                     </option>
                                                                     <?php
                                                                     $sql = "SELECT * FROM sla";
@@ -1784,7 +1798,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <select class="form-select" name="kpi"
                                                                     aria-label="Default select example">
                                                                     <option value="<?= $row['kpi'] ?: '' ?>" selected>
-                                                                        <?= !empty($row['kpi']) ? $row['kpi'] : 'ไม่มี' ?>
+                                                                        <?= !empty($row['kpi']) ? $row['kpi'] : '-' ?>
                                                                     </option>
                                                                     <?php
                                                                     $sql = "SELECT * FROM kpi";
@@ -1818,7 +1832,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     $data = $stmt->fetchAll(PDO::FETCH_ASSOC); ?>
                                                                     <option value="<?= $row['problem'] ?: '' ?>"
                                                                         selected>
-                                                                        <?= !empty($row['problem']) ? $row['problem'] : 'ไม่มี' ?>
+                                                                        <?= !empty($row['problem']) ? $row['problem'] : '-' ?>
                                                                     </option>
                                                                     <?php foreach ($data as $d) {
                                                                         if ($row['problem'] != $d['problemName']) { ?>
@@ -2252,7 +2266,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                                     ?>
                                                                     <div class="d-flex justify-content-end align-items-center my-2">
-                                                                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
                                                                     </div>
                                                                     <table id="pdf" style="width: 100%;" class="table">
                                                                         <thead class="table-primary">
@@ -2416,6 +2430,11 @@ if (!isset($_SESSION["admin_log"])) {
                                                                             value="<?= $row['department'] ?>">
                                                                     </div>
 
+                                                                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
+
+                                                                    <!-- Add SweetAlert2 JS -->
+                                                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
+
                                                                     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
                                                                     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
                                                                     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -2537,7 +2556,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="col-sm-6">
                                                                     <div class="mb-3">
                                                                         <label id="basic-addon1">อาการรับแจ้ง</label>
-                                                                        <input type="text" name="report" class="form-control" value="<?= $rowData['report'] ?>">
+                                                                        <input type="text" name="report" class="form-control">
                                                                     </div>
                                                                 </div>
                                                                 <div class="col-sm-6">
@@ -2603,7 +2622,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 </div>
 
                                                                 <div class="d-flex justify-content-end align-items-center my-2">
-                                                                    <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                    <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
                                                                 </div>
                                                                 <table id="pdf" style="width: 100%;" class="table">
                                                                     <thead class="table-primary">
@@ -2816,6 +2835,63 @@ if (!isset($_SESSION["admin_log"])) {
     </script>
     <script>
         //เพิ่มแถวตาราง
+        function calculateSumTotal(tableBodyId) {
+            let total = 0;
+            const sumInputs = document.querySelectorAll(`#${tableBodyId} input.no-toggle`);
+            sumInputs.forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+
+            // Dynamically get the specific total-amount element
+            const totalAmount = document.querySelector(`#total-amount-${tableBodyId.split('-').pop()}`);
+            if (totalAmount) {
+                totalAmount.textContent = total.toLocaleString();
+            }
+
+            console.log(`Total for ${tableBodyId}: `, total);
+        }
+
+        function calculateRowTotalAutoList(rowElement, tableBodyId) {
+            const amountInput = rowElement.querySelector('input[name*="amount"]');
+            const priceInput = rowElement.querySelector('input[name*="price"]');
+            const totalInput = rowElement.querySelector('input.no-toggle');
+
+            const amount = parseFloat(amountInput?.value || 0);
+            const price = parseFloat(priceInput?.value || 0);
+            totalInput.value = (amount * price);
+
+            calculateSumTotal(tableBodyId);
+        }
+
+        function calculateRowTotal(row, tableBodyId) {
+            const amountInput = row.querySelector('input[name*="amount"]');
+            const priceInput = row.querySelector('input[name*="price"]');
+            const totalInput = row.querySelector('input.no-toggle');
+
+            const calculate = () => {
+                const amount = parseFloat(amountInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                totalInput.value = (amount * price); // Ensure toFixed for consistent formatting
+                calculateSumTotal(tableBodyId); // Update the table's total
+            };
+
+            // Attach event listeners for recalculating row totals
+            if (amountInput && priceInput) {
+                amountInput.addEventListener("input", calculate);
+                priceInput.addEventListener("input", calculate);
+            }
+
+            calculate(); // Initial calculation when the row is added
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const tableRows = document.querySelectorAll('[id^="table-body-"] tr');
+            tableRows.forEach((row) => {
+                const tableBodyId = row.closest('tbody').id;
+                calculateRowTotal(row, tableBodyId);
+            });
+        });
+
         let rowIndex = 1;
         document.addEventListener('click', function(e) {
             if (e.target && e.target.id.startsWith('add-row-')) {
@@ -2847,28 +2923,31 @@ foreach ($result as $d) {
 <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
         `;
                 tableBody.appendChild(newRow);
+                calculateRowTotal(newRow, `table-body-${modalId}`);
             }
         });
-
         document.addEventListener('click', function(e) {
             if (e.target && e.target.classList.contains('remove-row')) {
                 const row = e.target.closest('tr');
                 const hiddenInput = row.querySelector('select');
+                const tableBody = row.closest("tbody");
+                const tableBodyId = tableBody.id;
 
                 if (hiddenInput && hiddenInput.name.startsWith('update_list')) {
                     // Case 1: Soft delete for saved rows
                     const rowId = e.target.getAttribute('data-items-row-id');
                     const itemId = e.target.getAttribute('data-items-id');
-                    const tableBody = document.querySelector(`#table-body-${rowId}`);
+                    const mainTableBody = document.querySelector(`#table-body-${rowId}`);
                     const deletedInput = document.createElement('input');
                     deletedInput.type = 'hidden';
                     deletedInput.name = `deleted_items[${rowId}][${itemId}]`;
                     deletedInput.value = itemId;
-                    tableBody.appendChild(deletedInput);
+                    mainTableBody.appendChild(deletedInput);
                 }
 
                 // Case 2: Direct removal of unsaved rows
                 row.remove();
+                calculateSumTotal(tableBodyId)
             }
         });
 
@@ -2908,6 +2987,7 @@ foreach ($result as $d) {
                                 rowElement.find('input[name^="price"]').attr('name', `price[${modalId}][]`).val(data.price);
                                 rowElement.find('input[name^="unit"]').attr('name', `unit[${modalId}][]`).val(data.unit);
                             }
+                            calculateRowTotalAutoList(rowElement[0], `table-body-${modalId}`);
                         } else {
                             alert('ไม่สามารถดึงข้อมูลได้');
                         }

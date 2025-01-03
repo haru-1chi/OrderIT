@@ -50,10 +50,10 @@ function navbar()
                     <li class="nav-item">
                         <a class="nav-link" href="myjob2.php">สร้างงาน</a>
                     </li>
-
+<!-- 
                     <li class="nav-item">
                         <a class="nav-link" href="create.php">สร้างใบเบิก</a>
-                    </li>
+                    </li> -->
                     <li class="nav-item">
                         <a class="nav-link" href="checkAll.php">สร้างใบเบิกประจำสัปดาห์</a>
                     </li>
