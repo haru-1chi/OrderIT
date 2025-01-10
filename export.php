@@ -128,6 +128,7 @@ if (isset($_POST['act'])) {
     echo '<th style="border: 1px solid black;" scope="col">วันที่</th>';
     echo '<th style="border: 1px solid black;" scope="col">เวลาแจ้ง</th>';
     echo '<th style="border: 1px solid black;" scope="col">เวลาปิดงาน</th>';
+    echo '<th style="border: 1px solid black;" scope="col">สถานะ</th>';
     echo '<th style="border: 1px solid black;" scope="col">ประเภทงาน</th>';
     echo '<th style="border: 1px solid black;" scope="col">หมายเลขครุภัณฑ์</th>';
     echo '<th style="border: 1px solid black;" scope="col">อาการเสีย</th>';
@@ -152,12 +153,124 @@ if (isset($_POST['act'])) {
     // Output the table rows
     foreach ($result as $row) {
         $dateWithdrawThai = formatDateThai($row['date_report']);
+        $closeDateText = ($row['close_date'] === '00:00:00.000000' || $row['close_date'] === null) ? '-' : $row['close_date'];
+        $statusText = '';
+        switch ($row['status']) {
+            case 2:
+                $statusText = 'กำลังดำเนินงาน';
+                break;
+            case 3:
+                $statusText = 'รออะไหล่';
+                break;
+            case 4:
+                $statusText = 'เสร็จงาน';
+                break;
+            case 5:
+                $statusText = 'ส่งซ่อม';
+                break;
+            case 6:
+                $statusText = 'รอกรอกรายละเอียด';
+                break;
+            default:
+                $statusText = 'ไม่ทราบสถานะ'; // Fallback for unexpected values
+        }
 
         echo '<tr style="text-align: center;"';
         echo '<td style="border: 1px solid black;" scope="row">' . $row['id'] . '</td>';
         echo '<td style="border: 1px solid black;" scope="row">' . $dateWithdrawThai . '</td>';
         echo '<td style="border: 1px solid black;" scope="row">' . $row['time_report'] . '</td>';
-        echo '<td style="border: 1px solid black;" scope="row">' . $row['close_date'] . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $closeDateText . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $statusText . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $row['device'] . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $row['number_device'] . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $row['report'] . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $row['reporter'] . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $row['depart_name'] . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $row['tel'] . '</td>';
+        // ... (other table data)
+        echo '</tr>';
+    }
+
+    echo '</tbody>';
+    echo '</table>';
+
+    // Exit to prevent any further output
+    exit();
+}
+
+// Check if the export action is triggered
+if (isset($_POST['actUncomplete'])) {
+    echo '<head>';
+    echo '<meta charset="UTF-8">';
+
+    // Set headers for Excel file download
+    header("Content-Type: application/xls");
+    header("Content-Disposition: attachment; filename=งานของฉัน.xls");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    echo '</head>';
+
+    // Output the HTML for the table
+    echo '<table style="border: 1px solid black;">';
+    echo '<thead>';
+    echo '<tr style="text-align:center;">';
+    echo '<th style="border: 1px solid black;" scope="col">ลำดับ</th>';
+    echo '<th style="border: 1px solid black;" scope="col">วันที่</th>';
+    echo '<th style="border: 1px solid black;" scope="col">เวลาแจ้ง</th>';
+    echo '<th style="border: 1px solid black;" scope="col">เวลาปิดงาน</th>';
+    echo '<th style="border: 1px solid black;" scope="col">สถานะ</th>';
+    echo '<th style="border: 1px solid black;" scope="col">ประเภทงาน</th>';
+    echo '<th style="border: 1px solid black;" scope="col">หมายเลขครุภัณฑ์</th>';
+    echo '<th style="border: 1px solid black;" scope="col">อาการเสีย</th>';
+    echo '<th style="border: 1px solid black;" scope="col">ผู้แจ้ง</th>';
+    echo '<th style="border: 1px solid black;" scope="col">หน่วยงาน</th>';
+    echo '<th style="border: 1px solid black;" scope="col">เบอร์ติดต่อกลับ</th>';
+    // ... (other table headers)
+    echo '</tr>';
+    echo '</thead>';
+    echo '<tbody>';
+
+    // Fetch data from the database
+    $sql = "SELECT dp.*, dt.depart_name 
+            FROM data_report as dp
+            INNER JOIN depart as dt ON dp.department = dt.depart_id
+            WHERE dp.username = :username AND dp.status = 6 ORDER BY dp.date_report ASC";
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(":username", $admin);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Output the table rows
+    foreach ($result as $row) {
+        $dateWithdrawThai = formatDateThai($row['date_report']);
+        $closeDateText = ($row['close_date'] === '00:00:00.000000' || $row['close_date'] === null) ? '-' : $row['close_date'];
+        $statusText = '';
+        switch ($row['status']) {
+            case 2:
+                $statusText = 'กำลังดำเนินงาน';
+                break;
+            case 3:
+                $statusText = 'รออะไหล่';
+                break;
+            case 4:
+                $statusText = 'เสร็จงาน';
+                break;
+            case 5:
+                $statusText = 'ส่งซ่อม';
+                break;
+            case 6:
+                $statusText = 'รอกรอกรายละเอียด';
+                break;
+            default:
+                $statusText = 'ไม่ทราบสถานะ'; // Fallback for unexpected values
+        }
+
+        echo '<tr style="text-align: center;"';
+        echo '<td style="border: 1px solid black;" scope="row">' . $row['id'] . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $dateWithdrawThai . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $row['time_report'] . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $closeDateText . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $statusText . '</td>';
         echo '<td style="border: 1px solid black;" scope="row">' . $row['device'] . '</td>';
         echo '<td style="border: 1px solid black;" scope="row">' . $row['number_device'] . '</td>';
         echo '<td style="border: 1px solid black;" scope="row">' . $row['report'] . '</td>';
@@ -215,6 +328,90 @@ if (isset($_POST['DataAll'])) {
     echo '</tr>';
     echo '</thead>';
     echo '<tbody>';
+
+    $sql = "
+    SELECT 
+    od.*, 
+    wd.withdraw_name, 
+    lw.work_name, 
+    dv.device_name, 
+    dp.depart_name, 
+    of.offer_name,
+    nd.numberDevice, 
+    nd.id AS numberDevice_id, 
+    oi.id AS item_id, 
+    oi.list, 
+    oi.quality, 
+    oi.amount, 
+    oi.price, 
+    oi.unit
+    FROM 
+    orderdata_new AS od
+    INNER JOIN 
+    withdraw AS wd ON od.refWithdraw = wd.withdraw_id
+    INNER JOIN 
+    offer AS of ON od.refOffer = of.offer_id
+    INNER JOIN 
+    depart AS dp ON od.refDepart = dp.depart_id
+    INNER JOIN 
+    listwork AS lw ON od.refWork = lw.work_id
+    INNER JOIN 
+    device AS dv ON od.refDevice = dv.device_id
+    LEFT JOIN 
+    order_numberdevice AS nd ON od.id = nd.order_item
+    LEFT JOIN 
+    order_items AS oi ON od.id = oi.order_id
+    WHERE 
+    (od.numberWork = :numberWork) AND
+    (nd.is_deleted = 0 OR nd.is_deleted IS NULL)
+    AND (oi.is_deleted = 0 OR oi.is_deleted IS NULL)
+    ORDER BY nd.id, oi.id
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(":numberWork", $numberWork);
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if ($results) {
+        // Process the latest record and related data
+        $order = $results[0]; // Fetch the main record details
+        $devices = [];
+        $items = [];
+
+        foreach ($results as $row) {
+            // Collect unique devices
+            if (!empty($row['numberDevice_id']) && !isset($devices[$row['numberDevice_id']])) {
+                $devices[$row['numberDevice_id']] =
+                    [
+                        'numberDevice_id' => $row['numberDevice_id'],
+                        'numberDevice' => $row['numberDevice']
+                    ];
+            }
+
+            // Collect unique items
+            if (!empty($row['item_id']) && !isset($items[$row['item_id']])) {
+                $items[$row['item_id']] = [
+                    'item_id' => $row['item_id'],
+                    'list' => $row['list'],
+                    'quality' => $row['quality'],
+                    'amount' => $row['amount'],
+                    'price' => $row['price'],
+                    'total' => $row['price'] * $row['amount'],
+                    'unit' => $row['unit']
+                ];
+            }
+        }
+
+        // Reset keys for JSON encoding or numeric indexing
+        $devices = array_values($devices);
+        $items = array_values($items);
+    } else {
+        $order = [];
+        $devices = [];
+        $items = [];
+    }
+
 
     // Fetch data from the database
     $sql = "SELECT od.*, wd.*,lw.*,dm.*,dp.*,ad.*,of.*

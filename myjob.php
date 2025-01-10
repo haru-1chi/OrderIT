@@ -248,7 +248,7 @@ if (!isset($_SESSION["admin_log"])) {
                                 } else if ($row['status'] == 5) {
                                     $statusText = "ส่งซ่อม";
                                 } else if ($row['status'] == 6) {
-                                    $statusText = "รอกรอกรายละเอียด";
+                                    $statusText = "รอกรอกรายละเอียด". ' ' . $row['withdraw'];
                                 }
                                 ?>
                                 <td>
@@ -701,7 +701,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <div class="col-sm-6">
                                                                         <div class="mb-3">
                                                                             <label id="basic-addon1">หมายเลขครุภัณฑ์</label>
-                                                                            <div id="device-number-container-<?= $row['id'] ?>">
+                                                                            <div id="device-number-container-main-<?= $row['id'] ?>">
                                                                                 <?php
                                                                                 $sql = 'SELECT * FROM order_numberdevice WHERE order_item = :order_item AND is_deleted = 0';
                                                                                 $stmt = $conn->prepare($sql);
@@ -716,14 +716,13 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                             <input type="text" name="update_number_device[<?= $row['id'] ?>][<?= $device['id'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($device['numberDevice']) ?>">
                                                                                             <button type="button" class="btn btn-warning p-2 mb-2 ms-3 remove-field"
                                                                                                 data-device-id="<?= $device['id'] ?>"
-                                                                                                data-row-id="<?= $row['id'] ?>"
+                                                                                                data-row-id="main-<?= $row['id'] ?>"
                                                                                                 style="visibility: <?= $isFirst ? 'hidden' : 'visible' ?>;">ลบ</button>
                                                                                         </div>
                                                                                     <?php
                                                                                         $isFirst = false;
                                                                                     }
                                                                                 } else { ?>
-
                                                                                     <div class="d-flex device-number-row">
                                                                                         <input type="text" name="number_device[<?= $row['id'] ?>][]" class="form-control mb-2" value="">
                                                                                         <button type="button" class="btn btn-danger p-2 ms-3 remove-field" style="visibility: hidden;">ลบ</button>
@@ -731,7 +730,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 <?php } ?>
                                                                             </div>
                                                                             <div class="d-flex justify-content-end">
-                                                                                <button type="button" id="add-device-number-<?= $row['id'] ?>" class="btn btn-success mt-2 align-self-end">+ เพิ่มหมายเลขครุภัณฑ์</button>
+                                                                                <button type="button" id="add-device-number-main-<?= $row['id'] ?>" class="btn btn-success mt-2 align-self-end">+ เพิ่มหมายเลขครุภัณฑ์</button>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -921,7 +920,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <div class="col-sm-4">
                                                                         <div class="mb-3">
                                                                             <label for="inputGroupSelect01">สถานะ</label>
-                                                                            <select required class="form-select" name="status" id="inputGroupSelect01">
+                                                                            <select required class="form-select" name="status" id="inputGroupSelect01" disabled>
                                                                                 <?php
                                                                                 // Fetch the latest status for the current order
                                                                                 $statusSql = "SELECT status FROM order_status 
@@ -975,7 +974,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                                     ?>
                                                                     <div class="d-flex justify-content-end align-items-center my-2">
-                                                                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-main-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
                                                                     </div>
                                                                     <table id="pdf" style="width: 100%;" class="table">
                                                                         <thead class="table-primary">
@@ -990,7 +989,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 <th scope="col"></th>
                                                                             </tr>
                                                                         </thead>
-                                                                        <tbody id="table-body-<?= $row['id'] ?>">
+                                                                        <tbody id="table-body-main-<?= $row['id'] ?>">
                                                                             <?php
                                                                             $rowNumber = 1;
                                                                             $isFirstRow = true;
@@ -1030,7 +1029,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                         </tbody>
                                                                     </table>
                                                                     <div class="d-flex justify-content-end">
-                                                                        <button type="button" id="add-row-<?= $row['id'] ?>" class="btn btn-success">+ เพิ่มแถว</button>
+                                                                        <button type="button" id="add-row-main-<?= $row['id'] ?>" class="btn btn-success">+ เพิ่มแถว</button>
                                                                     </div>
 
                                                                 <?php } ?>
@@ -1109,7 +1108,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="col-sm-6">
                                                                     <div class="mb-3">
                                                                         <label id="basic-addon1">หมายเลขครุภัณฑ์</label>
-                                                                        <div id="device-number-container-<?= $row['id'] ?>">
+                                                                        <div id="device-number-container-main-<?= $row['id'] ?>">
                                                                             <div class="d-flex device-number-row">
                                                                                 <input type="text" name="number_device[<?= $row['id'] ?>][]" class="form-control"
                                                                                     value="<?= isset($row['number_device']) ? $row['number_device'] : '' ?>">
@@ -1117,7 +1116,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                             </div>
                                                                         </div>
                                                                         <div class="d-flex justify-content-end">
-                                                                            <button type="button" id="add-device-number-<?= $row['id'] ?>" class="btn btn-success mt-2 align-self-end">+ เพิ่มหมายเลขครุภัณฑ์</button>
+                                                                            <button type="button" id="add-device-number-main-<?= $row['id'] ?>" class="btn btn-success mt-2 align-self-end">+ เพิ่มหมายเลขครุภัณฑ์</button>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -1268,14 +1267,14 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="col-sm-6">
                                                                     <div class="mb-3">
                                                                         <label id="basic-addon1">อาการรับแจ้ง</label>
-                                                                        <input type="text" name="report" class="form-control">
+                                                                        <input type="text" name="report" class="form-control" value="<?= $row['report'] ?>">
                                                                     </div>
                                                                 </div>
 
                                                                 <div class="col-sm-6">
                                                                     <div class="mb-3">
                                                                         <label id="basic-addon1">เหตุผลและความจำเป็น</label>
-                                                                        <input type="text" name="reason" class="form-control">
+                                                                        <input type="text" name="reason" class="form-control" value="<?= $row['description'] ?>">
                                                                     </div>
                                                                 </div>
 
@@ -1309,7 +1308,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <div class="mb-3">
                                                                         <label for="inputGroupSelect01">สถานะ
                                                                         </label>
-                                                                        <select required class="form-select" name="status" id="inputGroupSelect01">
+                                                                        <select required class="form-select" name="status" id="inputGroupSelect01" disabled>
                                                                             <option value="1">รอรับเอกสารจากหน่วยงาน</option>
                                                                             <option value="2">รอส่งเอกสารไปพัสดุ</option>
                                                                             <option value="3">รอพัสดุสั่งของ</option>
@@ -1335,7 +1334,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 </div>
 
                                                                 <div class="d-flex justify-content-end align-items-center my-2">
-                                                                    <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                    <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-main-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
                                                                 </div>
                                                                 <table id="pdf" style="width: 100%;" class="table">
                                                                     <thead class="table-primary">
@@ -1351,7 +1350,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                         </tr>
                                                                     </thead>
 
-                                                                    <tbody id="table-body-<?= $row['id'] ?>">
+                                                                    <tbody id="table-body-main-<?= $row['id'] ?>">
                                                                         <tr class="text-center">
                                                                             <th scope="row">1</th>
                                                                             <td>
@@ -1359,13 +1358,13 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                     <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                                                                                     <!-- Populate options dynamically -->
                                                                                     <?php
-                                                                                    $sql = "SELECT * FROM device_models ORDER BY models_name ASC";
-                                                                                    $stmt = $conn->prepare($sql);
-                                                                                    $stmt->execute();
-                                                                                    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                                                                    foreach ($result as $d) {
+                                                                                    $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
+                                                                                    $deviceStmt = $conn->prepare($deviceSql);
+                                                                                    $deviceStmt->execute();
+                                                                                    $devices = $deviceStmt->fetchAll(PDO::FETCH_ASSOC);
+                                                                                    foreach ($devices as $device) {
                                                                                     ?>
-                                                                                        <option value="<?= $d['models_id'] ?>"><?= $d['models_name'] ?></option>
+                                                                                        <option value="<?= $device['models_id'] ?>"><?= $device['models_name'] ?></option>
                                                                                     <?php
                                                                                     }
                                                                                     ?>
@@ -1384,7 +1383,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 </table>
 
                                                                 <div class="d-flex justify-content-end">
-                                                                    <button type="button" id="add-row-<?= $row['id'] ?>" class="btn btn-success">+ เพิ่มแถว</button>
+                                                                    <button type="button" id="add-row-main-<?= $row['id'] ?>" class="btn btn-success">+ เพิ่มแถว</button>
                                                                 </div>
                                                                 <div class="w-100 d-flex justify-content-center">
                                                                     <button type="submit" name="submit_with_work" class="w-100 btn btn-primary mt-3">บันทึกข้อมูล</button>
@@ -1462,7 +1461,7 @@ if (!isset($_SESSION["admin_log"])) {
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <form method="post" action="export.php">
-                            <button name="act" class="btn btn-primary" type="submit">Export->Excel</button>
+                            <button name="actUncomplete" class="btn btn-primary" type="submit">Export->Excel</button>
                         </form>
                     </div>
 
@@ -1845,51 +1844,11 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 </select>
                                                             </div>
                                                         </div>
-
-                                                        <!-- !!!!! -->
-
-                                                        <?php
-                                                        $sql = "SELECT * FROM orderdata";
-                                                        $stmt = $conn->prepare($sql);
-                                                        $stmt->execute();
-                                                        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                                        if (!$result) {
-                                                            $newValueToCheck = "1/67";
-                                                        } else {
-                                                            foreach ($result as $d) {
-                                                                if ($d) {
-                                                                    $selectedValue = $d['numberWork'];
-                                                                    list($numerator, $denominator) = explode('/', $selectedValue);
-
-                                                                    $currentDate = new DateTime();
-
-                                                                    // Set $october10 to be October 10 of the current year
-                                                                    $october1 = new DateTime($currentDate->format('Y') . '-10-10');
-
-                                                                    // Check if the current date is after October 10
-                                                                    if ($currentDate > $october1) {
-                                                                        // Add 1 to the numerator and set the denominator to 1
-                                                                        $newNumerator = intval($numerator) + 1;
-                                                                        //$newDenominator = intval($denominator) + 1; // เริ่มต้นที่ 1 ในปีถัดไป
-                                                                        $newDenominator = intval($denominator);
-                                                                    } else {
-                                                                        // Keep the numerator and increment the denominator
-                                                                        $newNumerator = intval($numerator) + 1;
-                                                                        $newDenominator = intval($denominator);
-                                                                    }
-
-                                                                    $newValueToCheck = $newNumerator . '/' . $newDenominator;
-                                                                }
-                                                            }
-                                                        }
-                                                        ?>
-
                                                     </div>
                                                     <div class="modal-footer" style="justify-content: space-between; border: none;">
                                                         <button type="submit" class="btn btn-danger"
                                                             name="disWork">คืนงาน</button>
-                                                        <button type="button" class="btn btn-primary" onclick="toggleModal('#requisitionModal<?= $row['id'] ?>')">เบิก/ส่งซ่อม</button>
+                                                        <button type="button" class="btn btn-primary" onclick="toggleModal('#UnCompleteModal<?= $row['id'] ?>')">เบิก/ส่งซ่อม</button>
                                                         <button type="submit" class="btn me-3 btn-primary"
                                                             name="Bantext">บันทึก</button>
                                                         <button type="submit" name="CloseSubmit"
@@ -1907,14 +1866,14 @@ if (!isset($_SESSION["admin_log"])) {
                                                 $hasRequisition = count($requisitionData) > 0;
                                                 ?>
 
-                                                <div id="requisitionModal<?= $row['id'] ?>" class="modal-content withdraw-modal" style="display: none;">
+                                                <div id="UnCompleteModal<?= $row['id'] ?>" class="modal-content withdraw-modal" style="display: none;">
                                                     <div class="modal-header" style="background-color: <?= $hasRequisition ? '#F8BF24' : '#cfe2ff'; ?>;">
                                                         <?php if ($hasRequisition): ?>
                                                             <h1 class="modal-title fs-5" id="staticBackdropLabel">แก้ไขใบเบิก</h1>
                                                         <?php else: ?>
                                                             <h1 class="modal-title fs-5" id="staticBackdropLabel">สร้างใบเบิก</h1>
                                                         <?php endif; ?>
-                                                        <button type="button" class="btn-close" onclick="toggleModal('#requisitionModal<?= $row['id'] ?>')"></button>
+                                                        <button type="button" class="btn-close" onclick="toggleModal('#UnCompleteModal<?= $row['id'] ?>')"></button>
                                                     </div>
                                                     <div class="p-3">
                                                         <div class="row">
@@ -1999,7 +1958,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <div class="col-sm-6">
                                                                         <div class="mb-3">
                                                                             <label id="basic-addon1">หมายเลขครุภัณฑ์</label>
-                                                                            <div id="device-number-container-<?= $row['id'] ?>">
+                                                                            <div id="device-number-container-unComplete-<?= $row['id'] ?>">
                                                                                 <?php
                                                                                 $sql = 'SELECT * FROM order_numberdevice WHERE order_item = :order_item AND is_deleted = 0';
                                                                                 $stmt = $conn->prepare($sql);
@@ -2014,7 +1973,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                             <input type="text" name="update_number_device[<?= $row['id'] ?>][<?= $device['id'] ?>]" class="form-control mb-2" value="<?= htmlspecialchars($device['numberDevice']) ?>">
                                                                                             <button type="button" class="btn btn-warning p-2 mb-2 ms-3 remove-field"
                                                                                                 data-device-id="<?= $device['id'] ?>"
-                                                                                                data-row-id="<?= $row['id'] ?>"
+                                                                                                data-row-id="unComplete-<?= $row['id'] ?>"
                                                                                                 style="visibility: <?= $isFirst ? 'hidden' : 'visible' ?>;">ลบ</button>
                                                                                         </div>
                                                                                     <?php
@@ -2029,7 +1988,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 <?php } ?>
                                                                             </div>
                                                                             <div class="d-flex justify-content-end">
-                                                                                <button type="button" id="add-device-number-<?= $row['id'] ?>" class="btn btn-success mt-2 align-self-end">+ เพิ่มหมายเลขครุภัณฑ์</button>
+                                                                                <button type="button" id="add-device-number-unComplete-<?= $row['id'] ?>" class="btn btn-success mt-2 align-self-end">+ เพิ่มหมายเลขครุภัณฑ์</button>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -2212,7 +2171,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <div class="col-sm-4">
                                                                         <div class="mb-3">
                                                                             <label for="inputGroupSelect01">สถานะ</label>
-                                                                            <select required class="form-select" name="status" id="inputGroupSelect01">
+                                                                            <select required class="form-select" name="status" id="inputGroupSelect01" disabled>
                                                                                 <?php
                                                                                 // Fetch the latest status for the current order
                                                                                 $statusSql = "SELECT status FROM order_status 
@@ -2266,7 +2225,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     $orderItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                                     ?>
                                                                     <div class="d-flex justify-content-end align-items-center my-2">
-                                                                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-unComplete-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
                                                                     </div>
                                                                     <table id="pdf" style="width: 100%;" class="table">
                                                                         <thead class="table-primary">
@@ -2281,7 +2240,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 <th scope="col"></th>
                                                                             </tr>
                                                                         </thead>
-                                                                        <tbody id="table-body-<?= $row['id'] ?>">
+                                                                        <tbody id="table-body-unComplete-<?= $row['id'] ?>">
                                                                             <?php
                                                                             $rowNumber = 1;
                                                                             $isFirstRow = true;
@@ -2321,7 +2280,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                         </tbody>
                                                                     </table>
                                                                     <div class="d-flex justify-content-end">
-                                                                        <button type="button" id="add-row-<?= $row['id'] ?>" class="btn btn-success">+ เพิ่มแถว</button>
+                                                                        <button type="button" id="add-row-unComplete-<?= $row['id'] ?>" class="btn btn-success">+ เพิ่มแถว</button>
                                                                     </div>
 
                                                                 <?php } ?>
@@ -2400,7 +2359,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="col-sm-6">
                                                                     <div class="mb-3">
                                                                         <label id="basic-addon1">หมายเลขครุภัณฑ์</label>
-                                                                        <div id="device-number-container-<?= $row['id'] ?>">
+                                                                        <div id="device-number-container-unComplete-<?= $row['id'] ?>">
                                                                             <div class="d-flex device-number-row">
                                                                                 <input type="text" name="number_device[<?= $row['id'] ?>][]" class="form-control"
                                                                                     value="<?= isset($row['number_device']) ? $row['number_device'] : '' ?>">
@@ -2408,7 +2367,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                             </div>
                                                                         </div>
                                                                         <div class="d-flex justify-content-end">
-                                                                            <button type="button" id="add-device-number-<?= $row['id'] ?>" class="btn btn-success mt-2 align-self-end">+ เพิ่มหมายเลขครุภัณฑ์</button>
+                                                                            <button type="button" id="add-device-number-unComplete-<?= $row['id'] ?>" class="btn btn-success mt-2 align-self-end">+ เพิ่มหมายเลขครุภัณฑ์</button>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -2556,13 +2515,13 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="col-sm-6">
                                                                     <div class="mb-3">
                                                                         <label id="basic-addon1">อาการรับแจ้ง</label>
-                                                                        <input type="text" name="report" class="form-control">
+                                                                        <input type="text" name="report" class="form-control" value="<?= $row['report'] ?>">
                                                                     </div>
                                                                 </div>
                                                                 <div class="col-sm-6">
                                                                     <div class="mb-3">
                                                                         <label id="basic-addon1">เหตุผลและความจำเป็น</label>
-                                                                        <input type="text" name="reason" class="form-control">
+                                                                        <input type="text" name="reason" class="form-control" value="<?= $row['description'] ?>">
                                                                     </div>
                                                                 </div>
 
@@ -2596,7 +2555,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <div class="mb-3">
                                                                         <label for="inputGroupSelect01">สถานะ
                                                                         </label>
-                                                                        <select required class="form-select" name="status" id="inputGroupSelect01">
+                                                                        <select required class="form-select" name="status" id="inputGroupSelect01" disabled>
                                                                             <option value="1">รอรับเอกสารจากหน่วยงาน</option>
                                                                             <option value="2">รอส่งเอกสารไปพัสดุ</option>
                                                                             <option value="3">รอพัสดุสั่งของ</option>
@@ -2622,7 +2581,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 </div>
 
                                                                 <div class="d-flex justify-content-end align-items-center my-2">
-                                                                    <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                    <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-unComplete-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
                                                                 </div>
                                                                 <table id="pdf" style="width: 100%;" class="table">
                                                                     <thead class="table-primary">
@@ -2638,7 +2597,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                         </tr>
                                                                     </thead>
 
-                                                                    <tbody id="table-body-<?= $row['id'] ?>">
+                                                                    <tbody id="table-body-unComplete-<?= $row['id'] ?>">
                                                                         <tr class="text-center">
                                                                             <th scope="row">1</th>
                                                                             <td>
@@ -2646,13 +2605,13 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                     <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                                                                                     <!-- Populate options dynamically -->
                                                                                     <?php
-                                                                                    $sql = "SELECT * FROM device_models ORDER BY models_name ASC";
-                                                                                    $stmt = $conn->prepare($sql);
-                                                                                    $stmt->execute();
-                                                                                    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                                                                    foreach ($result as $d) {
+                                                                                    $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
+                                                                                    $deviceStmt = $conn->prepare($deviceSql);
+                                                                                    $deviceStmt->execute();
+                                                                                    $devices = $deviceStmt->fetchAll(PDO::FETCH_ASSOC);
+                                                                                    foreach ($devices as $device) {
                                                                                     ?>
-                                                                                        <option value="<?= $d['models_id'] ?>"><?= $d['models_name'] ?></option>
+                                                                                        <option value="<?= $device['models_id'] ?>"><?= $device['models_name'] ?></option>
                                                                                     <?php
                                                                                     }
                                                                                     ?>
@@ -2671,7 +2630,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 </table>
 
                                                                 <div class="d-flex justify-content-end">
-                                                                    <button type="button" id="add-row-<?= $row['id'] ?>" class="btn btn-success">+ เพิ่มแถว</button>
+                                                                    <button type="button" id="add-row-unComplete-<?= $row['id'] ?>" class="btn btn-success">+ เพิ่มแถว</button>
                                                                 </div>
                                                                 <div class="w-100 d-flex justify-content-center">
                                                                     <button type="submit" name="submit_with_work" class="w-100 btn btn-primary mt-3">บันทึกข้อมูล</button>
@@ -2841,14 +2800,12 @@ if (!isset($_SESSION["admin_log"])) {
             sumInputs.forEach(input => {
                 total += parseFloat(input.value) || 0;
             });
-
-            // Dynamically get the specific total-amount element
-            const totalAmount = document.querySelector(`#total-amount-${tableBodyId.split('-').pop()}`);
+            const [tableType, modalId] = tableBodyId.split('-').slice(-2);
+            const totalAmount = document.querySelector(`#total-amount-${tableType}-${modalId}`);
             if (totalAmount) {
                 totalAmount.textContent = total.toLocaleString();
             }
-
-            console.log(`Total for ${tableBodyId}: `, total);
+            console.log(`Total for ${tableType}-${modalId}: `, total);
         }
 
         function calculateRowTotalAutoList(rowElement, tableBodyId) {
@@ -2894,36 +2851,39 @@ if (!isset($_SESSION["admin_log"])) {
 
         let rowIndex = 1;
         document.addEventListener('click', function(e) {
-            if (e.target && e.target.id.startsWith('add-row-')) {
-                const modalId = e.target.id.split('-').pop(); // Extract the modal index
-                const tableBody = document.querySelector(`#table-body-${modalId}`);
+            if (e.target && e.target.id.startsWith('add-row-main-') || e.target.id.startsWith('add-row-unComplete-')) {
+                const modalId = e.target.id.split('-').pop(); // Extract the modal ID
+                const isMain = e.target.id.includes('main');
+                const tableBody = document.querySelector(`#table-body-${isMain ? 'main' : 'unComplete'}-${modalId}`);
                 const rowIndex = tableBody.querySelectorAll('tr').length + 1;
 
                 const newRow = document.createElement('tr');
                 newRow.className = 'text-center';
                 newRow.innerHTML = `
-<th scope="row">${rowIndex}</th>
-<td>
-<select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="list[${modalId}][]" data-row="${rowIndex}">
-<option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-<?php
-foreach ($result as $d) {
-?>
-<option value="<?= $d['models_id'] ?>"><?= $d['models_name'] ?></option>
-<?php
-}
-?>
-</select>
-</td>
-<td><textarea rows="2" maxlength="60" name="quality[${modalId}][]" class="form-control"></textarea></td>
-<td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[${modalId}][]" class="form-control"></td>
-<td><input style="width: 5rem; margin: 0 auto;" name="price[${modalId}][]" class="form-control"></td>
-<td><input disabled value="" style="width: 5rem;" type="text" class="form-control no-toggle"></td>
-<td><input style="width: 4rem; margin: 0 auto;" type="text" name="unit[${modalId}][]" class="form-control"></td>
-<td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
+            <th scope="row">${rowIndex}</th>
+            <td>
+                <select style="width: 150px; margin: 0 auto;" class="form-select device-select" 
+                        name="list[${modalId}][]" data-row="${rowIndex}">
+                    <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+                    <?php
+                    foreach ($devices as $device) {
+                    ?>
+                    <option value="<?= $device['models_id'] ?>"><?= $device['models_name'] ?></option>
+                    <?php
+                    }
+                    ?>
+                </select>
+            </td>
+            <td><textarea rows="2" maxlength="60" name="quality[${modalId}][]" class="form-control"></textarea></td>
+            <td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[${modalId}][]" class="form-control"></td>
+            <td><input style="width: 5rem; margin: 0 auto;" type="text" name="price[${modalId}][]" class="form-control"></td>
+            <td><input disabled value="" style="width: 5rem;" type="text" class="form-control no-toggle"></td>
+            <td><input style="width: 4rem; margin: 0 auto;" type="text" name="unit[${modalId}][]" class="form-control"></td>
+            <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
         `;
+
                 tableBody.appendChild(newRow);
-                calculateRowTotal(newRow, `table-body-${modalId}`);
+                calculateRowTotal(newRow, `table-body-${isMain ? 'main' : 'unComplete'}-${modalId}`);
             }
         });
         document.addEventListener('click', function(e) {
@@ -2937,7 +2897,10 @@ foreach ($result as $d) {
                     // Case 1: Soft delete for saved rows
                     const rowId = e.target.getAttribute('data-items-row-id');
                     const itemId = e.target.getAttribute('data-items-id');
-                    const mainTableBody = document.querySelector(`#table-body-${rowId}`);
+                    const isMain = tableBodyId.includes('main');
+                    const mainTableBody = document.querySelector(
+                        `#table-body-${isMain ? 'main' : 'unComplete'}-${rowId}`
+                    );
                     const deletedInput = document.createElement('input');
                     deletedInput.type = 'hidden';
                     deletedInput.name = `deleted_items[${rowId}][${itemId}]`;
@@ -2962,7 +2925,9 @@ foreach ($result as $d) {
         $(document).on('change', '.device-select', function() {
             const models_id = $(this).val();
             const rowElement = $(this).closest('tr');
-            const modalId = $(this).closest('tbody').attr('id').split('-').pop();
+            const tableBodyId = $(this).closest('tbody').attr('id');
+            const modalId = tableBodyId.split('-').pop();
+            const tableType = tableBodyId.includes('main') ? 'main' : 'unComplete';
             const nameAttr = $(this).attr('name');
             const matches = nameAttr.match(/\[(\d+)\]\[(\d+)\]/);
             const isUpdateMode = matches !== null;
@@ -2987,7 +2952,7 @@ foreach ($result as $d) {
                                 rowElement.find('input[name^="price"]').attr('name', `price[${modalId}][]`).val(data.price);
                                 rowElement.find('input[name^="unit"]').attr('name', `unit[${modalId}][]`).val(data.unit);
                             }
-                            calculateRowTotalAutoList(rowElement[0], `table-body-${modalId}`);
+                            calculateRowTotalAutoList(rowElement[0], `table-body-${tableType}-${modalId}`);
                         } else {
                             alert('ไม่สามารถดึงข้อมูลได้');
                         }
@@ -3000,18 +2965,21 @@ foreach ($result as $d) {
         });
     </script>
     <script>
-        // Add a new device row
         document.addEventListener('click', function(e) {
             if (e.target && e.target.id.startsWith('add-device-number-')) {
-                const modalId = e.target.id.split('-').pop();
-                const container = document.querySelector(`#device-number-container-${modalId}`);
-                const newRow = document.createElement('div');
-                newRow.className = 'd-flex device-number-row';
-                newRow.innerHTML = `
+                const [type, modalId] = e.target.id.split('-').slice(-2);
+                const container = document.querySelector(`#device-number-container-${type}-${modalId}`);
+                if (container) {
+                    const newRow = document.createElement('div');
+                    newRow.className = 'd-flex device-number-row';
+                    newRow.innerHTML = `
 <input type="text" name="number_device[${modalId}][]" class="form-control mt-2">
-<button type="button" class="btn btn-warning mt-2 p-2 remove-field ms-3">ลบ</button>
-        `;
-                container.appendChild(newRow);
+                <button type="button" class="btn btn-warning mt-2 p-2 remove-field ms-3">ลบ</button>
+            `;
+                    container.appendChild(newRow);
+                } else {
+                    console.error(`Container not found for type: ${type} and modalId: ${modalId}`);
+                }
             }
         });
 
@@ -3023,11 +2991,13 @@ foreach ($result as $d) {
 
                 if (hiddenInput && hiddenInput.name.startsWith('update_number_device')) {
                     // Case 1: Soft delete
-                    const modalId = e.target.getAttribute('data-row-id');
+                    const getModalId = e.target.getAttribute('data-row-id');
+                    const modalId = getModalId.split('-').pop(); 
+                    const isMain = getModalId.includes('main');
                     const deviceId = e.target.getAttribute('data-device-id');
-                    const container = document.querySelector(`#device-number-container-${modalId}`);
+                    const container = document.querySelector(`#device-number-container-${isMain ? 'main' : 'unComplete'}-${modalId}`);
                     const deletedInput = document.createElement('input');
-                    deletedInput.type = 'hidden';
+                    deletedInput.type = 'text';
                     deletedInput.name = `deleted_devices[${modalId}][${deviceId}]`;
                     deletedInput.value = hiddenInput.value;
                     container.appendChild(deletedInput);

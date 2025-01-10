@@ -339,7 +339,7 @@ function generateNumberWork($conn)
     } else {
         // Default if no numberWork exists
         $numerator = 0;
-        $denominator = 67; // Starting year or any default value
+        $denominator = 68; // Starting year or any default value
     }
 
     $currentDate = new DateTime();
@@ -646,7 +646,7 @@ if (isset($_POST['submit_with_work'])) {
     $refOffer = $_POST["ref_offer"];
     $quotation = $_POST["quotation"];
     $note = $_POST["note"];
-    $status = $_POST["status"];
+    $status = 1;
     $id_ref = $_POST["id_ref"];
     $numberDevices = $_POST["number_device"];
 
@@ -667,7 +667,7 @@ if (isset($_POST['submit_with_work'])) {
     $sla = $_POST['sla'] ?? null;
     $kpi = $_POST['kpi'] ?? null;
     $close_date = $_POST['close_date'] ?? null;
-    $statusTask = null;
+    $statusTask = 3;
     if (!empty($close_date) && strtotime($close_date)) {
         if (empty($device) || empty($problem) || empty($sla) || empty($kpi)) {
             $statusTask = 6; // Incomplete
@@ -811,9 +811,9 @@ if (isset($_POST['submit_with_work'])) {
                                   number_device = :number_device, device = :device, deviceName = :deviceName, sla = :sla, 
                                   kpi = :kpi, repair_count = :repair_count, close_date = :close_date, department = :department";
 
-                if (!empty($close_date) && strtotime($close_date)) {
+                // if (!empty($close_date) && strtotime($close_date)) {
                     $updateSql .= ", status = :status";
-                }
+                // }
 
                 $updateSql .= " WHERE id = :id_ref";
                 $updateStmt = $conn->prepare($updateSql);
@@ -830,9 +830,9 @@ if (isset($_POST['submit_with_work'])) {
                 $updateStmt->bindParam(":close_date", $close_date);
                 $updateStmt->bindParam(":department", $department);
                 $updateStmt->bindParam(":id_ref", $id_ref);
-                if (!empty($close_date) && strtotime($close_date)) {
+                // if (!empty($close_date) && strtotime($close_date)) {
                     $updateStmt->bindParam(":status", $statusTask);
-                }
+                // }
                 $updateStmt->execute();
 
                 $conn->commit();
@@ -896,7 +896,7 @@ if (isset($_POST['save_with_work'])) {
     $sla = $_POST['sla'] ?? null;
     $kpi = $_POST['kpi'] ?? null;
     $close_date = $_POST['close_date'] ?? null;
-    $statusTask = null;
+    $statusTask = 3;
     if (!empty($close_date) && strtotime($close_date)) {
         if (empty($device) || empty($problem) || empty($sla) || empty($kpi)) {
             $statusTask = 6; // Incomplete
@@ -1119,9 +1119,9 @@ if (isset($_POST['save_with_work'])) {
                                   number_device = :number_device, device = :device, deviceName = :deviceName, sla = :sla, 
                                   kpi = :kpi, repair_count = :repair_count, close_date = :close_date, department = :department";
 
-                if (!empty($close_date) && strtotime($close_date)) {
+                // if (!empty($close_date) && strtotime($close_date)) {
                     $updateSql .= ", status = :status";
-                }
+                // }
 
                 $updateSql .= " WHERE id = :id_ref";
                 $updateStmt = $conn->prepare($updateSql);
@@ -1138,9 +1138,9 @@ if (isset($_POST['save_with_work'])) {
                 $updateStmt->bindParam(":close_date", $close_date);
                 $updateStmt->bindParam(":department", $department);
                 $updateStmt->bindParam(":id_ref", $id_ref);
-                if (!empty($close_date) && strtotime($close_date)) {
+                // if (!empty($close_date) && strtotime($close_date)) {
                     $updateStmt->bindParam(":status", $statusTask);
-                }
+                // }
                 $updateStmt->execute();
 
                 $conn->commit();
@@ -1489,7 +1489,7 @@ if (isset($_POST['CheckAll'])) {
     $dateWithdraw = $_POST["dateWithdraw"]; //วันที่ปัจจุบัน
     $refWithdraw = 23;
     $refWork = 10;
-    $refDevice = 17;
+    $refDevice = 43;
     $reason = $_POST['reason'];
     $report = "เบิกอะไหล่รายสัปดาห์ตามเอกสารแนบ";
     $refDepart = 3;
@@ -1508,7 +1508,7 @@ if (isset($_POST['CheckAll'])) {
     $qualities = $_POST['quality'];
     $amounts = $_POST['amount'];
     $prices = $_POST['price'];
-
+    $units = $_POST['unit'];
     // echo '<pre>';
     // var_dump([
     //     'numberWork' => $numberWork,
@@ -1561,10 +1561,10 @@ if (isset($_POST['CheckAll'])) {
             $orderId = $conn->lastInsertId();
 
             $itemSql = "INSERT INTO order_items (order_id, list, quality, amount, price
-            -- , unit
+            , unit
             ) 
             VALUES (:order_id, :list, :quality, :amount, :price
-            -- , :unit
+            , :unit
             )";
             $itemStmt = $conn->prepare($itemSql);
 
@@ -1574,7 +1574,7 @@ if (isset($_POST['CheckAll'])) {
                 $itemStmt->bindParam(':quality', $qualities[$index]);
                 $itemStmt->bindParam(':amount', $amounts[$index]);
                 $itemStmt->bindParam(':price', $prices[$index]);
-                // $itemStmt->bindParam(':unit', $units[$index]);
+                $itemStmt->bindParam(':unit', $units[$index]);
                 $itemStmt->execute();
             }
 
@@ -1754,9 +1754,22 @@ if (isset($_POST['CloseSubmit'])) {
     $kpi = $_POST['kpi'];
     $number_device = $_POST['number_devices'];
     $repair_count = $_POST['repair_count'];
+    // echo '<pre>';
+    // var_dump([
+    //     'close_date' => $_POST['close_date'],
+    // ]);
+    // echo '</pre>';
+    // exit();
     // Get current date and time
     date_default_timezone_set('Asia/Bangkok');
-    $close_date = date('Y-m-d H:i:s'); // Save as current DateTime in MySQL format
+    // Check if 'close_date' from POST is empty or null
+    if (empty($_POST['close_date'])) {
+        // If empty, use the current date and time
+        $close_date = date('Y-m-d H:i:s');
+    } else {
+        // Otherwise, use the provided 'close_date'
+        $close_date = $_POST['close_date'];
+    }
 
     if (empty($device) || empty($problem) || empty($sla) || empty($kpi)) {
         $status = 6;

@@ -80,11 +80,22 @@ if (!isset($_SESSION["admin_log"])) {
             <tbody class="text-center">
                 <?php
                 $status = $_GET['status'];
-                $sql = "SELECT od.*,dv.device_name,dw.withdraw_name 
-                FROM orderdata AS od
-                INNER JOIN device AS dv ON od.refDevice = dv.device_id
-                INNER JOIN withdraw AS dw ON od.refWithdraw = dw.withdraw_id
-                WHERE status = :status";
+                $sql = "SELECT od.id AS order_id, od.*, os.status, os.timestamp ,dv.device_name,dw.withdraw_name 
+                FROM orderdata_new AS od
+                LEFT JOIN device AS dv ON od.refDevice = dv.device_id
+                LEFT JOIN withdraw AS dw ON od.refWithdraw = dw.withdraw_id
+                LEFT JOIN (
+  SELECT os1.order_id, os1.status, os1.timestamp
+  FROM order_status AS os1
+  WHERE (os1.timestamp, os1.id) IN (
+    SELECT MAX(os2.timestamp) AS latest_timestamp, MAX(os2.id) AS latest_id
+    FROM order_status AS os2
+    WHERE os2.order_id = os1.order_id
+  )
+) AS os ON os.order_id = od.id
+                WHERE os.status = :status
+                ORDER BY od.id DESC";
+
                 $stmt = $conn->prepare($sql);
                 $stmt->bindParam(":status", $status);
                 $stmt->execute();
@@ -139,10 +150,8 @@ if (!isset($_SESSION["admin_log"])) {
 
 
                 foreach ($result as $row) {
-                    $receiptDateFromDB = $row['dateWithdraw'];
-                    $deliveryDateFromDB = $row['deliveryDate'];
-                    $receiptThai = formatDateThai($receiptDateFromDB);
-                    $deliveryThai = formatDateThai($deliveryDateFromDB);
+                    $dateWithdrawThai = formatDateThai($row['dateWithdraw']);
+                    $timestamp = formatDateThai($row['timestamp']);
 
                     $options = [
                         1 => 'รอรับเอกสารจากหน่วยงาน',
@@ -172,7 +181,7 @@ if (!isset($_SESSION["admin_log"])) {
                             <?= $row['device_name'] ?>
                         </td>
                         <td class="thaiDateInput">
-                            <?= $receiptThai ?>
+                            <?= $dateWithdrawThai ?>
                         </td>
                         <td>
                             <?= $row['reason'] ?>
@@ -181,14 +190,14 @@ if (!isset($_SESSION["admin_log"])) {
                             <?= $row['note'] ?>
                         </td>
                         <td>
-                            <?= $deliveryThai  ?>
+                            <?= $timestamp ?>
                         </td>
                         <td>
                             <?= $statusName ?>
                         </td>
 
                         <td>
-                            <a class="btn btn-primary" href="check.php?numberWork=<?= $row['id'] ?>">ดูข้อมูล</a>
+                            <a class="btn btn-primary" href="check.php?numberWork=<?= $row['numberWork'] ?>">ดูข้อมูล</a>
                         </td>
                     </tr>
                 <?php    }
@@ -201,7 +210,9 @@ if (!isset($_SESSION["admin_log"])) {
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script>
-        new DataTable('#example');
+        new DataTable('#example', {
+            "order": []
+        });
     </script>
 
 

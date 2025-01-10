@@ -244,6 +244,10 @@ if (isset($_POST['updateData'])) {
     $report = $_POST['report'];
     $reason = $_POST['reason'];
     $note = $_POST['note'];
+    $refWork = $_POST["ref_work"];
+    $refWithdraw = $_POST["ref_withdraw"];
+    $refOffer = $_POST["ref_offer"];
+    $quotation = $_POST["quotation"];
 
     $numberDevices = $_POST["device_numbers"];
     $update_number_device = $_POST["update_number_device"];
@@ -294,7 +298,11 @@ if (isset($_POST['updateData'])) {
     $sql = "UPDATE orderdata_new SET
             report = :report,
             reason = :reason,
-            note = :note
+            note = :note,
+            refWork = :refWork,
+            refWithdraw = :refWithdraw,
+            refOffer = :refOffer,
+            quotation = :quotation
             WHERE id = :id";
 
     // เตรียมและ execute statement
@@ -303,6 +311,10 @@ if (isset($_POST['updateData'])) {
     $stmt->bindParam(":report", $report);
     $stmt->bindParam(":reason", $reason);
     $stmt->bindParam(":note", $note);
+    $stmt->bindParam(":refWork", $refWork);
+    $stmt->bindParam(":refWithdraw", $refWithdraw);
+    $stmt->bindParam(":refOffer", $refOffer);
+    $stmt->bindParam(":quotation", $quotation);
     $stmt->bindParam(":id", $id);
     if ($stmt->execute()) {
         if (!empty($_POST['list'])) {

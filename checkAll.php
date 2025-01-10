@@ -97,15 +97,15 @@ if (!isset($_SESSION["admin_log"])) {
                oi.unit
                FROM 
                orderdata_new AS od
-               INNER JOIN 
+               LEFT JOIN 
                withdraw AS wd ON od.refWithdraw = wd.withdraw_id
-               INNER JOIN 
+               LEFT JOIN 
                offer AS of ON od.refOffer = of.offer_id
-               INNER JOIN 
+               LEFT JOIN 
                depart AS dp ON od.refDepart = dp.depart_id
-               INNER JOIN 
+               LEFT JOIN 
                listwork AS lw ON od.refWork = lw.work_id
-               INNER JOIN 
+               LEFT JOIN 
                device AS dv ON od.refDevice = dv.device_id
                LEFT JOIN 
                order_numberdevice AS nd ON od.id = nd.order_item
@@ -122,10 +122,10 @@ if (!isset($_SESSION["admin_log"])) {
                        GROUP BY order_id
                    ) AS latest_status
                    ON CONCAT(os1.timestamp, os1.id) = latest_status.latest AND os1.order_id = latest_status.order_id
-                   WHERE os1.status = 1
+                   WHERE os1.status = 2
                ) AS os ON od.id = os.order_id
                WHERE 
-               os.status = 1 AND
+               os.status = 2 AND
                (nd.is_deleted = 0 OR nd.is_deleted IS NULL)
                AND (oi.is_deleted = 0 OR oi.is_deleted IS NULL)
                ORDER BY nd.id, oi.id
@@ -204,7 +204,7 @@ if (!isset($_SESSION["admin_log"])) {
                             $firstRow = $group[0];
                         ?>
                             <!-- First row with toggle button -->
-                            <tr class="text-center" data-unit="<?= $firstRow['unit'] ?>">
+                            <tr class="text-center">
                                 <?php if (count($group) > 1): ?>
                                     <td> <button style="width: 40px; height: 40px;" class="btn toggle-expand rounded-circle" data-numberwork="<?= $numberWork ?>">></button> </td>
                                 <?php else: ?>
@@ -227,7 +227,7 @@ if (!isset($_SESSION["admin_log"])) {
                                 </td>
                             </tr>
                             <?php for ($i = 1; $i < count($group); $i++): $item = $group[$i]; ?>
-                                <tr class="text-center expand-row d-none" data-numberwork="<?= $numberWork ?>" data-unit="<?= $item['unit'] ?>">
+                                <tr class="text-center expand-row d-none" data-numberwork="<?= $numberWork ?>">
                                     <td>
                                         <p style="display: none;">></p>
                                     </td>
@@ -460,12 +460,18 @@ if (!isset($_SESSION["admin_log"])) {
                                 tableBody.removeChild(firstRow);
                                 const newRow = createRow(listId, listName, quality, amount, price, unit, numberWork);
                                 tableBody.appendChild(newRow);
+                                // if (unit == 'ลบ') {
+                                //     console.log('error at 464');
+                                // }
                                 updateRowIndexes();
                                 calculateTotal();
                             } else {
                                 // Create a new row if no match is found
                                 const newRow = createRow(listId, listName, quality, amount, price, unit, numberWork);
                                 tableBody.appendChild(newRow);
+                                // if (unit == 'ลบ') {
+                                //     console.log('error at 473');
+                                // }
                                 updateRowIndexes();
                                 calculateTotal();
                             }
@@ -522,7 +528,7 @@ if (!isset($_SESSION["admin_log"])) {
         function createRow(listId, listName, quality, amount, price, unit, numberWork) {
             const newRow = document.createElement('tr');
             newRow.className = 'text-center copied-row';
-            newRow.setAttribute('data-numberwork', numberWork);
+            newRow.setAttribute('copied-numberwork', numberWork);
             newRow.innerHTML = `
     <td>
         <select class="form-select device-select" name="list[]" data-row="0">

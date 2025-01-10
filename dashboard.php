@@ -242,7 +242,7 @@ if (!isset($_SESSION["admin_log"])) {
 
                                 $sql = "SELECT dp.*,dt.depart_name 
                     FROM data_report as dp
-                    INNER JOIN depart as dt ON dp.department = dt.depart_id
+                    LEFT JOIN depart as dt ON dp.department = dt.depart_id
                     WHERE DATE(date_report) = :dateNow
                     ";
                                 $stmt = $conn->prepare($sql);
@@ -320,7 +320,7 @@ if (!isset($_SESSION["admin_log"])) {
                                 <?php
                                 $sql = "SELECT dp.id, dp.device, dp.report, dp.time_report, dp.take, dt.depart_name, adm.fname, adm.lname,dp.deviceName
         FROM data_report as dp
-        INNER JOIN depart as dt ON dp.department = dt.depart_id 
+        LEFT JOIN depart as dt ON dp.department = dt.depart_id 
         INNER JOIN admin as adm ON dp.username = adm.username
         WHERE dp.status = 2
         ORDER BY dp.id DESC";
@@ -430,7 +430,7 @@ if (!isset($_SESSION["admin_log"])) {
 
                                 $sql = "SELECT dp.*,dt.depart_name 
                     FROM data_report as dp
-                    INNER JOIN depart as dt ON dp.department = dt.depart_id
+                    LEFT JOIN depart as dt ON dp.department = dt.depart_id
                     WHERE DATE(date_report) <> :dateNow
                     ";
                                 $stmt = $conn->prepare($sql);
@@ -511,7 +511,7 @@ if (!isset($_SESSION["admin_log"])) {
 
                                 $sql = "SELECT dp.*,dt.depart_name 
                     FROM data_report as dp
-                    INNER JOIN depart as dt ON dp.department = dt.depart_id
+                    LEFT JOIN depart as dt ON dp.department = dt.depart_id
                     ";
                                 $stmt = $conn->prepare($sql);
                                 $stmt->execute();
@@ -583,7 +583,7 @@ if (!isset($_SESSION["admin_log"])) {
                                 <?php
                                 $sql = "SELECT dp.*,dt.depart_name 
                     FROM data_report as dp
-                    INNER JOIN depart as dt ON dp.department = dt.depart_id
+                    LEFT JOIN depart as dt ON dp.department = dt.depart_id
                     ";
                                 $stmt = $conn->prepare($sql);
                                 $stmt->execute();
@@ -656,7 +656,7 @@ if (!isset($_SESSION["admin_log"])) {
                                 <?php
                                 $sql = "SELECT dp.*,dt.depart_name 
                         FROM data_report as dp
-                        INNER JOIN depart as dt ON dp.department = dt.depart_id";
+                        LEFT JOIN depart as dt ON dp.department = dt.depart_id";
                                 $stmt = $conn->prepare($sql);
                                 $stmt->execute();
                                 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);

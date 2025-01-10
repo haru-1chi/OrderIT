@@ -73,7 +73,7 @@ if (!isset($_SESSION["admin_log"])) {
       ?>
     </div>
   <?php } ?>
-
+  
   <?php
 
   $sql = "SELECT * FROM orderdata_new ORDER BY id DESC";
@@ -102,15 +102,15 @@ oi.price,
 oi.unit
 FROM 
 orderdata_new AS od
-INNER JOIN 
+LEFT JOIN 
 withdraw AS wd ON od.refWithdraw = wd.withdraw_id
-INNER JOIN 
+LEFT JOIN 
 offer AS of ON od.refOffer = of.offer_id
-INNER JOIN 
+LEFT JOIN 
 depart AS dp ON od.refDepart = dp.depart_id
-INNER JOIN 
+LEFT JOIN 
 listwork AS lw ON od.refWork = lw.work_id
-INNER JOIN 
+LEFT JOIN 
 device AS dv ON od.refDevice = dv.device_id
 LEFT JOIN 
 order_numberdevice AS nd ON od.id = nd.order_item
@@ -255,12 +255,12 @@ ORDER BY nd.id, oi.id
               <form action="" method="GET">
                 <div class="row p-3">
                   <div class="col-6">
-                    <label class="form-label" for="assetInput">ค้นหาหมายเลขครุภัณฑ์</label>
+                    <label class="form-label" for="assetInput">ค้นหา</label>
                     <input class="form-control" type="text" id="assetInput">
                     <input type="hidden" id="assetInputName" name="">
                   </div>
                   <div class="col-6">
-                    <label class="form-label" for="inputGroupSelect01">หมายเลขออกงาน</label>
+                    <label class="form-label">หมายเลขออกงาน</label>
                     <?php
                     $sql = "
                    SELECT od.id AS order_id, od.numberWork, os.status
@@ -500,6 +500,42 @@ ORDER BY os.status;
 
               <div class="row">
                 <div class="col-6">
+                  <label for="inputGroupSelect01">ประเภทการเบิก</label>
+                  <select disabled class="form-select" name="ref_withdraw" id="inputGroupSelect01">
+                    <?php
+                    $sql = 'SELECT * FROM withdraw';
+                    $stmt = $conn->prepare($sql);
+                    $stmt->execute();
+                    $withdraws = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                    foreach ($withdraws as $withdraw) {
+                      $selected = ($withdraw['withdraw_id'] == $order['refWithdraw']) ? 'selected' : ''; ?>
+                      <option value="<?= $withdraw['withdraw_id'] ?>" <?= $selected ?>><?= $withdraw['withdraw_name'] ?></option>
+                    <?php } ?>
+                  </select>
+                </div>
+
+                <div class="col-6">
+                  <label for="inputGroupSelect01">ประเภทงาน</label>
+                  <select disabled class="form-select" name="ref_work" id="inputGroupSelect01">
+                    <?php
+                    $sql = 'SELECT * FROM listwork';
+                    $stmt = $conn->prepare($sql);
+                    $stmt->execute();
+                    $listworks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                    foreach ($listworks as $listwork) {
+                      $selected = ($listwork['work_id'] == $order['refWork']) ? 'selected' : '';
+                    ?>
+                      <option value="<?= $listwork['work_id'] ?>" <?= $selected ?>><?= $listwork['work_name'] ?></option>
+                    <?php }
+                    ?>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-6">
                   <label>ส่งซ่อมอุปกรณ์ คอมพิวเตอร์</label>
                   <input type="text" class="form-control"
                     value="<?= $order['device_name'] ?? '' ?>" disabled>
@@ -514,7 +550,7 @@ ORDER BY os.status;
                           <button type="button" class="btn btn-warning p-2 ms-3 mb-2 remove-field"
                             data-device-id="<?= $device['numberDevice_id'] ?>"
                             data-row-id="<?= $order['id'] ?>"
-                            style="display: none; visibility: <?= $index === 0 ? 'hidden' : 'visible' ?>;">ลบ</button>
+                            style="visibility: <?= $index === 0 ? 'hidden' : 'visible' ?>;">ลบ</button>
                         </div>
                       <?php endforeach; ?>
                     <?php  } else { ?>
@@ -548,6 +584,30 @@ ORDER BY os.status;
                   <label>หน่วยงานที่แจ้ง</label>
                   <input type="text" class="form-control"
                     value="<?= $order['depart_name'] ?>" disabled>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-6">
+                  <label for="inputGroupSelect01">ร้านที่เสนอราคา</label>
+                  <select disabled class="form-select" name="ref_offer" id="inputGroupSelect01">
+                    <?php
+                    $sql = 'SELECT * FROM offer';
+                    $stmt = $conn->prepare($sql);
+                    $stmt->execute();
+                    $offers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    foreach ($offers as $offer) {
+                      $selected = ($offer['offer_id'] == $order['refOffer']) ? 'selected' : '';
+                    ?>
+                      <option value="<?= $offer['offer_id'] ?>" <?= $selected ?>><?= $offer['offer_name'] ?></option>
+                    <?php }
+                    ?>
+                  </select>
+                </div>
+
+                <div class="col-6">
+                  <label>เลขที่ใบเสนอราคา</label>
+                  <input disabled type="text" name="quotation" class="form-control" value="<?= $order['quotation'] ?>">
                 </div>
               </div>
 
@@ -870,7 +930,7 @@ ORDER BY os.status;
                     <div class="d-flex device-number-row">
                       <input type="text" name="device_numbers[]" class="form-control mb-2" value="">
                       <button type="button" class="btn btn-warning p-2 ms-3 mb-2 remove-field"
-                        style="display: none; visibility: <?= $index === 0 ? 'hidden' : 'visible' ?>;">ลบ</button>
+                        style="visibility: hidden;">ลบ</button>
                     </div>
                   </div>
                   <div class="d-flex justify-content-end">
@@ -1061,7 +1121,6 @@ ORDER BY os.status;
                   </select>
                 </div>
               </div>
-              <input type="hidden" name="report" class="form-control">
 
               <div class="col-sm-12">
                 <div class="mb-3">
@@ -1229,7 +1288,7 @@ ORDER BY os.status;
 
                 <div class="col-sm-6">
                   <div class="mb-3">
-                    <label id="basic-addon1">หมายเลขครุภัณฑ์</label>
+                    <label id="basic-addon1">หมายเลขพัสดุ / ครุภัณฑ์</label>
                     <div id="device-number-container-copied">
                       <?php
                       $sql = 'SELECT * FROM order_numberdevice WHERE order_item = :order_item AND is_deleted = 0';
@@ -1446,7 +1505,6 @@ ORDER BY os.status;
                     </select>
                   </div>
                 </div>
-                <input type="hidden" name="report" class="form-control">
 
                 <div class="col-sm-12">
                   <div class="mb-3">
@@ -1611,8 +1669,8 @@ ORDER BY os.status;
         manageColumnHeader.style.display = isDisabled ? "table-cell" : "none"; //ปุ่มเพิ่ม column list table //x เอาออกจาก function นี้
 
         //field อื่นๆ
-        ["report", "reason", "note"].forEach(function(name) {
-          const input = document.querySelector(`input[name='${name}']`)
+        ["report", "reason", "note", "ref_withdraw", "ref_work", "ref_offer", "quotation"].forEach(function(name) {
+          const input = document.querySelector(`[name='${name}']`);
           if (input) {
             input.disabled = !input.disabled;
           }

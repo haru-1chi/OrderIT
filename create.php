@@ -83,7 +83,7 @@ if (isset($_GET['withdraw'])) {
                 <?php
                 $sql = "SELECT od.*, dp.*
               FROM orderdata as od
-              INNER JOIN depart as dp ON od.refDepart = dp.depart_id
+              LEFT JOIN depart as dp ON od.refDepart = dp.depart_id
               WHERE id = :id";
                 $stmt = $conn->prepare($sql);
                 $stmt->bindParam(":id", $id);
@@ -453,7 +453,7 @@ if (isset($_GET['withdraw'])) {
                       <?php
                       $sql = "SELECT od.*, dp.*
               FROM data_report as od
-              INNER JOIN depart as dp ON od.department = dp.depart_id
+              LEFT JOIN depart as dp ON od.department = dp.depart_id
               WHERE id = :id";
                       $stmt = $conn->prepare($sql);
                       $stmt->bindParam(":id", $idwithdraw);
