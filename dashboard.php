@@ -332,7 +332,7 @@ if (!isset($_SESSION["admin_log"])) {
                                 foreach ($result as $row) {
                                     $timeString = $row['time_report'];
                                     $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
-                                
+
                                     $takeTimeString = $row['take'];
                                     if (empty($takeTimeString) || $takeTimeString === '00:00:00.000000') {
                                         $takeFormatted = '-';
@@ -644,12 +644,15 @@ if (!isset($_SESSION["admin_log"])) {
                         <table id="success" class="table table-success">
                             <thead>
                                 <tr>
-                                    <th scope="col" style="text-align: left; width: 10%;">หมายเลขงาน</th>
-                                    <th scope="col" style="text-align: left; width: 10%;">ผู้ซ่อม</th>
-                                    <th scope="col" style="text-align: left; width: 50%;">อาการที่ได้รับแจ้ง</th>
-                                    <th scope="col" style="text-align: left; width: 10%;">หน่วยงาน</th>
-                                    <th scope="col" style="text-align: left; width: 10%;">เวลารับงาน</th>
-                                    <th scope="col" style="text-align: left; width: 10%;">เวลาปิดงาน</th>
+                                    <th style="text-align: left;">หมายเลขงาน</th>
+                                    <th style="text-align: left; width: 170px;">ผู้ซ่อม</th>
+                                    <th style="text-align: left;">อาการที่ได้รับแจ้ง</th>
+                                    <th style="text-align: left; width: 170px;">หน่วยงาน</th>
+                                    <th style="text-align: left; width: 170px;">SLA</th>
+                                    <th style="text-align: left; width: 120px;">ตัวชี้วัด</th>
+                                    <th style="text-align: left; width: 80px;">เวลาแจ้ง</th>
+                                    <th style="text-align: left; width: 80px;">เวลารับงาน</th>
+                                    <th style="text-align: left; width: 80px;">เวลาปิดงาน</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -662,14 +665,17 @@ if (!isset($_SESSION["admin_log"])) {
                                 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                                 foreach ($result as $row) {
+                                    $reportTimeString = $row['time_report'];
                                     $takeTimeString = $row['take'];
                                     $closeTimeString = $row['close_date'];
-                                    if (empty($closeTimeString) || $closeTimeString === '00:00:00.000000' || empty($takeTimeString) || $takeTimeString === '00:00:00.000000') {
+                                    if (empty($closeTimeString) || $closeTimeString === '00:00:00.000000' || empty($takeTimeString) || $takeTimeString === '00:00:00.000000' || empty($reportTimeString) || $reportTimeString === '00:00:00.000000') {
+                                        $reportFormatted = '-';
                                         $takeFormatted = '-';
                                         $closeTimeFormatted = '-';
                                     } else {
-                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . ' น.';
-                                        $closeTimeFormatted = date('H:i', strtotime($closeTimeString)) . ' น.';
+                                        $reportFormatted = date('H:i', strtotime($takeTimeString)) . 'น.';
+                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . 'น.';
+                                        $closeTimeFormatted = date('H:i', strtotime($closeTimeString)) . 'น.';
                                     }
                                     if ($row['status'] == 4) {
                                 ?>
@@ -691,6 +697,9 @@ if (!isset($_SESSION["admin_log"])) {
                                             </td>
                                             <td><?= $row['report'] ?></td>
                                             <td><?= $row['depart_name'] ?></td>
+                                            <td><?= $row['sla'] ?></td>
+                                            <td><?= $row['kpi'] ?></td>
+                                            <td><?= $reportFormatted ?></td>
                                             <td><?= $takeFormatted ?></td>
                                             <td><?= $closeTimeFormatted ?></td>
                                         </tr>
@@ -822,7 +831,48 @@ if (!isset($_SESSION["admin_log"])) {
                     $('#success').DataTable({
                         order: [
                             [0, 'desc']
-                        ] // adjust the column index as needed
+                        ],
+                        columnDefs: [{
+                                targets: 0,
+                                width: "auto"
+                            }, // หมายเลขงาน
+                            {
+                                targets: 1,
+                                width: "170px"
+                            }, // ผู้ซ่อม
+                            {
+                                targets: 2,
+                                width: "auto"
+                            }, // อาการที่ได้รับแจ้ง
+                            {
+                                targets: 3,
+                                width: "170px"
+                            }, // หน่วยงาน
+                            {
+                                targets: 4,
+                                width: "170px"
+                            }, // SLA
+                            {
+                                targets: 5,
+                                width: "120px"
+                            }, // ตัวชี้วัด
+                            {
+                                targets: 6,
+                                width: "80px"
+                            }, // เวลาแจ้ง
+                            {
+                                targets: 7,
+                                width: "80px"
+                            }, // เวลารับงาน
+                            {
+                                targets: 8,
+                                width: "80px"
+                            }, // เวลาปิดงาน
+                        ],
+                        scrollX: true, // Allow horizontal scrolling if necessary
+                        paging: true, // Enable pagination
+                        searching: true,
+                        autoWidth: false
                     });
                     $('#clam').DataTable({
                         order: [

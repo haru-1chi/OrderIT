@@ -285,7 +285,7 @@ ORDER BY nd.id, oi.id
         <p style="text-align:right;">ลำดับ &nbsp;&nbsp; <?= $order['numberWork'] ?></p>
         <div style="text-align:center;font-weight: bold; font-size:20pt;line-height:24pt">แบบฟอร์มคำขอส่งซ่อมบำรุงอุปกรณ์คอมพิวเตอร์
         </div>
-        <p style="text-align:center;line-height:10pt">ศูนย์คอมพิวเตอร์ฝ่ายแผนงานและสารสนเทศ</p>
+        <p style="text-align:center;line-height:10pt">กลุ่มงานเทคโนโลยีสารสนเทศ โรงพยาบาลแม่สอด</p>
         <br>
         <p style="text-align:right;line-height:10pt">วัน / เดือน / ปี <?= date('d', $timestamp) . ' ' . $monthThai . ' ' . date('Y', $timestamp); ?></p>
         <br>
@@ -304,13 +304,13 @@ ORDER BY nd.id, oi.id
 
                 <p style="text-align:left; line-height:10pt">&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; (____________________________________)
                 </p>
-                <p style="text-align:left; line-height:10pt">แผนก &nbsp;&nbsp; <?= $order['depart_name'] ?></p>
+                <p style="text-align:left; line-height:10pt">หน่วยงาน &nbsp;&nbsp; <?= $order['depart_name'] ?></p>
             </div>
 
             <div>
-                <p style="text-align:right; line-height:10pt">ผู้รับเรื่อง <?= $order['refUsername'] ?></p>
+                <p style="text-align:center; line-height:10pt">ผู้รับเรื่อง &nbsp;&nbsp; <?= $order['refUsername'] ?></p>
                 <p style="text-align:center; line-height:10pt">( <?= $order['refUsername'] ?> )</p>
-                <p style="text-align:right; line-height:10pt">แผนก &nbsp;&nbsp; ศูนย์คอมพิวเตอร์</p>
+                <p style="text-align:right; line-height:10pt">หน่วยงาน &nbsp;&nbsp; กลุ่มงานเทคโนโลยีสารสนเทศ</p>
             </div>
         </div>
         <br>

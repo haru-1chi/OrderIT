@@ -724,7 +724,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                     }
                                                                                 } else { ?>
                                                                                     <div class="d-flex device-number-row">
-                                                                                        <input type="text" name="number_device[<?= $row['id'] ?>][]" class="form-control mb-2" value="">
+                                                                                        <input type="text" name="number_device[<?= $row['id'] ?>][]" class="form-control mb-2" value="<?= isset($row['number_device']) ? $row['number_device'] : '' ?>">
                                                                                         <button type="button" class="btn btn-danger p-2 ms-3 remove-field" style="visibility: hidden;">ลบ</button>
                                                                                     </div>
                                                                                 <?php } ?>
@@ -1982,7 +1982,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 } else { ?>
 
                                                                                     <div class="d-flex device-number-row">
-                                                                                        <input type="text" name="number_device[<?= $row['id'] ?>][]" class="form-control mb-2" value="">
+                                                                                        <input type="text" name="number_device[<?= $row['id'] ?>][]" class="form-control mb-2" value="<?= isset($row['number_device']) ? $row['number_device'] : '' ?>">
                                                                                         <button type="button" class="btn btn-danger p-2 ms-3 remove-field" style="visibility: hidden;">ลบ</button>
                                                                                     </div>
                                                                                 <?php } ?>

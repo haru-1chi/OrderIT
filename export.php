@@ -59,6 +59,9 @@ if (isset($_POST['actAll'])) {
     echo '<th style="border: 1px solid black;"  scope="col">ผู้แจ้ง</th>';
     echo '<th style="border: 1px solid black;"  scope="col">หน่วยงาน</th>';
     echo '<th style="border: 1px solid black;"  scope="col">เบอร์โทรติดต่อ</th>';
+    echo '<th style="border: 1px solid black;"  scope="col">SLA</th>';
+    echo '<th style="border: 1px solid black;"  scope="col">ตัวชี้วัด</th>';
+    echo '<th style="border: 1px solid black;"  scope="col">เวลาแจ้ง</th>';
     echo '<th style="border: 1px solid black;"  scope="col">เวลารับงาน</th>';
     echo '<th style="border: 1px solid black;" scope="col">เวลาปิดงาน</th>';
     echo '</tr>';
@@ -75,6 +78,18 @@ if (isset($_POST['actAll'])) {
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($result as $row) {
+        $reportTimeString = $row['time_report'];
+        $takeTimeString = $row['take'];
+        $closeTimeString = $row['close_date'];
+        if (empty($closeTimeString) || $closeTimeString === '00:00:00.000000' || empty($takeTimeString) || $takeTimeString === '00:00:00.000000' || empty($reportTimeString) || $reportTimeString === '00:00:00.000000') {
+            $reportFormatted = '-';
+            $takeFormatted = '-';
+            $closeTimeFormatted = '-';
+        } else {
+            $reportFormatted = date('H:i', strtotime($takeTimeString)) . 'น.';
+            $takeFormatted = date('H:i', strtotime($takeTimeString)) . ' น.';
+            $closeTimeFormatted = date('H:i', strtotime($closeTimeString)) . ' น.';
+        }
         if ($row['status'] == 4) {
             echo '<tr style="text-align:center;">';
             echo '<td style="border: 1px solid black;">' . $row['id'] . '</td>';
@@ -94,8 +109,11 @@ if (isset($_POST['actAll'])) {
             echo '<td style="border: 1px solid black;">' . $row['reporter'] . '</td>';
             echo '<td style="border: 1px solid black;">' . $row['depart_name'] . '</td>';
             echo '<td style="border: 1px solid black;">' . $row['tel'] . '</td>';
-            echo '<td style="border: 1px solid black;">' . $row['take'] . '</td>';
-            echo '<td style="border: 1px solid black;">' . $row['close_date'] . '</td>';
+            echo '<td style="border: 1px solid black;">' . $row['sla'] . '</td>';
+            echo '<td style="border: 1px solid black;">' . $row['kpi'] . '</td>';
+            echo '<td style="border: 1px solid black;">' . $reportFormatted . '</td>';
+            echo '<td style="border: 1px solid black;">' . $takeFormatted . '</td>';
+            echo '<td style="border: 1px solid black;">' . $closeTimeFormatted . '</td>';
             echo '</tr>';
         }
     }
