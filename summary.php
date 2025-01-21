@@ -37,12 +37,12 @@ if (!isset($_SESSION["admin_log"])) {
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <script>
         // Function to reload the page
-        function refreshPage() {
-            location.reload();
-        }
+        // function refreshPage() {
+        //     location.reload();
+        // }
 
-        // Set timeout to refresh the page every 1 minute (60000 milliseconds)
-        setTimeout(refreshPage, 30000);
+        // // Set timeout to refresh the page every 1 minute (60000 milliseconds)
+        // setTimeout(refreshPage, 30000);
     </script>
     <style>
         body {
@@ -50,7 +50,7 @@ if (!isset($_SESSION["admin_log"])) {
         }
 
         #dataAll tbody tr td {
-            background-color: #fff4f5;
+            background-color: #f2f7ff;
             color: #000;
         }
 
@@ -116,8 +116,19 @@ if (!isset($_SESSION["admin_log"])) {
             </div>
         <?php } ?>
         <div class="row">
+
+            <div style="width: 500px; height: 400px;">
+                <select id="filterDropdown" style="margin-bottom: 15px;">
+                    <option value="day" selected>วันนี้</option>
+                    <option value="week">สัปดาห์นี้</option>
+                    <option value="month">เดือนนี้</option>
+                    <option value="year">ปีนี้</option>
+                </select>
+                <canvas id="pairedChart" style="width: 100%; height: 100%;"></canvas>
+            </div>
+
             <div class="col-sm-12 col-lg-12 col-md-12">
-                <h1 class="text-center my-4">สรุปยอดจำนวนงาน</h1>
+                <h1 class="text-center my-4">อยู่ในระหว่างการสร้างหน้าเว็บนี้...</h1>
                 <div class="row d-flex justify-content-center">
                     <?php
                     $sql = "SELECT status, COUNT(*) as count FROM data_report GROUP BY status";
@@ -174,133 +185,40 @@ if (!isset($_SESSION["admin_log"])) {
                             </div>
                         </div>
                     <?php } ?>
-                    <!-- </div> -->
                 </div>
                 <div class="card rounded-4 shadow-sm p-3 mt-5 col-sm-12 col-lg-12 col-md-12">
-                    <h1>งานวันนี้</h1>
+                    <h1>รายการความพึงพอใจ</h1>
                     <div class="table-responsive">
-                        <table id="dataAll" class="table table-danger">
+                        <table id="dataAll" class="table table-primary">
                             <thead>
                                 <tr class="text-center">
-                                    <th scope="col">หมายเลข</th>
-                                    <th scope="col">วันที่</th>
-                                    <th scope="col">เวลาแจ้ง</th>
-                                    <th scope="col">อุปกรณ์</th>
-                                    <th scope="col">อาการที่ได้รับแจ้ง</th>
-                                    <th scope="col">ผู้แจ้ง</th>
-                                    <th scope="col">หน่วยงาน</th>
-                                    <th scope="col">เบอร์ติดต่อกลับ</th>
-                                    <th scope="col">สร้างโดย</th>
-                                    <th scope="col">ปุ่มรับงาน</th>
+                                    <th scope="col">ช่องทางที่ใช้บริการ</th>
+                                    <th scope="col">ปัญหาได้รับการแก้ไข</th>
+                                    <th scope="col">ความรวดเร็ว</th>
+                                    <th scope="col">การแก้ปัญหา</th>
+                                    <th scope="col">การให้บริการ</th>
+                                    <th scope="col">ข้อเสนอแนะ</th>
                                 </tr>
                             </thead>
                             <tbody>
-
-
                                 <?php
-                                // function toMonthThai($m)
-                                // {
-                                //     $monthNamesThai = array(
-                                //         "",
-                                //         "มกราคม",
-                                //         "กุมภาพันธ์",
-                                //         "มีนาคม",
-                                //         "เมษายน",
-                                //         "พฤษภาคม",
-                                //         "มิถุนายน",
-                                //         "กรกฎาคม",
-                                //         "สิงหาคม",
-                                //         "กันยายน",
-                                //         "ตุลาคม",
-                                //         "พฤศจิกายน",
-                                //         "ธันวาคม"
-                                //     );
-                                //     return $monthNamesThai[$m];
-                                // }
-
-                                // function formatDateThai($date)
-                                // {
-                                //     if ($date == null || $date == "") {
-                                //         return ""; // ถ้าวันที่เป็นค่าว่างให้คืนค่าว่างเปล่า
-                                //     }
-
-                                //     // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp
-                                //     $timestamp = strtotime($date);
-
-                                //     // ดึงปีไทย
-                                //     $yearThai = date('Y', $timestamp);
-
-                                //     // ดึงเดือน
-                                //     $monthNumber = date('n', $timestamp);
-
-                                //     // แปลงเดือนเป็นภาษาไทย
-                                //     $monthThai = toMonthThai($monthNumber);
-
-                                //     // ดึงวันที่
-                                //     $day = date('d', $timestamp);
-
-                                //     // สร้างรูปแบบวันที่ใหม่
-                                //     $formattedDate = "$day $monthThai $yearThai";
-
-                                //     return $formattedDate;
-                                // }
-
-                                $sql = "SELECT dp.*,dt.depart_name 
-                    FROM data_report as dp
-                    LEFT JOIN depart as dt ON dp.department = dt.depart_id
-                    WHERE DATE(date_report) = :dateNow
+                                $sql = "SELECT *
+                    FROM rating
                     ";
                                 $stmt = $conn->prepare($sql);
-                                $stmt->bindParam(":dateNow", $dateThai);
                                 $stmt->execute();
                                 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                $i = 0;
                                 foreach ($result as $row) {
-                                    $i++;
-                                    // $dateWithdrawFromDB = $row['date_report'];
-
-                                    // $dateWithdrawThai = formatDateThai($dateWithdrawFromDB);
-
-                                    $dateString = $row['date_report'];
-                                    $timestamp = strtotime($dateString);
-                                    $dateFormatted = date('d/m/Y', $timestamp);
-
-                                    $timeString = $row['time_report'];
-                                    $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
-                                    if ($row['status'] == 0) {
                                 ?>
-                                        <tr>
-                                            <td scope="row"><?= $row['id'] ?></td>
-                                            <td scope="row"><?= $dateFormatted ?></td>
-                                            <td><?= $timeFormatted ?></td>
-                                            <td><?= $row['deviceName'] ?></td>
-                                            <td><?= $row['report'] ?></td>
-                                            <td><?= $row['reporter'] ?></td>
-                                            <td><?= $row['depart_name'] ?></td>
-                                            <td><?= $row['tel'] ?></td>
-                                            <td><?= $row['create_by'] ?></td>
-                                            <td>
-                                                <?php
-                                                if (!$row['username']) { ?>
-                                                    <form action="system/insert.php" method="post">
-                                                        <input type="hidden" name="username" value="<?= $admin ?>">
-                                                        <input type="hidden" name="take" class="time_report" value="<?= $currentTime ?>">
-                                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                                        <button type="submit" name="takeaway" class="btn btn-primary">รับงาน</button>
-                                                    </form>
-                                                <?php } else { ?>
-                                                    <form action="system/insert.php" method="post">
-                                                        <input type="hidden" name="username" value="<?= $admin ?>">
-                                                        <input type="hidden" name="take" class="time_report" value="<?= $currentTime ?>">
-                                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                                        <button type="submit" name="takeaway" class="btn btn-primary">รับงาน</button>
-                                                    </form>
-                                                <?php  }
-                                                ?>
-                                            </td>
-                                        </tr>
+                                    <tr>
+                                        <td><?= $row['service_channel'] ?></td>
+                                        <td><?= $row['issue_resolved'] ?></td>
+                                        <td><?= $row['service_speed'] ?></td>
+                                        <td><?= $row['problem_satisfaction'] ?></td>
+                                        <td><?= $row['service_satisfaction'] ?></td>
+                                        <td><?= $row['suggestion'] ?></td>
+                                    </tr>
                                 <?php }
-                                }
                                 ?>
                             </tbody>
                         </table>
@@ -716,113 +634,91 @@ if (!isset($_SESSION["admin_log"])) {
                     </div>
                 </div>
 
-                <div class="card rounded-4 shadow-sm p-3 mt-5 col-sm-12 col-lg-12 col-md-12">
-                    <h1>รายการความพึงพอใจ</h1>
-                    <div class="table-responsive">
-                        <table id="rating" class="table table-warning">
-                            <thead>
-                                <tr class="text-center">
-                                    <th scope="col">ช่องทางที่ใช้บริการ</th>
-                                    <th scope="col">ปัญหาได้รับการแก้ไข</th>
-                                    <th scope="col">ความรวดเร็ว</th>
-                                    <th scope="col">การแก้ปัญหา</th>
-                                    <th scope="col">การให้บริการ</th>
-                                    <th scope="col">ข้อเสนอแนะ</th>
-                                    <th scope="col">เวลาที่ให้คะแนน</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $sql = "SELECT *
-                    FROM rating
-                    ";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                foreach ($result as $row) {
-                                ?>
-                                    <tr>
-                                    
-                                        <td><?= $row['service_channel'] ?></td>
-                                        <td class="text-center"><?= $row['issue_resolved'] === 'yes' ? 'ใช่' : 'ไม่ใช่' ?></td>
-                                        <td class="text-center"><?= $row['service_speed'] ?></td>
-                                        <td class="text-center"><?= $row['problem_satisfaction'] ?></td>
-                                        <td class="text-center"><?= $row['service_satisfaction'] ?></td>
-                                        <td><?= $row['suggestion'] ?></td>
-                                        <td><?= $row['timestamp'] ?></td>
-                                    </tr>
-                                <?php }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+
 
 
 
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
-                        const ctx = document.getElementById('myChart');
-                        <?php
-                        $sql_statuses = "SELECT status, COUNT(*) as count FROM data_report GROUP BY status";
-                        $stmt_statuses = $conn->prepare($sql_statuses);
-                        $stmt_statuses->execute();
-                        $statuses = $stmt_statuses->fetchAll(PDO::FETCH_ASSOC);
+                        const ctx = document.getElementById('pairedChart');
+                        const dropdown = document.getElementById('filterDropdown');
+                        let chart;
 
-                        // แปลง labels และ counts จาก status
-                        $status_labels = ['งานที่ยังไม่ได้รับ', 'กำลังดำเนินการ', 'รออะไหล่', 'งานที่เสร็จ'];
-                        $status_counts = ['0', '0', '0', '0'];
-                        foreach ($statuses as $status) {
-                            $status_code = $status['status'];
-                            $count = $status['count'];
-
-                            $status_counts[$status_code - 1] = $count;
+                        function fetchData(filter) {
+                            return fetch('fetch_data.php', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        filter: filter
+                                    })
+                                })
+                                .then((response) => response.json());
                         }
 
-                        // แปลงอาร์เรย์ counts เป็นสตริงที่คั่นด้วยเครื่องหมายจุลภาค
-                        $status_counts_str = implode(', ', $status_counts);
+                        function updateChart(filter) {
+                            fetchData(filter).then((data) => {
+                                const labels = data.labels;
+                                const creatorCounts = data.creator_counts;
+                                const takerCounts = data.taker_counts;
 
-                        ?>
-                        // Data from PHP
-                        const data = {
-                            labels: <?= json_encode($status_labels) ?>,
-                            datasets: [{
-                                label: 'จำนวนงาน',
-                                data: [<?= $status_counts_str ?>],
+                                const chartData = {
+                                    labels: labels,
+                                    datasets: [{
+                                            label: 'จำนวนรับงาน',
+                                            data: takerCounts,
+                                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                                            borderColor: 'rgba(255, 99, 132, 1)',
+                                            borderWidth: 1,
+                                        },
+                                        {
+                                            label: 'จำนวนคีย์งาน',
+                                            data: creatorCounts,
+                                            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                                            borderColor: 'rgba(75, 192, 192, 1)',
+                                            borderWidth: 1,
+                                        },
+                                    ],
+                                };
 
-                                backgroundColor: [
-                                    'rgba(255, 99, 132, 0.2)',
-                                    'rgba(255, 206, 86, 0.2)',
-                                    'rgba(54, 162, 235, 0.2)',
-                                    'rgba(75, 192, 192, 0.2)',
-                                ],
-                                borderColor: [
-                                    'rgba(255, 99, 132, 1)',
-                                    'rgba(255, 206, 86, 1)',
-                                    'rgba(54, 162, 235, 1)',
-                                    'rgba(75, 192, 192, 1)',
-                                ],
-                                borderWidth: 1
-                            }]
-                        };
-
-                        const options = {
-                            scales: {
-                                y: {
-                                    beginAtZero: true
+                                if (chart) {
+                                    chart.data = chartData;
+                                    chart.update();
+                                } else {
+                                    chart = new Chart(ctx, {
+                                        type: 'bar',
+                                        data: chartData,
+                                        options: {
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            scales: {
+                                                x: {
+                                                    stacked: false
+                                                },
+                                                y: {
+                                                    beginAtZero: true
+                                                },
+                                            },
+                                            plugins: {
+                                                legend: {
+                                                    display: true,
+                                                    position: 'top',
+                                                },
+                                            },
+                                        },
+                                    });
                                 }
-                            }
-                        };
+                            });
+                        }
 
-                        new Chart(ctx, {
-                            type: 'bar',
-                            data: data,
-                            options: options
+                        dropdown.addEventListener('change', function() {
+                            updateChart(dropdown.value);
                         });
-                        console.log('Labels:', data.labels);
-                        console.log('Data:', data.datasets[0].data);
+
+                        // Initial Chart Load
+                        updateChart('day');
                     });
                 </script>
                 <hr>

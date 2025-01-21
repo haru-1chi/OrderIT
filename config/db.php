@@ -9,7 +9,7 @@ $password = "Haru1chi_KzhsLov3r";
 //อย่าลืมเปลี่ยน data connect เป็น http://172.16.190.6/ จากไฟล์ Itdata
 
 try {
-    $conn = new PDO("mysql:host=$servername;dbname=OrderIT1", $username, $password);
+    $conn = new PDO("mysql:host=$servername;dbname=OrderIT", $username, $password);
     // set the PDO error mode to exception
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     // echo "Connected successfully";
