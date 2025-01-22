@@ -744,7 +744,7 @@ if (!isset($_SESSION["admin_log"])) {
                                     <tr>
                                     
                                         <td><?= $row['service_channel'] ?></td>
-                                        <td class="text-center"><?= $row['issue_resolved'] === 'yes' ? 'ใช่' : 'ไม่ใช่' ?></td>
+                                        <td class="text-center"><?= $row['issue_resolved'] ?></td>
                                         <td class="text-center"><?= $row['service_speed'] ?></td>
                                         <td class="text-center"><?= $row['problem_satisfaction'] ?></td>
                                         <td class="text-center"><?= $row['service_satisfaction'] ?></td>

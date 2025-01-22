@@ -73,7 +73,7 @@ if (!isset($_SESSION["admin_log"])) {
       ?>
     </div>
   <?php } ?>
-  
+
   <?php
 
   $sql = "SELECT * FROM orderdata_new ORDER BY id DESC";
@@ -1330,11 +1330,14 @@ ORDER BY os.status;
                     $stmt->execute([$rowData['refDepart']]);
                     $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
                     ?>
-                    <input type="text" class="form-control" id="departInput" name="ref_depart"
-                      value="<?= $departRow['depart_name'] ?>">
-                    <input type="hidden" name="depart_id" id="departId"
-                      value="<?= $rowData['refDepart'] ?>">
+                    <input type="text" class="form-control" id="departInput1" name="ref_depart" value="<?= $departRow['depart_name'] ?>">
+                    <input type="hidden" name="depart_id" id="departId1" value="<?= $rowData['refDepart'] ?>">
                   </div>
+
+                  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
+
+                  <!-- Add SweetAlert2 JS -->
+                  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
 
                   <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
                   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -1344,6 +1347,7 @@ ORDER BY os.status;
                     $(function() {
                       function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
                         let inputChanged = false;
+                        let alertShown = false; // Flag to track if the alert has been shown already
 
                         $(inputId).autocomplete({
                             source: function(request, response) {
@@ -1374,7 +1378,6 @@ ORDER BY os.status;
                           };
 
                         $(inputId).on("autocompletefocus", function(event, ui) {
-                          // You can log or do something here but won't change the input value
                           console.log("Item highlighted: ", ui.item.label);
                           return false;
                         });
@@ -1384,7 +1387,7 @@ ORDER BY os.status;
                         });
 
                         $(inputId).on("blur", function() {
-                          if (inputChanged) {
+                          if (inputChanged && !alertShown) {
                             const userInput = $(this).val().trim();
                             if (userInput === "") return;
 
@@ -1397,6 +1400,8 @@ ORDER BY os.status;
                             });
 
                             if (!found) {
+                              alertShown = true; // Prevent the alert from firing again
+                              // Show SweetAlert to confirm insert data
                               Swal.fire({
                                 title: confirmMessage,
                                 icon: "info",
@@ -1420,9 +1425,10 @@ ORDER BY os.status;
                                     }
                                   });
                                 } else {
-                                  $(inputId).val(""); // Clear input
+                                  $(inputId).val(""); // Clear input if canceled
                                   $(hiddenInputId).val("");
                                 }
+                                alertShown = false; // Reset the flag after the action
                               });
                             }
                           }
@@ -1432,8 +1438,8 @@ ORDER BY os.status;
 
                       setupAutocomplete(
                         "depart",
-                        "#departInput",
-                        "#departId",
+                        "#departInput1",
+                        "#departId1",
                         "autocomplete.php",
                         "insertDepart.php",
                         "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"

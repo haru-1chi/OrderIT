@@ -88,7 +88,7 @@ if (!isset($_SESSION["admin_log"])) {
 
 <body>
     <?php navbar() ?>
-    <div class="container">
+    <div class="">
         <?php if (isset($_SESSION['error'])) { ?>
             <div class="alert alert-danger" role="alert">
                 <?php
@@ -115,18 +115,43 @@ if (!isset($_SESSION["admin_log"])) {
                 ?>
             </div>
         <?php } ?>
-        <div class="row">
 
-            <div style="width: 500px; height: 400px;">
-                <select id="filterDropdown" style="margin-bottom: 15px;">
-                    <option value="day" selected>วันนี้</option>
-                    <option value="week">สัปดาห์นี้</option>
-                    <option value="month">เดือนนี้</option>
-                    <option value="year">ปีนี้</option>
-                </select>
+        <div class="d-flex">
+            <div class="card p-3 m-4" style="width: 500px; height: 400px;">
+                <div class="d-flex justify-content-between">
+                    <p>สรุปยอดการรับงาน</p>
+                    <select id="filterDropdown" style="margin-bottom: 15px;">
+                        <option value="day" selected>วันนี้</option>
+                        <option value="week">สัปดาห์นี้</option>
+                        <option value="month">เดือนนี้</option>
+                        <option value="year">ปีนี้</option>
+                    </select>
+                </div>
                 <canvas id="pairedChart" style="width: 100%; height: 100%;"></canvas>
             </div>
+            <div class="card p-3 mt-4" style="width: 700px; height: 400px;">
+                <div class="d-flex justify-content-between">
+                    <p>แนวโน้มงานรายวัน</p>
+                    <select id="filterDropdown1" style="margin-bottom: 15px;">
+                        <option value="day" selected>วันนี้</option>
+                        <option value="week">สัปดาห์นี้</option>
+                        <option value="month">เดือนนี้</option>
+                        <option value="year">ปีนี้</option>
+                    </select>
+                </div>
+                <canvas id="lineChart" style="width: 100%; height: 100%;"></canvas>
+            </div>
 
+            <div class="card p-3 ms-4 me-4 mt-4">
+                <p>สรุปความพึงพอใจ</p>
+                <div style="width: 600px; height: 100px;">
+                    <canvas id="serviceBarChart" style="width: 100%; height: 100%;"></canvas>
+                    <canvas id="solvingBarChart" style="width: 100%; height: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-sm-12 col-lg-12 col-md-12">
                 <h1 class="text-center my-4">อยู่ในระหว่างการสร้างหน้าเว็บนี้...</h1>
                 <div class="row d-flex justify-content-center">
@@ -634,91 +659,279 @@ if (!isset($_SESSION["admin_log"])) {
                     </div>
                 </div>
 
-
-
-
-
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
-                        const ctx = document.getElementById('pairedChart');
-                        const dropdown = document.getElementById('filterDropdown');
-                        let chart;
+                        // Fetch data from PHP endpoint
+                        fetch('fetch_service_channel.php')
+                            .then(response => response.json())
+                            .then(response => {
+                                // Response should have 'labels' and 'data' arrays
+                                const serviceLabels = response.labels;
+                                const serviceData = response.data;
 
-                        function fetchData(filter) {
-                            return fetch('fetch_data.php', {
+                                // Prepare datasets dynamically based on response
+                                const datasets = serviceLabels.map((label, index) => ({
+                                    label: label,
+                                    data: [serviceData[index]], // Stacking requires an array per group
+                                    backgroundColor: getColor(index, 0.5), // Adjust transparency
+                                    borderColor: getColor(index, 1),
+                                    borderWidth: 1,
+                                }));
+
+                                // Chart data
+                                const data = {
+                                    labels: ['ช่องทางการให้บริการ'],
+                                    datasets: datasets,
+                                };
+
+                                // Create the Chart
+                                const ctx = document.getElementById('serviceBarChart').getContext('2d');
+                                new Chart(ctx, {
+                                    type: 'bar',
+                                    data: data,
+                                    options: {
+                                        indexAxis: 'y', // Makes it horizontal
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                display: true,
+                                                position: 'top',
+                                                align: 'end',
+                                            },
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: (tooltipItem) =>
+                                                        `${tooltipItem.dataset.label}: ${tooltipItem.raw}%`,
+                                                },
+                                            },
+                                        },
+                                        scales: {
+                                            x: {
+                                                stacked: true, // Enables stacked bars
+                                                title: {
+                                                    display: true,
+                                                },
+                                                ticks: {
+                                                    beginAtZero: true,
+                                                    stepSize: 10,
+                                                },
+                                            },
+                                            y: {
+                                                stacked: true, // Enables stacked bars
+                                            },
+                                        },
+                                    },
+                                });
+                            })
+                            .catch(error => console.error('Error fetching data:', error));
+                    });
+
+                    // Function to generate colors
+                    function getColor(index, alpha) {
+                        const colors = [
+                            `rgba(255, 99, 132, ${alpha})`,
+                            `rgba(75, 192, 192, ${alpha})`,
+                            `rgba(54, 162, 235, ${alpha})`,
+                            `rgba(255, 206, 86, ${alpha})`,
+                            `rgba(153, 102, 255, ${alpha})`,
+                        ];
+                        return colors[index % colors.length];
+                    }
+                </script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Fetch data from PHP endpoint
+                        fetch('fetch_solving.php')
+                            .then(response => response.json())
+                            .then(response => {
+                                // Response should have 'labels' and 'data' arrays
+                                const serviceLabels = response.labels;
+                                const serviceData = response.data;
+
+                                // Prepare datasets dynamically based on response
+                                const datasets = serviceLabels.map((label, index) => ({
+                                    label: label,
+                                    data: [serviceData[index]], // Stacking requires an array per group
+                                    backgroundColor: getColor(index, 0.5), // Adjust transparency
+                                    borderColor: getColor(index, 1),
+                                    borderWidth: 1,
+                                }));
+
+                                // Chart data
+                                const data = {
+                                    labels: ['ปัญหาได้รับการแก้ไข'],
+                                    datasets: datasets,
+                                };
+
+                                // Create the Chart
+                                const ctx = document.getElementById('solvingBarChart').getContext('2d');
+                                new Chart(ctx, {
+                                    type: 'bar',
+                                    data: data,
+                                    options: {
+                                        indexAxis: 'y', // Makes it horizontal
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                display: true,
+                                                position: 'top',
+                                                align: 'end',
+                                            },
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: (tooltipItem) =>
+                                                        `${tooltipItem.dataset.label}: ${tooltipItem.raw}%`,
+                                                },
+                                            },
+                                        },
+                                        scales: {
+                                            x: {
+                                                stacked: true, // Enables stacked bars
+                                                title: {
+                                                    display: true,
+                                                },
+                                                ticks: {
+                                                    beginAtZero: true,
+                                                    stepSize: 10,
+                                                },
+                                            },
+                                            y: {
+                                                stacked: true, // Enables stacked bars
+                                            },
+                                        },
+                                    },
+                                });
+                            })
+                            .catch(error => console.error('Error fetching data:', error));
+                    });
+
+                    // Function to generate colors
+                    function getColor(index, alpha) {
+                        const colors = [
+                            `rgba(255, 99, 132, ${alpha})`,
+                            `rgba(75, 192, 192, ${alpha})`,
+                            `rgba(54, 162, 235, ${alpha})`,
+                            `rgba(255, 206, 86, ${alpha})`,
+                            `rgba(153, 102, 255, ${alpha})`,
+                        ];
+                        return colors[index % colors.length];
+                    }
+                </script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const charts = [{
+                                canvasId: 'pairedChart',
+                                dropdownId: 'filterDropdown',
+                                endpoint: 'fetch_staff.php',
+                                type: 'bar',
+                                datasets: (data) => [{
+                                        label: 'จำนวนรับงาน',
+                                        data: data.taker_counts,
+                                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                                        borderColor: 'rgba(255, 99, 132, 1)',
+                                        borderWidth: 1,
+                                    },
+                                    {
+                                        label: 'จำนวนคีย์งาน',
+                                        data: data.creator_counts,
+                                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                                        borderColor: 'rgba(75, 192, 192, 1)',
+                                        borderWidth: 1,
+                                    },
+                                ],
+                            },
+                            {
+                                canvasId: 'lineChart',
+                                dropdownId: 'filterDropdown1',
+                                endpoint: 'fetch_count_task.php',
+                                type: 'line',
+                                datasets: (data) => [{
+                                    label: 'จำนวนงาน',
+                                    data: data.task_counts,
+                                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    fill: false,
+                                    tension: 0.2,
+                                }, ],
+                            },
+                        ];
+
+                        function fetchData(endpoint, filter) {
+                            return fetch(endpoint, {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json'
                                     },
                                     body: JSON.stringify({
-                                        filter: filter
-                                    })
+                                        filter
+                                    }),
                                 })
-                                .then((response) => response.json());
+                                .then((response) => {
+                                    if (!response.ok) throw new Error('Network error');
+                                    return response.json();
+                                })
+                                .catch((error) => console.error('Error fetching data:', error));
                         }
 
-                        function updateChart(filter) {
-                            fetchData(filter).then((data) => {
-                                const labels = data.labels;
-                                const creatorCounts = data.creator_counts;
-                                const takerCounts = data.taker_counts;
-
-                                const chartData = {
-                                    labels: labels,
-                                    datasets: [{
-                                            label: 'จำนวนรับงาน',
-                                            data: takerCounts,
-                                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                                            borderColor: 'rgba(255, 99, 132, 1)',
-                                            borderWidth: 1,
+                        function createChart(canvas, type, data, datasetsFn) {
+                            return new Chart(canvas, {
+                                type: type,
+                                data: {
+                                    labels: data.labels,
+                                    datasets: datasetsFn(data),
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            position: 'top'
                                         },
-                                        {
-                                            label: 'จำนวนคีย์งาน',
-                                            data: creatorCounts,
-                                            backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                                            borderColor: 'rgba(75, 192, 192, 1)',
-                                            borderWidth: 1,
+                                    },
+                                    scales: {
+                                        x: {
+                                            title: {
+                                                display: true
+                                            }
                                         },
-                                    ],
-                                };
-
-                                if (chart) {
-                                    chart.data = chartData;
-                                    chart.update();
-                                } else {
-                                    chart = new Chart(ctx, {
-                                        type: 'bar',
-                                        data: chartData,
-                                        options: {
-                                            responsive: true,
-                                            maintainAspectRatio: false,
-                                            scales: {
-                                                x: {
-                                                    stacked: false
-                                                },
-                                                y: {
-                                                    beginAtZero: true
-                                                },
-                                            },
-                                            plugins: {
-                                                legend: {
-                                                    display: true,
-                                                    position: 'top',
-                                                },
-                                            },
+                                        y: {
+                                            beginAtZero: true
                                         },
-                                    });
-                                }
+                                    },
+                                },
                             });
                         }
 
-                        dropdown.addEventListener('change', function() {
-                            updateChart(dropdown.value);
-                        });
+                        charts.forEach(({
+                            canvasId,
+                            dropdownId,
+                            endpoint,
+                            type,
+                            datasets
+                        }) => {
+                            const canvas = document.getElementById(canvasId);
+                            const dropdown = document.getElementById(dropdownId);
+                            let chartInstance;
 
-                        // Initial Chart Load
-                        updateChart('day');
+                            function updateChart(filter) {
+                                fetchData(endpoint, filter).then((data) => {
+                                    if (!chartInstance) {
+                                        chartInstance = createChart(canvas, type, data, datasets);
+                                    } else {
+                                        chartInstance.data.labels = data.labels;
+                                        chartInstance.data.datasets = datasets(data);
+                                        chartInstance.update();
+                                    }
+                                });
+                            }
+
+                            dropdown.addEventListener('change', () => updateChart(dropdown.value));
+                            updateChart('day');
+                        });
                     });
                 </script>
                 <hr>

@@ -1,6 +1,4 @@
 <?php
-// autocomplete.php
-
 require_once 'config/db.php';
 
 // Get the term and type parameters
