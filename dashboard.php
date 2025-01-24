@@ -379,6 +379,7 @@ if (!isset($_SESSION["admin_log"])) {
                                     <th scope="col">ผู้แจ้ง</th>
                                     <th scope="col">หน่วยงาน</th>
                                     <th scope="col">เบอร์ติดต่อกลับ</th>
+                                    <th scope="col">สร้างโดย</th>
                                     <th scope="col">ปุ่มรับงาน</th>
                                 </tr>
                             </thead>
@@ -466,6 +467,7 @@ if (!isset($_SESSION["admin_log"])) {
                                             <td><?= $row['reporter'] ?></td>
                                             <td><?= $row['depart_name'] ?></td>
                                             <td><?= $row['tel'] ?></td>
+                                            <td><?= $row['create_by'] ?></td>
                                             <td>
                                                 <?php
                                                 if (!$row['username']) { ?>

@@ -144,73 +144,53 @@ if (!isset($_SESSION["admin_log"])) {
 
             <div class="card p-3 ms-4 me-4 mt-4">
                 <p>สรุปความพึงพอใจ</p>
-                <div style="width: 600px; height: 100px;">
+                <div style="width: 600px; height: 80px;">
                     <canvas id="serviceBarChart" style="width: 100%; height: 100%;"></canvas>
                     <canvas id="solvingBarChart" style="width: 100%; height: 100%;"></canvas>
+                    <canvas id="averageScoresChart" style="width: 100%; height: 100%;"></canvas>
+                </div>
+                <div style="width: 600px; height: 150px; margin-top: 150px;">
+                    <canvas id="horizontalBarChart" style="width: 100%; height: 100%;"></canvas>
                 </div>
             </div>
         </div>
 
+        <div class="d-flex">
+            <div class="card p-3 m-4">
+                <div class="d-flex justify-content-between">
+                    <p>SLA%</p>
+                    <select id="pieChartFilter" style="margin-bottom: 15px;">
+                        <option value="day" selected>วันนี้</option>
+                        <option value="week">สัปดาห์นี้</option>
+                        <option value="month">เดือนนี้</option>
+                        <option value="year">ปีนี้</option>
+                    </select>
+                </div>
+                <canvas id="pieChart" style="width: 250px; height: 250px;"></canvas>
+            </div>
+
+            <div class="card p-3 mt-4" style="width: 700px; height: 400px;">
+                <div class="d-flex justify-content-between">
+                    <p>งานที่ใช้เวลานานเกิน SLA โดยเฉลี่ย</p>
+                    <select id="avgSLAFilter" style="margin-bottom: 15px;">
+                        <option value="day" selected>วันนี้</option>
+                        <option value="week">สัปดาห์นี้</option>
+                        <option value="month">เดือนนี้</option>
+                        <option value="year">ปีนี้</option>
+                    </select>
+                </div>
+                <canvas id="avgSLAChart" style="width: 100%; height: 100%;"></canvas>
+            </div>
+        </div>
+
+        <div class="d-flex">
+            <div class="card p-3 m-4" style="width: 1800px; height: 400px;">
+                <canvas id="gantt-chart" style="width: 100%; height: 100%;"></canvas>
+            </div>
+        </div>
         <div class="row">
             <div class="col-sm-12 col-lg-12 col-md-12">
                 <h1 class="text-center my-4">อยู่ในระหว่างการสร้างหน้าเว็บนี้...</h1>
-                <div class="row d-flex justify-content-center">
-                    <?php
-                    $sql = "SELECT status, COUNT(*) as count FROM data_report GROUP BY status";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->execute();
-                    $statusCounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                    $statusOptions = array(
-                        0 => array(
-                            'text' => "งานที่ยังไม่ได้รับ",
-                            'color' => "#FF7575"
-                        ),
-                        2 => array(
-                            'text' => "กำลังดำเนินงาน",
-                            'color' => "#F8BF24"
-                        ),
-                        3 => array(
-                            'text' => "รออะไหล่",
-                            'color' => "#659BFF"
-                        ),
-                        4 => array(
-                            'text' => "เสร็จงาน",
-                            'color' => "#6CC668"
-                        ),
-                        5 => array(
-                            'text' => "ส่งซ่อม",
-                            'color' => "#D673D3"
-                        ),
-                        6 => array(
-                            'text' => "รอกรอกรายละเอียด",
-                            'color' => "#6CC668"
-                        ),
-
-                    );
-                    foreach ($statusCounts as $statusCount) {
-                        $status = $statusCount['status'];
-                        $count = $statusCount['count'];
-
-                        $textS = isset($statusOptions[$status]['text']) ? $statusOptions[$status]['text'] : "ไม่ระบุสถานะ";
-                        $color = isset($statusOptions[$status]['color']) ? $statusOptions[$status]['color'] : sprintf('#%06X', rand(0, 0xFFFFFF));
-
-                    ?>
-                        <div class="col-sm-2">
-                            <div class="rounded-3 text-white ps-3 pb-2" style="max-width: 18rem; background-color: <?= $color ?>">
-                                <div class="card-header">
-                                    <ion-icon name="people-outline"></ion-icon>
-                                    <div class="d-flex align-items-end">
-                                        <p style="font-size: 45px; margin: 0px;"><?= $count ?></p>
-                                        <p class="ms-2" style="font-size: 32px; margin: 0px; margin-bottom:.4rem;">งาน</p>
-                                    </div>
-                                    <p style="font-size: 20px; margin: 0px;"><?= $textS ?> </p>
-
-                                </div>
-                            </div>
-                        </div>
-                    <?php } ?>
-                </div>
                 <div class="card rounded-4 shadow-sm p-3 mt-5 col-sm-12 col-lg-12 col-md-12">
                     <h1>รายการความพึงพอใจ</h1>
                     <div class="table-responsive">
@@ -249,484 +229,171 @@ if (!isset($_SESSION["admin_log"])) {
                         </table>
                     </div>
                 </div>
-                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
-                    <div class="table-responsive">
-                        <h1>กำลังดำเนินการ</h1>
-                        <table id="inTime" class="table table-warning">
-                            <thead>
-                                <tr>
-                                    <th scope="col">หมายเลข</th>
-                                    <th scope="col">ผู้ซ่อม</th>
-                                    <th scope="col">อุปกรณ์</th>
-                                    <th scope="col">อาการที่ได้รับแจ้ง</th>
-                                    <th scope="col">หน่วยงาน</th>
-                                    <th scope="col">เวลาแจ้ง</th>
-                                    <th scope="col">เวลารับงาน</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $sql = "SELECT dp.id, dp.device, dp.report, dp.time_report, dp.take, dt.depart_name, adm.fname, adm.lname,dp.deviceName
-        FROM data_report as dp
-        LEFT JOIN depart as dt ON dp.department = dt.depart_id 
-        INNER JOIN admin as adm ON dp.username = adm.username
-        WHERE dp.status = 2
-        ORDER BY dp.id DESC";
-
-                                $stmt = $conn->prepare($sql);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                foreach ($result as $row) {
-                                    $timeString = $row['time_report'];
-                                    $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
-
-                                    $takeTimeString = $row['take'];
-                                    if (empty($takeTimeString) || $takeTimeString === '00:00:00.000000') {
-                                        $takeFormatted = '-';
-                                    } else {
-                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . ' น.';
-                                    }
-                                ?>
-                                    <tr class="text-center">
-                                        <td><?= $row['id'] ?></td>
-                                        <td><?= $row['fname'] . ' ' . $row['lname'] ?></td>
-                                        <td><?= $row['deviceName'] ?></td>
-                                        <td><?= $row['report'] ?></td>
-                                        <td><?= $row['depart_name'] ?></td>
-                                        <td><?= $timeFormatted ?></td>
-                                        <td><?= $takeFormatted ?></td>
-                                    </tr>
-                                <?php
-                                }
-
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
-                    <h1>งานที่ถูกบันทึกไว้</h1>
-                    <hr>
-
-                    <div class="table-responsive">
-                        <table id="dataAllNOTTAKE" class="table table-danger">
-                            <thead>
-                                <tr class="text-center">
-                                    <th scope="col">หมายเลข</th>
-                                    <th scope="col">วันที่</th>
-                                    <th scope="col">เวลาแจ้ง</th>
-                                    <th scope="col">อุปกรณ์</th>
-                                    <th scope="col">อาการที่ได้รับแจ้ง</th>
-                                    <th scope="col">ผู้แจ้ง</th>
-                                    <th scope="col">หน่วยงาน</th>
-                                    <th scope="col">เบอร์ติดต่อกลับ</th>
-                                    <th scope="col">ปุ่มรับงาน</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-
-
-                                <?php
-                                // function toMonthThai($m)
-                                // {
-                                //     $monthNamesThai = array(
-                                //         "",
-                                //         "มกราคม",
-                                //         "กุมภาพันธ์",
-                                //         "มีนาคม",
-                                //         "เมษายน",
-                                //         "พฤษภาคม",
-                                //         "มิถุนายน",
-                                //         "กรกฎาคม",
-                                //         "สิงหาคม",
-                                //         "กันยายน",
-                                //         "ตุลาคม",
-                                //         "พฤศจิกายน",
-                                //         "ธันวาคม"
-                                //     );
-                                //     return $monthNamesThai[$m];
-                                // }
-
-                                // function formatDateThai($date)
-                                // {
-                                //     if ($date == null || $date == "") {
-                                //         return ""; // ถ้าวันที่เป็นค่าว่างให้คืนค่าว่างเปล่า
-                                //     }
-
-                                //     // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp
-                                //     $timestamp = strtotime($date);
-
-                                //     // ดึงปีไทย
-                                //     $yearThai = date('Y', $timestamp);
-
-                                //     // ดึงเดือน
-                                //     $monthNumber = date('n', $timestamp);
-
-                                //     // แปลงเดือนเป็นภาษาไทย
-                                //     $monthThai = toMonthThai($monthNumber);
-
-                                //     // ดึงวันที่
-                                //     $day = date('d', $timestamp);
-
-                                //     // สร้างรูปแบบวันที่ใหม่
-                                //     $formattedDate = "$day $monthThai $yearThai";
-
-                                //     return $formattedDate;
-                                // }
-
-                                $sql = "SELECT dp.*,dt.depart_name 
-                    FROM data_report as dp
-                    LEFT JOIN depart as dt ON dp.department = dt.depart_id
-                    WHERE DATE(date_report) <> :dateNow
-                    ";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->bindParam(":dateNow", $dateThai);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                $i = 0;
-                                foreach ($result as $row) {
-                                    $i++;
-                                    // $dateWithdrawFromDB = $row['date_report'];
-
-                                    // $dateWithdrawThai = formatDateThai($dateWithdrawFromDB);
-
-                                    $dateString = $row['date_report'];
-                                    $timestamp = strtotime($dateString);
-                                    $dateFormatted = date('d/m/Y', $timestamp);
-
-                                    if ($row['status'] == 0) {
-                                        $timeString = $row['time_report'];
-                                        $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
-                                ?>
-                                        <tr>
-                                            <td scope="row"><?= $row['id'] ?></td>
-                                            <td scope="row"><?= $dateFormatted ?></td>
-                                            <td><?= $timeFormatted ?></td>
-                                            <td><?= $row['deviceName'] ?></td>
-                                            <td><?= $row['report'] ?></td>
-                                            <td><?= $row['reporter'] ?></td>
-                                            <td><?= $row['depart_name'] ?></td>
-                                            <td><?= $row['tel'] ?></td>
-                                            <td>
-                                                <?php
-                                                if (!$row['username']) { ?>
-                                                    <form action="system/insert.php" method="post">
-                                                        <input type="hidden" name="username" value="<?= $admin ?>">
-                                                        <input type="hidden" name="take" class="time_report" value="<?= $currentTime ?>">
-                                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                                        <button type="submit" name="takeaway" class="btn btn-primary">รับงาน</button>
-                                                    </form>
-                                                <?php } else { ?>
-                                                    <form action="system/insert.php" method="post">
-                                                        <input type="hidden" name="username" value="<?= $admin ?>">
-                                                        <input type="hidden" name="take" class="time_report" value="<?= $currentTime ?>">
-                                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                                        <button type="submit" name="takeaway" class="btn btn-primary">รับงาน</button>
-                                                    </form>
-                                                <?php  }
-                                                ?>
-                                            </td>
-                                        </tr>
-                                <?php }
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-
-                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
-                    <div class="table-responsive">
-                        <h1>ส่งซ่อม</h1>
-                        <hr>
-                        <table id="clam" class="table table-danger">
-                            <thead>
-                                <tr>
-                                    <th scope="col">หมายเลขงาน</th>
-                                    <th scope="col">ผู้ซ่อม</th>
-                                    <th scope="col">อุปกรณ์</th>
-                                    <th scope="col">อาการที่ได้รับแจ้ง</th>
-                                    <th scope="col">หน่วยงาน</th>
-                                    <th scope="col">เวลาแจ้ง</th>
-                                    <th scope="col">เวลารับงาน</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-
-                                $sql = "SELECT dp.*,dt.depart_name 
-                    FROM data_report as dp
-                    LEFT JOIN depart as dt ON dp.department = dt.depart_id
-                    ";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                foreach ($result as $row) {
-                                    $timeString = $row['time_report'];
-                                    $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
-
-                                    $takeTimeString = $row['take'];
-                                    if (empty($takeTimeString) || $takeTimeString === '00:00:00.000000') {
-                                        $takeFormatted = '-';
-                                    } else {
-                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . ' น.';
-                                    }
-                                    if ($row['status'] == 5) {
-
-                                ?>
-                                        <tr class="text-center">
-                                            <td><?= $row['id'] ?></td>
-                                            <td>
-                                                <?php
-                                                $sql = "SELECT * FROM admin";
-                                                $stmt = $conn->prepare($sql);
-                                                $stmt->execute();
-                                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                                foreach ($result as $row2) {
-                                                    if ($row['username'] == $row2['username']) {
-                                                        echo $row2['fname'] . ' ' . $row2['lname'];
-                                                    }
-                                                }
-                                                ?>
-                                            </td>
-                                            <td><?= $row['deviceName'] ?></td>
-                                            <td><?= $row['report'] ?></td>
-                                            <td><?= $row['depart_name'] ?></td>
-                                            <td><?= $timeFormatted ?></td>
-                                            <td><?= $takeFormatted ?></td>
-
-                                        </tr>
-                                <?php }
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                    <hr>
-                </div>
-
-
-                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
-                    <div class="table-responsive">
-                        <h1>รออะไหล่</h1>
-                        <hr>
-                        <table id="wait" class="table table-primary">
-                            <thead>
-                                <tr>
-                                    <th scope="col">หมายเลขงาน</th>
-                                    <th scope="col">ผู้ซ่อม</th>
-                                    <th scope="col">อุปกรณ์</th>
-                                    <th scope="col">อาการที่ได้รับแจ้ง</th>
-                                    <th scope="col">หน่วยงาน</th>
-                                    <th scope="col">เวลาแจ้ง</th>
-                                    <th scope="col">เวลารับงาน</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $sql = "SELECT dp.*,dt.depart_name 
-                    FROM data_report as dp
-                    LEFT JOIN depart as dt ON dp.department = dt.depart_id
-                    ";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                foreach ($result as $row) {
-                                    $timeString = $row['time_report'];
-                                    $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
-
-                                    $takeTimeString = $row['take'];
-                                    if (empty($takeTimeString) || $takeTimeString === '00:00:00.000000') {
-                                        $takeFormatted = '-';
-                                    } else {
-                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . ' น.';
-                                    }
-                                    if ($row['status'] == 3) {
-                                ?>
-                                        <tr class="text-center">
-                                            <td><?= $row['id'] ?></td>
-                                            <td>
-                                                <?php
-                                                $sql = "SELECT * FROM admin";
-                                                $stmt = $conn->prepare($sql);
-                                                $stmt->execute();
-                                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                                foreach ($result as $row2) {
-                                                    if ($row['username'] == $row2['username']) {
-                                                        echo $row2['fname'] . ' ' . $row2['lname'];
-                                                    }
-                                                }
-                                                ?>
-                                            </td>
-                                            <td><?= $row['deviceName'] ?></td>
-                                            <td><?= $row['report'] ?></td>
-                                            <td><?= $row['depart_name'] ?></td>
-                                            <td><?= $timeFormatted ?></td>
-                                            <td><?= $takeFormatted ?></td>
-
-                                        </tr>
-                                <?php }
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                    <hr>
-                </div>
-
-
-                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
-                    <div class="table-responsive">
-                        <h1>งานที่เสร็จ</h1>
-                        <form method="post" action="export.php">
-                            <button name="actAll" class="btn btn-primary" type="submit">Export->Excel</button>
-                        </form>
-                        <hr>
-                        <table id="success" class="table table-success">
-                            <thead>
-                                <tr>
-                                    <th style="text-align: left;">หมายเลขงาน</th>
-                                    <th style="text-align: left; width: 170px;">ผู้ซ่อม</th>
-                                    <th style="text-align: left;">อาการที่ได้รับแจ้ง</th>
-                                    <th style="text-align: left; width: 170px;">หน่วยงาน</th>
-                                    <th style="text-align: left; width: 170px;">SLA</th>
-                                    <th style="text-align: left; width: 120px;">ตัวชี้วัด</th>
-                                    <th style="text-align: left; width: 80px;">เวลาแจ้ง</th>
-                                    <th style="text-align: left; width: 80px;">เวลารับงาน</th>
-                                    <th style="text-align: left; width: 80px;">เวลาปิดงาน</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $sql = "SELECT dp.*,dt.depart_name 
-                        FROM data_report as dp
-                        LEFT JOIN depart as dt ON dp.department = dt.depart_id";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                foreach ($result as $row) {
-                                    $reportTimeString = $row['time_report'];
-                                    $takeTimeString = $row['take'];
-                                    $closeTimeString = $row['close_date'];
-                                    if (empty($closeTimeString) || $closeTimeString === '00:00:00.000000' || empty($takeTimeString) || $takeTimeString === '00:00:00.000000' || empty($reportTimeString) || $reportTimeString === '00:00:00.000000') {
-                                        $reportFormatted = '-';
-                                        $takeFormatted = '-';
-                                        $closeTimeFormatted = '-';
-                                    } else {
-                                        $reportFormatted = date('H:i', strtotime($takeTimeString)) . 'น.';
-                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . 'น.';
-                                        $closeTimeFormatted = date('H:i', strtotime($closeTimeString)) . 'น.';
-                                    }
-                                    if ($row['status'] == 4) {
-                                ?>
-                                        <tr class="text-left">
-                                            <td><?= $row['id'] ?></td>
-                                            <td>
-                                                <?php
-                                                $sql = "SELECT * FROM admin";
-                                                $stmt = $conn->prepare($sql);
-                                                $stmt->execute();
-                                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                                foreach ($result as $row2) {
-                                                    if ($row['username'] == $row2['username']) {
-                                                        echo $row2['fname'] . ' ' . $row2['lname'];
-                                                    }
-                                                }
-                                                ?>
-                                            </td>
-                                            <td><?= $row['report'] ?></td>
-                                            <td><?= $row['depart_name'] ?></td>
-                                            <td><?= $row['sla'] ?></td>
-                                            <td><?= $row['kpi'] ?></td>
-                                            <td><?= $reportFormatted ?></td>
-                                            <td><?= $takeFormatted ?></td>
-                                            <td><?= $closeTimeFormatted ?></td>
-                                        </tr>
-                                <?php }
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
-                        // Fetch data from PHP endpoint
-                        fetch('fetch_service_channel.php')
-                            .then(response => response.json())
-                            .then(response => {
-                                // Response should have 'labels' and 'data' arrays
-                                const serviceLabels = response.labels;
-                                const serviceData = response.data;
+                        const horizontalChartCanvas = document.getElementById('averageScoresChart');
+                        let horizontalChartInstance;
 
-                                // Prepare datasets dynamically based on response
-                                const datasets = serviceLabels.map((label, index) => ({
-                                    label: label,
-                                    data: [serviceData[index]], // Stacking requires an array per group
-                                    backgroundColor: getColor(index, 0.5), // Adjust transparency
-                                    borderColor: getColor(index, 1),
-                                    borderWidth: 1,
-                                }));
+                        function fetchAverageScores() {
+                            return fetch('fetch_total_score.php', {
+                                    method: 'GET',
+                                })
+                                .then((response) => {
+                                    if (!response.ok) throw new Error('Network error');
+                                    return response.json();
+                                })
+                                .catch((error) => console.error('Error fetching data:', error));
+                        }
 
-                                // Chart data
-                                const data = {
-                                    labels: ['ช่องทางการให้บริการ'],
-                                    datasets: datasets,
-                                };
-
-                                // Create the Chart
-                                const ctx = document.getElementById('serviceBarChart').getContext('2d');
-                                new Chart(ctx, {
-                                    type: 'bar',
-                                    data: data,
-                                    options: {
-                                        indexAxis: 'y', // Makes it horizontal
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        plugins: {
-                                            legend: {
-                                                display: true,
-                                                position: 'top',
-                                                align: 'end',
-                                            },
-                                            tooltip: {
-                                                callbacks: {
-                                                    label: (tooltipItem) =>
-                                                        `${tooltipItem.dataset.label}: ${tooltipItem.raw}%`,
-                                                },
-                                            },
+                        function createHorizontalChart(canvas, data) {
+                            return new Chart(canvas, {
+                                type: 'bar',
+                                data: {
+                                    labels: [data.label],
+                                    datasets: [{
+                                        label: 'คะแนนเฉลี่ย',
+                                        data: [data.score],
+                                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                                        borderColor: 'rgba(75, 192, 192, 1)',
+                                        borderWidth: 1,
+                                    }, ],
+                                },
+                                options: {
+                                    indexAxis: 'y', // Horizontal bar
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: false,
+                                            position: 'top',
                                         },
-                                        scales: {
-                                            x: {
-                                                stacked: true, // Enables stacked bars
-                                                title: {
-                                                    display: true,
-                                                },
-                                                ticks: {
-                                                    beginAtZero: true,
-                                                    stepSize: 10,
-                                                },
+                                    },
+                                    scales: {
+                                        x: {
+                                            title: {
+                                                display: true,
+
                                             },
-                                            y: {
-                                                stacked: true, // Enables stacked bars
+                                            beginAtZero: true,
+                                            max: 5,
+                                        },
+                                        y: {
+                                            title: {
+                                                display: true,
                                             },
                                         },
                                     },
-                                });
-                            })
-                            .catch(error => console.error('Error fetching data:', error));
+                                },
+                            });
+                        }
+
+                        fetchAverageScores().then((data) => {
+                            if (data.error) {
+                                console.error('Error:', data.error);
+                                return;
+                            }
+                            if (!horizontalChartInstance) {
+                                horizontalChartInstance = createHorizontalChart(horizontalChartCanvas, data);
+                            } else {
+                                horizontalChartInstance.data.labels = [data.label];
+                                horizontalChartInstance.data.datasets[0].data = [data.score];
+                                horizontalChartInstance.update();
+                            }
+                        });
                     });
+                </script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const endpoints = {
+                            service: 'fetch_service_channel.php',
+                            solving: 'fetch_solving.php',
+                        };
+
+                        const chartConfigs = {
+                            serviceBarChart: {
+                                title: 'ช่องทางการให้บริการ',
+                            },
+                            solvingBarChart: {
+                                title: 'ปัญหาได้รับการแก้ไข',
+                            },
+                        };
+
+                        // Initialize charts
+                        Object.entries(chartConfigs).forEach(([chartId, config]) => {
+                            initializeChart(chartId, endpoints[chartId.split('Bar')[0]], config);
+                        });
+                    });
+
+                    // Function to fetch data from API
+                    async function fetchData(url) {
+                        try {
+                            const response = await fetch(url);
+                            if (!response.ok) throw new Error('Failed to fetch data');
+                            return await response.json();
+                        } catch (error) {
+                            console.error(error);
+                            alert('Error fetching chart data. Please try again.');
+                            return null;
+                        }
+                    }
+
+                    // Function to initialize a chart
+                    async function initializeChart(chartId, endpoint, config) {
+                        const data = await fetchData(endpoint);
+                        if (!data) return;
+
+                        const {
+                            labels,
+                            data: chartData
+                        } = data;
+                        const datasets = labels.map((label, index) => ({
+                            label,
+                            data: [chartData[index]],
+                            backgroundColor: getColor(index, 0.5),
+                            borderColor: getColor(index, 1),
+                            borderWidth: 1,
+                        }));
+
+                        const ctx = document.getElementById(chartId).getContext('2d');
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: [config.title],
+                                datasets,
+                            },
+                            options: {
+                                indexAxis: 'y',
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: 'top',
+                                        align: 'end',
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: (tooltipItem) =>
+                                                `${tooltipItem.dataset.label}: ${tooltipItem.raw}%`,
+                                        },
+                                    },
+                                },
+                                scales: {
+                                    x: {
+                                        stacked: true,
+                                        ticks: {
+                                            beginAtZero: true,
+                                            stepSize: 10,
+                                        },
+                                    },
+                                    y: {
+                                        stacked: true,
+                                    },
+                                },
+                            },
+                        });
+                    }
 
                     // Function to generate colors
                     function getColor(index, alpha) {
@@ -740,85 +407,115 @@ if (!isset($_SESSION["admin_log"])) {
                         return colors[index % colors.length];
                     }
                 </script>
+
+                <style>
+                    .chart-container {
+                        width: 600px;
+                        height: 100px;
+                    }
+
+                    canvas {
+                        width: 100%;
+                        height: 100%;
+                    }
+                </style>
                 <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Fetch data from PHP endpoint
-                        fetch('fetch_solving.php')
-                            .then(response => response.json())
-                            .then(response => {
-                                // Response should have 'labels' and 'data' arrays
-                                const serviceLabels = response.labels;
-                                const serviceData = response.data;
+                    document.addEventListener("DOMContentLoaded", function() {
+                        const endpoint = "fetch_avg_sla.php"; // Backend endpoint
+                        const canvas = document.getElementById("avgSLAChart");
+                        const filterDropdown = document.getElementById("avgSLAFilter");
+                        let chartInstance;
 
-                                // Prepare datasets dynamically based on response
-                                const datasets = serviceLabels.map((label, index) => ({
-                                    label: label,
-                                    data: [serviceData[index]], // Stacking requires an array per group
-                                    backgroundColor: getColor(index, 0.5), // Adjust transparency
-                                    borderColor: getColor(index, 1),
-                                    borderWidth: 1,
-                                }));
+                        // Fetch data from the backend
+                        function fetchData(filter) {
+                            return fetch(endpoint, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                        filter
+                                    }),
+                                })
+                                .then((response) => {
+                                    if (!response.ok) throw new Error("Network error");
+                                    return response.json();
+                                })
+                                .catch((error) => console.error("Error fetching data:", error));
+                        }
 
-                                // Chart data
-                                const data = {
-                                    labels: ['ปัญหาได้รับการแก้ไข'],
-                                    datasets: datasets,
-                                };
+                        // Create or update the chart
+                        function updateChart(data) {
+                            const chartData = {
+                                labels: data.labels,
+                                datasets: [{
+                                        label: "เวลาที่กำหนด",
+                                        data: data.in_time_values,
+                                        borderColor: "rgba(54, 162, 235, 1)",
+                                        backgroundColor: "rgba(54, 162, 235, 0.2)",
+                                        fill: false,
+                                        tension: 0.3,
+                                    },
+                                    {
+                                        label: "เวลาที่ใช้",
+                                        data: data.avg_time_values,
+                                        borderColor: "rgba(255, 99, 132, 1)",
+                                        backgroundColor: "rgba(255, 99, 132, 0.2)",
+                                        fill: false,
+                                        tension: 0.3,
+                                    },
+                                ],
+                            };
 
-                                // Create the Chart
-                                const ctx = document.getElementById('solvingBarChart').getContext('2d');
-                                new Chart(ctx, {
-                                    type: 'bar',
-                                    data: data,
-                                    options: {
-                                        indexAxis: 'y', // Makes it horizontal
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        plugins: {
-                                            legend: {
-                                                display: true,
-                                                position: 'top',
-                                                align: 'end',
-                                            },
-                                            tooltip: {
-                                                callbacks: {
-                                                    label: (tooltipItem) =>
-                                                        `${tooltipItem.dataset.label}: ${tooltipItem.raw}%`,
-                                                },
-                                            },
-                                        },
-                                        scales: {
-                                            x: {
-                                                stacked: true, // Enables stacked bars
-                                                title: {
-                                                    display: true,
-                                                },
-                                                ticks: {
-                                                    beginAtZero: true,
-                                                    stepSize: 10,
-                                                },
-                                            },
-                                            y: {
-                                                stacked: true, // Enables stacked bars
+                            const chartOptions = {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: "top",
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                let value = context.raw || 0;
+                                                return `${value} นาที`;
                                             },
                                         },
                                     },
-                                });
-                            })
-                            .catch(error => console.error('Error fetching data:', error));
-                    });
+                                },
+                                scales: {
+                                    x: {
+                                        title: {
+                                            display: true,
+                                        },
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                    },
+                                },
+                            };
 
-                    // Function to generate colors
-                    function getColor(index, alpha) {
-                        const colors = [
-                            `rgba(255, 99, 132, ${alpha})`,
-                            `rgba(75, 192, 192, ${alpha})`,
-                            `rgba(54, 162, 235, ${alpha})`,
-                            `rgba(255, 206, 86, ${alpha})`,
-                            `rgba(153, 102, 255, ${alpha})`,
-                        ];
-                        return colors[index % colors.length];
-                    }
+                            if (chartInstance) {
+                                chartInstance.destroy(); // Destroy existing chart instance
+                            }
+
+                            chartInstance = new Chart(canvas, {
+                                type: "line",
+                                data: chartData,
+                                options: chartOptions,
+                            });
+                        }
+
+                        // Event listener for dropdown change
+                        filterDropdown.addEventListener("change", function() {
+                            const selectedFilter = this.value;
+                            fetchData(selectedFilter).then(updateChart);
+                        });
+
+                        // Initial load with default filter
+                        fetchData(filterDropdown.value).then(updateChart);
+                    });
                 </script>
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
@@ -934,6 +631,140 @@ if (!isset($_SESSION["admin_log"])) {
                         });
                     });
                 </script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const pieChartCanvas = document.getElementById('pieChart');
+                        const pieChartDropdown = document.getElementById('pieChartFilter');
+                        let pieChartInstance;
+
+                        function fetchPieData(filter) {
+                            return fetch('fetch_percentage_sla.php', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        filter
+                                    })
+                                })
+                                .then(response => response.json())
+                                .catch(error => console.error('Error fetching pie chart data:', error));
+                        }
+
+                        function updatePieChart(filter) {
+                            fetchPieData(filter).then(data => {
+                                const chartData = {
+                                    labels: ['เสร็จภายในเวลา', 'เกินเวลาที่กำหนด'],
+                                    datasets: [{
+                                        data: [data.in_time, data.over_time],
+                                        backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(255, 99, 132, 0.5)'],
+                                        borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+                                        borderWidth: 1
+                                    }]
+                                };
+
+                                if (!pieChartInstance) {
+                                    pieChartInstance = new Chart(pieChartCanvas, {
+                                        type: 'pie',
+                                        data: chartData,
+                                        options: {
+                                            responsive: false,
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                legend: {
+                                                    display: true,
+                                                    position: 'bottom'
+                                                },
+                                                tooltip: {
+                                                    callbacks: {
+                                                        label: function(context) {
+                                                            // Format the value with a '%' symbol
+                                                            let value = context.raw || 0;
+                                                            return `${context.label}: ${value}%`;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    pieChartInstance.data = chartData;
+                                    pieChartInstance.update();
+                                }
+                            });
+                        }
+
+                        pieChartDropdown.addEventListener('change', () => updatePieChart(pieChartDropdown.value));
+                        updatePieChart('day');
+                    });
+                </script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const chartData = {
+                            canvasId: 'horizontalBarChart',
+                            endpoint: 'fetch_average_scores.php', // API to retrieve the averages
+                            type: 'bar',
+                            datasets: (data) => [{
+                                label: 'คะแนนเฉลี่ย',
+                                data: data.scores,
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.5)',
+                                    'rgba(255, 206, 86, 0.5)',
+                                    'rgba(54, 162, 235, 0.5)',
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                ],
+                                borderWidth: 1,
+                            }, ],
+                        };
+
+                        const canvas = document.getElementById(chartData.canvasId);
+
+                        function fetchChartData(endpoint) {
+                            return fetch(endpoint, {
+                                    method: 'GET',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                })
+                                .then((response) => response.json())
+                                .catch((error) => console.error('Error fetching data:', error));
+                        }
+
+                        function createHorizontalBarChart(canvas, data, datasetsFn) {
+                            return new Chart(canvas, {
+                                type: 'bar',
+                                data: {
+                                    labels: data.labels,
+                                    datasets: datasetsFn(data),
+                                },
+                                options: {
+                                    indexAxis: 'y', // Horizontal bar chart
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        },
+                                    },
+                                    scales: {
+                                        x: {
+                                            beginAtZero: true,
+                                            max: 5,
+                                        },
+                                    },
+                                },
+                            });
+                        }
+
+                        fetchChartData(chartData.endpoint).then((data) => {
+                            createHorizontalBarChart(canvas, data, chartData.datasets);
+                        });
+                    });
+                </script>
                 <hr>
             </div>
             <br>
@@ -1033,6 +864,81 @@ if (!isset($_SESSION["admin_log"])) {
                             [0, 'desc']
                         ] // adjust the column index as needed
                     });
+                });
+            </script>
+
+            <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    fetch('fetch_data.php') // Replace with your actual PHP endpoint
+                        .then(response => response.json())
+                        .then(data => {
+                            // Transform the data for the Gantt chart
+                            const labels = [...new Set(data.map(item => item.name))]; // Get unique names
+
+                            // Helper function to generate random colors
+                            const randomColor = () => `rgba(${Math.floor(Math.random() * 255)}, 
+                                            ${Math.floor(Math.random() * 255)}, 
+                                            ${Math.floor(Math.random() * 255)}, 
+                                            0.5)`;
+
+                            // Prepare datasets for each task
+                            const datasets = data.map(task => ({
+                                x: [new Date(`2023-01-01 ${task.start}`), new Date(`2023-01-01 ${task.end}`)],
+                                y: task.name,
+                                backgroundColor: randomColor(), // Generate a random color for each task
+                                problem: task.problem, // Add problem type for tooltips
+                                take: task.start, // Start time in 24-hour format
+                                close_date: task.end // End time in 24-hour format
+                            }));
+
+                            // Gantt chart configuration
+                            new Chart(document.getElementById('gantt-chart'), {
+                                type: 'bar',
+                                data: {
+                                    datasets: [{
+                                        label: 'Timeline',
+                                        data: datasets,
+                                        borderWidth: 1, // Keep border consistent for visibility
+                                    }],
+                                },
+                                options: {
+                                    indexAxis: 'y',
+                                    scales: {
+                                        x: {
+                                            type: 'time',
+                                            time: {
+                                                unit: 'hour',
+                                                displayFormats: {
+                                                    hour: 'HH:mm'
+                                                }
+                                            },
+                                            min: '2023-01-01 08:00', // Start time
+                                            max: '2023-01-01 17:00', // End time
+                                        },
+                                        y: {
+                                            type: 'category',
+                                            reverse: true // Reverse for better readability
+                                        },
+                                    },
+                                    plugins: {
+                                        tooltip: {
+                                            callbacks: {
+                                                label: (ctx) => {
+                                                    const {
+                                                        problem,
+                                                        take,
+                                                        close_date
+                                                    } = ctx.raw;
+                                                    return `${problem} (${take} - ${close_date})`;
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                            });
+                        })
+                        .catch(err => console.error(err));
                 });
             </script>
             <footer class="mt-5 footer mt-auto py-3" style="background: #fff;">
