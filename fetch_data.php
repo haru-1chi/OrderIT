@@ -1,6 +1,10 @@
 <?php
 require_once 'config/db.php';
 
+// Get the selected date from the query parameter
+$date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
+
+// Fetch data for the selected date
 $sql = "
 SELECT 
     id, 
@@ -12,9 +16,10 @@ FROM
     data_report 
 WHERE 
     status = 4 
-    AND DATE(DATE_SUB(date_report, INTERVAL 543 YEAR)) = CURDATE()";
+    AND DATE(DATE_SUB(date_report, INTERVAL 543 YEAR)) = :selected_date";
 
 $stmt = $conn->prepare($sql);
+$stmt->bindParam(':selected_date', $date, PDO::PARAM_STR);
 $stmt->execute();
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

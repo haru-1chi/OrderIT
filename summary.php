@@ -185,6 +185,7 @@ if (!isset($_SESSION["admin_log"])) {
 
         <div class="d-flex">
             <div class="card p-3 m-4" style="width: 1800px; height: 400px;">
+                <input type="date" id="filter-date" class="form-control mb-3" />
                 <canvas id="gantt-chart" style="width: 100%; height: 100%;"></canvas>
             </div>
         </div>
@@ -870,75 +871,95 @@ if (!isset($_SESSION["admin_log"])) {
             <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
-                    fetch('fetch_data.php') // Replace with your actual PHP endpoint
-                        .then(response => response.json())
-                        .then(data => {
-                            // Transform the data for the Gantt chart
-                            const labels = [...new Set(data.map(item => item.name))]; // Get unique names
+                    const filterDateInput = document.getElementById("filter-date");
+                    const ganttChartCanvas = document.getElementById("gantt-chart");
+                    let chart; // Placeholder for the chart instance
 
-                            // Helper function to generate random colors
-                            const randomColor = () => `rgba(${Math.floor(Math.random() * 255)}, 
-                                            ${Math.floor(Math.random() * 255)}, 
-                                            ${Math.floor(Math.random() * 255)}, 
-                                            0.5)`;
+                    // Function to fetch and update the chart data
+                    function fetchDataAndRenderChart(date = null) {
+                        const url = date ?
+                            `fetch_data.php?date=${date}` // Send the selected date as a query parameter
+                            :
+                            'fetch_data.php'; // Default fetch endpoint
 
-                            // Prepare datasets for each task
-                            const datasets = data.map(task => ({
-                                x: [new Date(`2023-01-01 ${task.start}`), new Date(`2023-01-01 ${task.end}`)],
-                                y: task.name,
-                                backgroundColor: randomColor(), // Generate a random color for each task
-                                problem: task.problem, // Add problem type for tooltips
-                                take: task.start, // Start time in 24-hour format
-                                close_date: task.end // End time in 24-hour format
-                            }));
+                        fetch(url)
+                            .then(response => response.json())
+                            .then(data => {
+                                // Prepare datasets
+                                const datasets = data.map(task => ({
+                                    x: [new Date(`2023-01-01 ${task.start}`), new Date(`2023-01-01 ${task.end}`)],
+                                    y: task.name,
+                                    backgroundColor: `rgba(${Math.floor(Math.random() * 255)}, 
+                                                ${Math.floor(Math.random() * 255)}, 
+                                                ${Math.floor(Math.random() * 255)}, 0.5)`,
+                                    problem: task.problem,
+                                    take: task.start,
+                                    close_date: task.end,
+                                }));
 
-                            // Gantt chart configuration
-                            new Chart(document.getElementById('gantt-chart'), {
-                                type: 'bar',
-                                data: {
-                                    datasets: [{
-                                        label: 'Timeline',
-                                        data: datasets,
-                                        borderWidth: 1, // Keep border consistent for visibility
-                                    }],
-                                },
-                                options: {
-                                    indexAxis: 'y',
-                                    scales: {
-                                        x: {
-                                            type: 'time',
-                                            time: {
-                                                unit: 'hour',
-                                                displayFormats: {
-                                                    hour: 'HH:mm'
-                                                }
+                                // Render or update the chart
+                                if (chart) {
+                                    chart.data.datasets[0].data = datasets;
+                                    chart.update();
+                                } else {
+                                    chart = new Chart(ganttChartCanvas, {
+                                        type: 'bar',
+                                        data: {
+                                            datasets: [{
+                                                label: 'Timeline',
+                                                data: datasets,
+                                                borderWidth: 1,
+                                                
+                                            }],
+                                        },
+                                        options: {
+                                            indexAxis: 'y',
+                                            scales: {
+                                                x: {
+                                                    type: 'time',
+                                                    time: {
+                                                        unit: 'hour',
+                                                        displayFormats: {
+                                                            hour: 'HH:mm'
+                                                        }
+                                                    },
+                                                    min: '2023-01-01 08:00',
+                                                    max: '2023-01-01 17:00',
+                                                },
+                                                y: {
+                                                    type: 'category',
+                                                    reverse: true,
+                                                },
                                             },
-                                            min: '2023-01-01 08:00', // Start time
-                                            max: '2023-01-01 17:00', // End time
-                                        },
-                                        y: {
-                                            type: 'category',
-                                            reverse: true // Reverse for better readability
-                                        },
-                                    },
-                                    plugins: {
-                                        tooltip: {
-                                            callbacks: {
-                                                label: (ctx) => {
-                                                    const {
-                                                        problem,
-                                                        take,
-                                                        close_date
-                                                    } = ctx.raw;
-                                                    return `${problem} (${take} - ${close_date})`;
+                                            plugins: {
+                                                tooltip: {
+                                                    callbacks: {
+                                                        label: (ctx) => {
+                                                            const {
+                                                                problem,
+                                                                take,
+                                                                close_date
+                                                            } = ctx.raw;
+                                                            return `${problem} (${take} - ${close_date})`;
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
-                                },
-                            });
-                        })
-                        .catch(err => console.error(err));
+                                    });
+                                }
+                            })
+                            .catch(err => console.error(err));
+                    }
+
+                    // Initial chart render
+                    fetchDataAndRenderChart();
+
+                    // Event listener for date input
+                    filterDateInput.addEventListener("change", function() {
+                        const selectedDate = this.value; // Get the selected date
+                        fetchDataAndRenderChart(selectedDate); // Update chart with the selected date
+                    });
                 });
             </script>
             <footer class="mt-5 footer mt-auto py-3" style="background: #fff;">
