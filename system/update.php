@@ -248,6 +248,7 @@ if (isset($_POST['updateData'])) {
     $refWithdraw = $_POST["ref_withdraw"];
     $refOffer = $_POST["ref_offer"];
     $quotation = $_POST["quotation"];
+    $id_ref = $_POST["id_ref"];
 
     $numberDevices = $_POST["device_numbers"];
     $update_number_device = $_POST["update_number_device"];
@@ -302,7 +303,8 @@ if (isset($_POST['updateData'])) {
             refWork = :refWork,
             refWithdraw = :refWithdraw,
             refOffer = :refOffer,
-            quotation = :quotation
+            quotation = :quotation,
+            id_ref = :id_ref
             WHERE id = :id";
 
     // เตรียมและ execute statement
@@ -315,6 +317,7 @@ if (isset($_POST['updateData'])) {
     $stmt->bindParam(":refWithdraw", $refWithdraw);
     $stmt->bindParam(":refOffer", $refOffer);
     $stmt->bindParam(":quotation", $quotation);
+    $stmt->bindParam(":id_ref", $id_ref);
     $stmt->bindParam(":id", $id);
     if ($stmt->execute()) {
         if (!empty($_POST['list'])) {

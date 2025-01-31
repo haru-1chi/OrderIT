@@ -321,7 +321,7 @@ $id = $_GET['workid'];
         <p style="line-height:10pt"><b style="font-size:22pt">ส่วนราชการ</b> โรงพยาบาลแม่สอด กลุ่มงาน <?= $order['depart_name'] ?> งาน ศูนย์คอมพิวเตอร์ รหัสหน่วยงาน 67 โทร 1554</p>
         <div class="d-flex justify-content-between">
             <p style="line-height:10pt"><b style="font-size:20pt">ที่</b>&nbsp;&nbsp;&nbsp;ตก 0033. /พิเศษ</p>
-            <p style="line-height:10pt"><b style="font-size:20pt">วันที่</b>&nbsp;&nbsp;&nbsp;<?= date('d', $timestamp) . ' ' . $monthThai . ' ' . date('Y', $timestamp); ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+            <p style="line-height:10pt"><b style="font-size:20pt">วันที่</b>&nbsp;&nbsp;&nbsp;<?= date('d', $timestamp) . ' ' . $monthThai . ' ' . (date('Y', $timestamp) + 543); ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
         </div>
         <div style="margin-top: -20pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...........................................................................................................................&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;..................................................................................................................................</div>
         <p style="line-height:10pt"><b style="font-size:20pt">เรื่อง</b> ขอเบิกวัสดุ / <?= $order['withdraw_name'] ?> หมวด</p>

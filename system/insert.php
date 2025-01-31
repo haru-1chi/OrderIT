@@ -372,6 +372,7 @@ if (isset($_POST['submit'])) {
     $refUsername = $_POST["ref_username"];
     $refOffer = $_POST["ref_offer"];
     $quotation = $_POST["quotation"];
+    $id_ref = $_POST["id_ref"];
     $note = $_POST["note"];
     $status = $_POST["status"];
     date_default_timezone_set('Asia/Bangkok');
@@ -424,8 +425,8 @@ if (isset($_POST['submit'])) {
             $conn->beginTransaction();
 
             // Insert into orderdata_new table
-            $sql = "INSERT INTO orderdata_new (numberWork, dateWithdraw, refWithdraw, refWork, refDevice, reason, report, refDepart, refUsername, refOffer, quotation, note) 
-                    VALUES (:numberWork, :dateWithdraw, :refWithdraw, :refWork, :refDevice, :reason, :report, :refDepart, :refUsername, :refOffer, :quotation, :note)";
+            $sql = "INSERT INTO orderdata_new (numberWork, dateWithdraw, refWithdraw, refWork, refDevice, reason, report, refDepart, refUsername, refOffer, quotation, note,id_ref) 
+                    VALUES (:numberWork, :dateWithdraw, :refWithdraw, :refWork, :refDevice, :reason, :report, :refDepart, :refUsername, :refOffer, :quotation, :note, :id_ref)";
             $stmt = $conn->prepare($sql);
 
             $stmt->bindParam(':numberWork', $numberWork);
@@ -439,6 +440,7 @@ if (isset($_POST['submit'])) {
             $stmt->bindParam(':refUsername', $refUsername);
             $stmt->bindParam(':refOffer', $refOffer);
             $stmt->bindParam(':quotation', $quotation);
+            $stmt->bindParam(':id_ref', $id_ref);
             $stmt->bindParam(':note', $note);
 
             if ($stmt->execute()) {
@@ -812,7 +814,7 @@ if (isset($_POST['submit_with_work'])) {
                                   kpi = :kpi, repair_count = :repair_count, close_date = :close_date, department = :department";
 
                 // if (!empty($close_date) && strtotime($close_date)) {
-                    $updateSql .= ", status = :status";
+                $updateSql .= ", status = :status";
                 // }
 
                 $updateSql .= " WHERE id = :id_ref";
@@ -831,7 +833,7 @@ if (isset($_POST['submit_with_work'])) {
                 $updateStmt->bindParam(":department", $department);
                 $updateStmt->bindParam(":id_ref", $id_ref);
                 // if (!empty($close_date) && strtotime($close_date)) {
-                    $updateStmt->bindParam(":status", $statusTask);
+                $updateStmt->bindParam(":status", $statusTask);
                 // }
                 $updateStmt->execute();
 
@@ -1120,7 +1122,7 @@ if (isset($_POST['save_with_work'])) {
                                   kpi = :kpi, repair_count = :repair_count, close_date = :close_date, department = :department";
 
                 // if (!empty($close_date) && strtotime($close_date)) {
-                    $updateSql .= ", status = :status";
+                $updateSql .= ", status = :status";
                 // }
 
                 $updateSql .= " WHERE id = :id_ref";
@@ -1139,7 +1141,7 @@ if (isset($_POST['save_with_work'])) {
                 $updateStmt->bindParam(":department", $department);
                 $updateStmt->bindParam(":id_ref", $id_ref);
                 // if (!empty($close_date) && strtotime($close_date)) {
-                    $updateStmt->bindParam(":status", $statusTask);
+                $updateStmt->bindParam(":status", $statusTask);
                 // }
                 $updateStmt->execute();
 

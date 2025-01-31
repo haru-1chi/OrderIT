@@ -26,7 +26,7 @@ switch ($filter) {
 $sql_creators = "
     SELECT 
         a.username AS create_by, 
-        COUNT(*) AS finish_take
+        COUNT(*) AS finish_create
     FROM 
         data_report AS d
     JOIN 
@@ -64,26 +64,37 @@ $creator_counts = [];
 $taker_counts = [];
 
 foreach ($creator_data as $row) {
-    $labels[] = $row['create_by'];
-    $creator_counts[$row['create_by']] = $row['finish_take'];
+    if (!in_array($row['create_by'], $labels)) {
+        $labels[] = $row['create_by'];
+    }
 }
 
 foreach ($taker_data as $row) {
     if (!in_array($row['username'], $labels)) {
         $labels[] = $row['username'];
     }
+}
+
+// Initialize counts to zero
+foreach ($labels as $label) {
+    $creator_counts[$label] = 0;
+    $taker_counts[$label] = 0;
+}
+
+// Fill in actual values
+foreach ($creator_data as $row) {
+    $creator_counts[$row['create_by']] = $row['finish_create'];
+}
+
+foreach ($taker_data as $row) {
     $taker_counts[$row['username']] = $row['finish_take'];
 }
 
-// Align data
-foreach ($labels as $label) {
-    if (!isset($creator_counts[$label])) $creator_counts[$label] = 0;
-    if (!isset($taker_counts[$label])) $taker_counts[$label] = 0;
-}
-
 // Send JSON response
+header('Content-Type: application/json');
 echo json_encode([
     'labels' => $labels,
     'creator_counts' => array_values($creator_counts),
     'taker_counts' => array_values($taker_counts),
-]);
+], JSON_PRETTY_PRINT);
+exit;

@@ -486,20 +486,21 @@ ORDER BY os.status;
 
               <div class="row">
                 <div class="col-6">
-                  <label>วันที่ออกใบเบิก</label>
-                  <input type="date" class="form-control"
-                    value="<?= $order['dateWithdraw'] ?? '' ?>" disabled>
+                  <label>ผูกหมายเลขงาน(ถ้ามี)</label>
+                  <input type="text" class="form-control" name="id_ref"
+                    value="<?= $order['id_ref'] ?? '' ?>" disabled>
                 </div>
 
                 <div class="col-6">
-                  <label>ผู้รับเรื่อง</label>
-                  <input type="text" class="form-control"
-                    value="<?= $order['refUsername'] ?? '' ?>" disabled>
+                  <label>วันที่ออกใบเบิก</label>
+                  <input type="date" class="form-control"
+                    value="<?= $order['dateWithdraw'] ?? '' ?>" disabled>
+
                 </div>
               </div>
 
               <div class="row">
-                <div class="col-6">
+                <div class="col-4">
                   <label for="inputGroupSelect01">ประเภทการเบิก</label>
                   <select disabled class="form-select" name="ref_withdraw" id="inputGroupSelect01">
                     <?php
@@ -515,7 +516,7 @@ ORDER BY os.status;
                   </select>
                 </div>
 
-                <div class="col-6">
+                <div class="col-4">
                   <label for="inputGroupSelect01">ประเภทงาน</label>
                   <select disabled class="form-select" name="ref_work" id="inputGroupSelect01">
                     <?php
@@ -531,6 +532,11 @@ ORDER BY os.status;
                     <?php }
                     ?>
                   </select>
+                </div>
+                <div class="col-4">
+                  <label>ผู้รับเรื่อง</label>
+                  <input type="text" class="form-control"
+                    value="<?= $order['refUsername'] ?? '' ?>" disabled>
                 </div>
               </div>
 
@@ -857,14 +863,20 @@ ORDER BY os.status;
         <div class="modal-body p-3">
           <form action="system/insert.php" method="post">
             <div class="row">
-              <div class="col-sm-4">
+              <div class="col-sm-6">
                 <div class="mb-3">
                   <label id="basic-addon1">วันที่ออกใบเบิก</label>
                   <input type="date" name="dateWithdraw" class="form-control thaiDateInput">
                 </div>
               </div>
 
-              <div class="col-sm-4">
+              <div class="col-sm-6">
+                <label>ผูกหมายเลขงาน(ถ้ามี)</label>
+                <input type="text" class="form-control" name="id_ref"
+                  value="">
+              </div>
+
+              <div class="col-sm-6">
                 <div class="mb-3">
                   <label for="inputGroupSelect01">ประเภทการเบิก</label>
                   <select required class="form-select" name="ref_withdraw" id="inputGroupSelect01">
@@ -884,7 +896,7 @@ ORDER BY os.status;
                 </div>
               </div>
 
-              <div class="col-sm-4">
+              <div class="col-sm-6">
                 <div class="mb-3">
                   <label for="inputGroupSelect01">ประเภทงาน</label>
                   <select required class="form-select" name="ref_work" id="inputGroupSelect01">
@@ -1220,14 +1232,20 @@ ORDER BY os.status;
               $requisitionData = $checkStmt->fetchAll(PDO::FETCH_ASSOC);
               ?>
               <?php foreach ($requisitionData as $rowData) { ?>
-                <div class="col-sm-4">
+                <div class="col-sm-6">
                   <div class="mb-3">
                     <label id="basic-addon1">วันที่ออกใบเบิก</label>
                     <input required type="date" name="dateWithdraw" value="<?= $rowData['dateWithdraw'] ?>" class="form-control thaiDateInput">
                   </div>
                 </div>
 
-                <div class="col-sm-4">
+                <div class="col-sm-6">
+                  <label>ผูกหมายเลขงาน(ถ้ามี)</label>
+                  <input type="text" class="form-control" name="id_ref"
+                    value="">
+                </div>
+
+                <div class="col-sm-6">
                   <div class="mb-3">
                     <label for="inputGroupSelect01">ประเภทการเบิก</label>
                     <select required class="form-select" name="ref_withdraw" id="inputGroupSelect01">
@@ -1245,7 +1263,7 @@ ORDER BY os.status;
                   </div>
                 </div>
 
-                <div class="col-sm-4">
+                <div class="col-sm-6">
                   <div class="mb-3">
                     <label for="inputGroupSelect01">ประเภทงาน</label>
                     <select required class="form-select" name="ref_work" id="inputGroupSelect01">
@@ -1675,7 +1693,7 @@ ORDER BY os.status;
         manageColumnHeader.style.display = isDisabled ? "table-cell" : "none"; //ปุ่มเพิ่ม column list table //x เอาออกจาก function นี้
 
         //field อื่นๆ
-        ["report", "reason", "note", "ref_withdraw", "ref_work", "ref_offer", "quotation"].forEach(function(name) {
+        ["report", "reason", "note", "ref_withdraw", "ref_work", "ref_offer", "quotation", "id_ref"].forEach(function(name) {
           const input = document.querySelector(`[name='${name}']`);
           if (input) {
             input.disabled = !input.disabled;
@@ -1744,12 +1762,12 @@ ORDER BY os.status;
           const newRow = document.createElement("tr");
           newRow.innerHTML = `
             <td>${rowIndex}</td>
-<td>
+            <td>
           <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="list[]">
             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
             ${deviceOptions}
           </select>
-        </td>
+    </td>
             <td><textarea class="form-control" name="quality[]"></textarea></td>
             <td><input style="width: 3rem; margin: 0 auto;" type="text" name="amount[]" class="form-control"></td>
             <td><input style="width: 5rem; margin: 0 auto;" type="text" name="price[]" class="form-control"></td>

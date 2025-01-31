@@ -184,11 +184,297 @@ if (!isset($_SESSION["admin_log"])) {
         </div>
 
         <div class="d-flex">
-            <div class="card p-3 m-4" style="width: 1800px; height: 400px;">
+            <div class="card p-3 m-4" style="width: 1800px; height: 800px;">
                 <input type="date" id="filter-date" class="form-control mb-3" />
-                <canvas id="gantt-chart" style="width: 100%; height: 100%;"></canvas>
+                <select id="timelineFilter" class="form-control">
+                    <option value="problem" selected>Activity Report</option>
+                    <option value="device">รูปแบบการทำงาน</option>
+                    <option value="report">อาการรับแจ้ง</option>
+                    <option value="sla">SLA</option>
+                </select>
+                <canvas id="gantt-chart" width="800" height="100"></canvas>
+                <canvas id="gantt-summary" style="width: 100%; height: 100%;"></canvas>
+                <canvas id="summary-chart" width="800" height="100"></canvas>
             </div>
         </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+        <script>
+            let chart; // To hold the Chart.js instance
+
+            // Fetch data from backend
+            async function fetchChartData(date, filter) {
+                const response = await fetch(`fetch_data.php?date=${date}&filter=${filter}`);
+                const data = await response.json();
+                return data;
+            }
+
+            // Map fetched data to chart format
+            function mapDataToChartFormat(fetchedData) {
+                const filteredData = fetchedData.filter(row => row.name.toLowerCase() !== 'achirayaj');
+                return filteredData.map(row => ({
+                    name: row.name,
+                    tasks: [{
+                        type: row.problem, // "problem" column maps to task type
+                        start: row.start,
+                        end: row.end,
+                    }],
+                }));
+            }
+
+            // Create or update the chart
+            function renderChart(data) {
+                const summarizedTasks = summarizeTasks(data);
+
+                const labels = summarizedTasks.map(item => item.timeRange);
+
+                // Unique task types
+                const taskTypes = [...new Set(summarizedTasks.map(item => item.taskType).filter(type => type !== 'Nothing'))];
+
+                // Base colors (RGB only)
+                const baseColors = [
+                    [255, 99, 132], // Similar to 'rgba(255, 99, 132, 0.5)'
+                    [255, 206, 86], // Similar to 'rgba(255, 206, 86, 0.5)'
+                    [54, 162, 235], // Similar to 'rgba(54, 162, 235, 0.5)'
+                ];
+
+                // Generate unique colors for each task type
+                const taskColors = {};
+                taskTypes.forEach((type, index) => {
+                    const baseColor = baseColors[index % baseColors.length];
+                    const [r, g, b] = baseColor;
+                    taskColors[type] = {
+                        backgroundColor: `rgba(${r}, ${g}, ${b}, 0.5)`,
+                        borderColor: `rgba(${r}, ${g}, ${b}, 1)`,
+                    };
+                });
+
+                // Generate datasets for each task type
+                const datasets = taskTypes.map(taskType => {
+                    const data = summarizedTasks.map(item => (item.taskType === taskType ? 1 : 0));
+                    return {
+                        label: taskType, // Legend will now show task type
+                        data: data,
+                        backgroundColor: taskColors[taskType].backgroundColor,
+                        borderColor: taskColors[taskType].borderColor,
+                        borderWidth: 1,
+                    };
+                });
+
+                // Chart Data
+                const chartData = {
+                    labels: labels,
+                    datasets: datasets, // Multiple datasets
+                };
+
+                const config = {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        indexAxis: 'x',
+                        scales: {
+                            x: {
+                                stacked: true,
+                                position: 'top',
+                                title: {
+                                    display: true,
+                                    text: 'Time Range',
+                                },
+                            },
+                            y: {
+                                stacked: true,
+                                display: false,
+                            },
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: context => {
+                                        return `${context.dataset.label}: ${context.raw}`;
+                                    },
+                                },
+                            },
+                        },
+                    },
+                };
+
+                // If chart exists, destroy it before creating a new one
+                if (chart) {
+                    chart.destroy();
+                }
+                const ctx = document.getElementById('summary-chart').getContext('2d');
+                chart = new Chart(ctx, config);
+            }
+
+            // function renderChart(data) {
+            //     const summarizedTasks = summarizeTasks(data);
+
+            //     const labels = summarizedTasks.map(item => item.timeRange);
+            //     // Function to generate a random color similar to a base color
+            //     function getRandomColorFromBase(baseColor, opacity = 0.5) {
+            //         const [r, g, b] = baseColor; // Extract the RGB values from the base color
+            //         const variation = 30; // Maximum variation for randomness
+            //         const randomize = (value) => Math.min(255, Math.max(0, value + Math.floor(Math.random() * (variation * 2) - variation)));
+            //         const newR = randomize(r);
+            //         const newG = randomize(g);
+            //         const newB = randomize(b);
+            //         return `rgba(${newR}, ${newG}, ${newB}, ${opacity})`;
+            //     }
+
+            //     // Base colors (RGB only)
+            //     const baseColors = [
+            //         [255, 99, 132], // Similar to 'rgba(255, 99, 132, 0.5)'
+            //         [255, 206, 86], // Similar to 'rgba(255, 206, 86, 0.5)'
+            //         [54, 162, 235] // Similar to 'rgba(54, 162, 235, 0.5)'
+            //     ];
+
+            //     // Function to map unique task types to similar colors
+            //     const taskColors = {}; // Store generated colors for each task type
+            //     function getTaskColor(taskType, opacity = 0.5) {
+            //         if (!taskColors[taskType]) {
+            //             const baseColor = baseColors[Math.floor(Math.random() * baseColors.length)];
+            //             taskColors[taskType] = getRandomColorFromBase(baseColor, opacity);
+            //         }
+            //         return taskColors[taskType];
+            //     }
+
+            //     // Chart Data with Pantone-like Random Colors
+            //     const chartData = {
+            //         labels: labels,
+            //         datasets: [{
+            //             label: 'Task Summary',
+            //             data: summarizedTasks.map(item => (item.taskType !== 'Nothing' ? 1 : 0)),
+            //             backgroundColor: summarizedTasks.map(item => getTaskColor(item.taskType, 0.5)),
+            //             borderColor: summarizedTasks.map(item => getTaskColor(item.taskType, 1).replace(/0\.5\)$/, '1)')),
+            //             borderWidth: 1,
+            //         }]
+            //     };
+
+
+            //     const config = {
+            //         type: 'bar',
+            //         data: chartData,
+            //         options: {
+            //             indexAxis: 'x',
+            //             scales: {
+            //                 x: {
+            //                     position: 'top',
+            //                     title: {
+            //                         display: true,
+            //                         text: 'Time Range',
+            //                     },
+            //                 },
+            //                 y: {
+            //                     display: false,
+            //                 },
+            //             },
+            //             plugins: {
+            //                 tooltip: {
+            //                     callbacks: {
+            //                         label: context => {
+            //                             const taskType = summarizedTasks[context.dataIndex].taskType;
+            //                             return `${taskType}`;
+            //                         },
+            //                     },
+            //                 },
+            //             },
+            //         },
+            //     };
+
+            //     // If chart exists, destroy it before creating a new one
+            //     if (chart) {
+            //         chart.destroy();
+            //     }
+            //     const ctx = document.getElementById('summary-chart').getContext('2d');
+            //     chart = new Chart(ctx, config);
+            // }
+
+            // Initialize the chart with event listeners
+            async function initChart() {
+                const dateInput = document.getElementById('filter-date');
+                const filterSelect = document.getElementById('timelineFilter');
+
+                async function updateChart() {
+                    const selectedDate = dateInput.value || new Date().toISOString().split('T')[0];
+                    const selectedFilter = filterSelect.value;
+                    const fetchedData = await fetchChartData(selectedDate, selectedFilter);
+                    const ganttData = mapDataToChartFormat(fetchedData);
+                    renderChart(ganttData);
+                }
+
+                dateInput.addEventListener('change', updateChart);
+                filterSelect.addEventListener('change', updateChart);
+
+                // Initial chart load
+                await updateChart();
+            }
+
+            // Utility functions
+            function timeToMinutes(time) {
+                const [hours, minutes] = time.split(':').map(Number);
+                return hours * 60 + minutes;
+            }
+
+            function minutesToTime(minutes) {
+                const h = Math.floor(minutes / 60);
+                const m = minutes % 60;
+                return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+            }
+
+            function summarizeTasks(data) {
+                const timeBuckets = []; // Initialize hourly time buckets between 8:30 and 16:30
+
+                for (let start = 8 * 60 + 30; start <= 16 * 60 + 30; start += 60) {
+                    timeBuckets.push({
+                        start,
+                        end: start + 60,
+                        tasks: {}
+                    });
+                }
+
+                // Analyze each person's tasks
+                data.forEach(person => {
+                    person.tasks.forEach(task => {
+                        const taskStart = timeToMinutes(task.start);
+                        const taskEnd = timeToMinutes(task.end);
+
+                        timeBuckets.forEach(bucket => {
+                            if (taskStart < bucket.end && taskEnd > bucket.start) {
+                                const overlapStart = Math.max(taskStart, bucket.start);
+                                const overlapEnd = Math.min(taskEnd, bucket.end);
+                                const overlapDuration = overlapEnd - overlapStart;
+
+                                if (overlapDuration > 0) {
+                                    bucket.tasks[task.type] = (bucket.tasks[task.type] || 0) + overlapDuration;
+                                }
+                            }
+                        });
+                    });
+                });
+
+                return timeBuckets.map(bucket => {
+                    // Sort tasks by total time (primary) and number of participants (secondary)
+                    const sortedTasks = Object.entries(bucket.tasks)
+                        .sort((a, b) => b[1] - a[1]); // Sort by total duration descending
+
+                    const taskType = sortedTasks.length ?
+                        sortedTasks[0][0] // Select the task type with the longest duration
+                        :
+                        'Nothing'; // Default when no tasks are present
+
+                    return {
+                        timeRange: `${minutesToTime(bucket.start)}-${minutesToTime(bucket.end)}`,
+                        taskType
+                    };
+                });
+            }
+
+
+            // Start
+            initChart();
+        </script>
+
         <div class="row">
             <div class="col-sm-12 col-lg-12 col-md-12">
                 <h1 class="text-center my-4">อยู่ในระหว่างการสร้างหน้าเว็บนี้...</h1>
@@ -870,22 +1156,100 @@ if (!isset($_SESSION["admin_log"])) {
 
             <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
             <script>
+                // document.addEventListener("DOMContentLoaded", function() {
+                //     const filterDateInput = document.getElementById("filter-date");
+                //     const ganttChartCanvas = document.getElementById("gantt-chart");
+                //     let chart;
+
+                //     function fetchDataAndRenderChart(date = null) {
+                //         const url = date ? `fetch_data.php?date=${date}` : 'fetch_data.php';
+                //         fetch(url)
+                //             .then(response => response.json())
+                //             .then(data => {
+                //                 // Prepare datasets with unique labels and groups
+                //                 const uniqueLabels = [...new Set(data.map(item => item.name))];
+                //                 const datasets = data.map((task, index) => ({
+                //                     label: `${task.name} (${index})`,
+                //                     data: [{
+                //                         x: [new Date(`2023-01-01 ${task.start}`), new Date(`2023-01-01 ${task.end}`)],
+                //                         y: task.name
+                //                     }],
+                //                     backgroundColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.7)`,
+                //                     borderWidth: 1,
+                //                 }));
+
+                //                 if (chart) {
+                //                     chart.data.datasets = datasets;
+                //                     chart.update();
+                //                 } else {
+                //                     chart = new Chart(ganttChartCanvas, {
+                //                         type: 'bar',
+                //                         data: {
+                //                             datasets: datasets,
+                //                         },
+                //                         options: {
+                //                             indexAxis: 'y',
+                //                             responsive: true,
+                //                             scales: {
+                //                                 x: {
+                //                                     type: 'time',
+                //                                     time: {
+                //                                         unit: 'hour',
+                //                                         displayFormats: {
+                //                                             hour: 'HH:mm'
+                //                                         }
+                //                                     },
+                //                                     min: '2023-01-01 08:00',
+                //                                     max: '2023-01-01 17:00',
+                //                                 },
+                //                                 y: {
+                //                                     type: 'category',
+                //                                     reverse: true,
+                //                                 },
+                //                             },
+                //                             plugins: {
+                //                                 tooltip: {
+                //                                     callbacks: {
+                //                                         label: (ctx) => {
+                //                                             const {
+                //                                                 x
+                //                                             } = ctx.raw;
+                //                                             const [start, end] = x;
+                //                                             return `Start: ${start.toLocaleTimeString()} - End: ${end.toLocaleTimeString()}`;
+                //                                         }
+                //                                     }
+                //                                 }
+                //                             },
+                //                             barPercentage: 0.8, // Bar width adjustment
+                //                             categoryPercentage: 0.9 // Space between grouped bars
+                //                         },
+                //                     });
+                //                 }
+                //             })
+                //             .catch(err => console.error(err));
+                //     }
+
+                //     // Initial load and event listener
+                //     fetchDataAndRenderChart();
+                //     filterDateInput.addEventListener("change", function() {
+                //         fetchDataAndRenderChart(this.value);
+                //     });
+                // });
                 document.addEventListener("DOMContentLoaded", function() {
                     const filterDateInput = document.getElementById("filter-date");
+                    const timelineFilterSelect = document.getElementById("timelineFilter");
                     const ganttChartCanvas = document.getElementById("gantt-chart");
                     let chart; // Placeholder for the chart instance
 
                     // Function to fetch and update the chart data
-                    function fetchDataAndRenderChart(date = null) {
-                        const url = date ?
-                            `fetch_data.php?date=${date}` // Send the selected date as a query parameter
-                            :
-                            'fetch_data.php'; // Default fetch endpoint
+                    function fetchDataAndRenderChart(date = null, filter = null) {
+                        const url = new URL('fetch_data.php', window.location.href);
+                        if (date) url.searchParams.append('date', date);
+                        if (filter) url.searchParams.append('filter', filter);
 
                         fetch(url)
                             .then(response => response.json())
                             .then(data => {
-                                // Prepare datasets
                                 const datasets = data.map(task => ({
                                     x: [new Date(`2023-01-01 ${task.start}`), new Date(`2023-01-01 ${task.end}`)],
                                     y: task.name,
@@ -909,7 +1273,6 @@ if (!isset($_SESSION["admin_log"])) {
                                                 label: 'Timeline',
                                                 data: datasets,
                                                 borderWidth: 1,
-                                                
                                             }],
                                         },
                                         options: {
@@ -917,14 +1280,18 @@ if (!isset($_SESSION["admin_log"])) {
                                             scales: {
                                                 x: {
                                                     type: 'time',
+                                                    position: 'top',
                                                     time: {
-                                                        unit: 'hour',
+                                                        unit: 'minute',
                                                         displayFormats: {
-                                                            hour: 'HH:mm'
+                                                            minute: 'HH:mm'
                                                         }
                                                     },
-                                                    min: '2023-01-01 08:00',
-                                                    max: '2023-01-01 17:00',
+                                                    min: '2023-01-01 07:30',
+                                                    max: '2023-01-01 17:30',
+                                                    ticks: {
+                                                        stepSize: 30,
+                                                    }
                                                 },
                                                 y: {
                                                     type: 'category',
@@ -940,7 +1307,11 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 take,
                                                                 close_date
                                                             } = ctx.raw;
-                                                            return `${problem} (${take} - ${close_date})`;
+                                                            const formatTime = (time) => {
+                                                                const [hours, minutes] = time.split(":");
+                                                                return `${hours}:${minutes}`;
+                                                            };
+                                                            return `${problem} (${formatTime(take)} น. - ${formatTime(close_date)} น.)`;
                                                         }
                                                     }
                                                 }
@@ -957,9 +1328,303 @@ if (!isset($_SESSION["admin_log"])) {
 
                     // Event listener for date input
                     filterDateInput.addEventListener("change", function() {
-                        const selectedDate = this.value; // Get the selected date
-                        fetchDataAndRenderChart(selectedDate); // Update chart with the selected date
+                        const selectedDate = this.value;
+                        const selectedFilter = timelineFilterSelect.value;
+                        fetchDataAndRenderChart(selectedDate, selectedFilter);
                     });
+
+                    // Event listener for dropdown filter
+                    timelineFilterSelect.addEventListener("change", function() {
+                        const selectedFilter = this.value;
+                        const selectedDate = filterDateInput.value || null;
+                        fetchDataAndRenderChart(selectedDate, selectedFilter);
+                    });
+                });
+
+                // document.addEventListener("DOMContentLoaded", function() {
+                //     const filterDateInput = document.getElementById("filter-date");
+                //     const timelineFilterSelect = document.getElementById("timelineFilter");
+                //     const ganttChartCanvas = document.getElementById("gantt-summary");
+                //     let chart;
+
+                //     function getHourRange(time) {
+                //         const [hour, minute] = time.split(":").map(Number);
+                //         const startHour = minute >= 30 ? hour : hour - 1;
+                //         return `${String(startHour).padStart(2, "0")}:30 - ${String(startHour + 1).padStart(2, "0")}:30`;
+                //     }
+
+                //     function summarizeTasks(tasks) {
+                //         const summary = {};
+
+                //         tasks.forEach((task) => {
+                //             const taskStart = new Date(`2023-01-01 ${task.start}`);
+                //             const taskEnd = new Date(`2023-01-01 ${task.end}`);
+
+                //             for (let hour = 7; hour < 18; hour++) {
+                //                 const rangeStart = new Date(`2023-01-01 ${String(hour).padStart(2, "0")}:30`);
+                //                 const rangeEnd = new Date(`2023-01-01 ${String(hour + 1).padStart(2, "0")}:30`);
+                //                 const rangeKey = `${task.name}-${String(hour).padStart(2, "0")}:30 - ${String(hour + 1).padStart(2, "0")}:30`;
+
+                //                 if (taskEnd > rangeStart && taskStart < rangeEnd) {
+                //                     const overlap = Math.min(taskEnd, rangeEnd) - Math.max(taskStart, rangeStart);
+
+                //                     if (!summary[rangeKey] || overlap > summary[rangeKey].duration) {
+                //                         summary[rangeKey] = {
+                //                             name: task.name,
+                //                             problem: task.problem,
+                //                             range: `${String(hour).padStart(2, "0")}:30 - ${String(hour + 1).padStart(2, "0")}:30`,
+                //                             duration: overlap,
+                //                         };
+                //                     }
+                //                 }
+                //             }
+                //         });
+
+                //         return Object.values(summary);
+                //     }
+
+
+                //     function fetchDataAndRenderChart(date = null, filter = null) {
+                //         const url = new URL("fetch_data.php", window.location.href);
+                //         if (date) url.searchParams.append("date", date);
+                //         if (filter) url.searchParams.append("filter", filter);
+
+                //         fetch(url)
+                //             .then((response) => response.json())
+                //             .then((data) => {
+                //                 const summarizedData = summarizeTasks(data);
+
+                //                 const datasets = summarizedData.map((task) => ({
+                //                     x: [
+                //                         new Date(`2023-01-01 ${task.range.split(" - ")[0]}`),
+                //                         new Date(`2023-01-01 ${task.range.split(" - ")[1]}`),
+                //                     ],
+                //                     y: task.name,
+                //                     backgroundColor: `rgba(${Math.floor(Math.random() * 255)}, 
+                //         ${Math.floor(Math.random() * 255)}, 
+                //         ${Math.floor(Math.random() * 255)}, 0.5)`,
+                //                     problem: task.problem,
+                //                     range: task.range,
+                //                 }));
+
+                //                 if (chart) {
+                //                     chart.data.datasets[0].data = datasets;
+                //                     chart.update();
+                //                 } else {
+                //                     chart = new Chart(ganttChartCanvas, {
+                //                         type: "bar",
+                //                         data: {
+                //                             datasets: [{
+                //                                 label: "Summary Schedule",
+                //                                 data: datasets,
+                //                                 borderWidth: 1,
+                //                             }, ],
+                //                         },
+                //                         options: {
+                //                             indexAxis: "y",
+                //                             scales: {
+                //                                 x: {
+                //                                     type: "time",
+                //                                     position: "top",
+                //                                     time: {
+                //                                         unit: "minute",
+                //                                         displayFormats: {
+                //                                             minute: "HH:mm",
+                //                                         },
+                //                                     },
+                //                                     min: "2023-01-01 07:30",
+                //                                     max: "2023-01-01 17:30",
+                //                                     ticks: {
+                //                                         stepSize: 30,
+                //                                     },
+                //                                 },
+                //                                 y: {
+                //                                     type: "category",
+                //                                     reverse: true,
+                //                                 },
+                //                             },
+                //                             plugins: {
+                //                                 tooltip: {
+                //                                     callbacks: {
+                //                                         label: (ctx) => {
+                //                                             return `${ctx.raw.problem} (${ctx.raw.range})`;
+                //                                         },
+                //                                     },
+                //                                 },
+                //                             },
+                //                         },
+                //                     });
+                //                 }
+                //             })
+                //             .catch((err) => console.error(err));
+                //     }
+
+                //     fetchDataAndRenderChart();
+
+                //     filterDateInput.addEventListener("change", function() {
+                //         fetchDataAndRenderChart(this.value, timelineFilterSelect.value);
+                //     });
+
+                //     timelineFilterSelect.addEventListener("change", function() {
+                //         fetchDataAndRenderChart(filterDateInput.value || null, this.value);
+                //     });
+                // });
+                document.addEventListener("DOMContentLoaded", function() {
+                    const filterDateInput = document.getElementById("filter-date");
+                    const timelineFilterSelect = document.getElementById("timelineFilter");
+                    const ganttChartCanvas = document.getElementById("gantt-summary");
+                    let chart;
+                    const colorMap = {}; // Stores unique colors for each task type
+
+                    function generateColor(taskType) { // Use taskType (problem) instead of task name
+                        if (!colorMap[taskType]) {
+                            const randomColor = `rgba(${Math.floor(Math.random() * 255)}, 
+            ${Math.floor(Math.random() * 255)}, 
+            ${Math.floor(Math.random() * 255)}, 0.7)`;
+                            colorMap[taskType] = randomColor;
+                        }
+                        return colorMap[taskType];
+                    }
+
+
+                    function summarizeTasks(tasks) {
+                        const summary = {};
+
+                        tasks.forEach((task) => {
+                            const taskStart = new Date(`2023-01-01 ${task.start}`);
+                            const taskEnd = new Date(`2023-01-01 ${task.end}`);
+
+                            for (let hour = 7; hour < 18; hour++) {
+                                const rangeStart = new Date(`2023-01-01 ${String(hour).padStart(2, "0")}:30`);
+                                const rangeEnd = new Date(`2023-01-01 ${String(hour + 1).padStart(2, "0")}:30`);
+                                const rangeKey = `${task.name}-${String(hour).padStart(2, "0")}:30 - ${String(hour + 1).padStart(2, "0")}:30`;
+
+                                if (taskEnd > rangeStart && taskStart < rangeEnd) {
+                                    const overlap = Math.min(taskEnd, rangeEnd) - Math.max(taskStart, rangeStart);
+
+                                    if (!summary[rangeKey] || overlap > summary[rangeKey].duration) {
+                                        summary[rangeKey] = {
+                                            name: task.name,
+                                            problem: task.problem,
+                                            range: `${String(hour).padStart(2, "0")}:30 - ${String(hour + 1).padStart(2, "0")}:30`,
+                                            duration: overlap,
+                                        };
+                                    }
+                                }
+                            }
+                        });
+
+                        return Object.values(summary);
+                    }
+
+                    function fetchDataAndRenderChart(date = null, filter = null) {
+                        // Clear previous color mapping while keeping the same object reference
+                        Object.keys(colorMap).forEach(key => delete colorMap[key]);
+
+                        const url = new URL("fetch_data.php", window.location.href);
+                        if (date) url.searchParams.append("date", date);
+                        if (filter) url.searchParams.append("filter", filter);
+
+                        fetch(url)
+                            .then((response) => response.json())
+                            .then((data) => {
+                                const summarizedData = summarizeTasks(data);
+
+                                const datasets = summarizedData.map((task) => ({
+                                    x: [
+                                        new Date(`2023-01-01 ${task.range.split(" - ")[0]}`),
+                                        new Date(`2023-01-01 ${task.range.split(" - ")[1]}`),
+                                    ],
+                                    y: task.name,
+                                    backgroundColor: generateColor(task.problem), // Generate a new color map for each filter
+                                    problem: task.problem,
+                                    range: task.range,
+                                }));
+
+                                if (chart) {
+                                    chart.destroy(); // Destroy previous chart instance before creating a new one
+                                }
+
+                                chart = new Chart(ganttChartCanvas, {
+                                    type: "bar",
+                                    data: {
+                                        datasets: [{
+                                            label: "Summary Schedule",
+                                            data: datasets,
+                                            borderWidth: 1,
+                                            backgroundColor: datasets.map(d => d.backgroundColor),
+                                        }],
+                                    },
+                                    options: {
+                                        indexAxis: "y",
+                                        scales: {
+                                            x: {
+                                                type: "time",
+                                                position: "top",
+                                                time: {
+                                                    unit: "minute",
+                                                    displayFormats: {
+                                                        minute: "HH:mm",
+                                                    },
+                                                },
+                                                min: "2023-01-01 07:30",
+                                                max: "2023-01-01 17:30",
+                                                ticks: {
+                                                    stepSize: 30,
+                                                },
+                                            },
+                                            y: {
+                                                type: "category",
+                                                reverse: true,
+                                            },
+                                        },
+                                        plugins: {
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: (ctx) => `${ctx.raw.problem} (${ctx.raw.range})`,
+                                                },
+                                            },
+                                            legend: {
+                                                display: true,
+                                                labels: {
+                                                    generateLabels: (chart) => {
+                                                        return Object.keys(colorMap).map((taskType) => ({
+                                                            text: taskType,
+                                                            fillStyle: colorMap[taskType],
+                                                            hidden: false,
+                                                        }));
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                });
+                            })
+                            .catch((err) => console.error(err));
+                    }
+
+
+                    fetchDataAndRenderChart();
+
+                    filterDateInput.addEventListener("change", function() {
+                        fetchDataAndRenderChart(this.value, timelineFilterSelect.value);
+                    });
+
+                    timelineFilterSelect.addEventListener("change", function() {
+                        fetchDataAndRenderChart(filterDateInput.value || null, this.value);
+                    });
+                });
+            </script>
+            <script>
+                // Automatically set the default date to today
+                document.addEventListener("DOMContentLoaded", function() {
+                    const filterDateInput = document.getElementById("filter-date");
+
+                    // Get today's date in YYYY-MM-DD format
+                    const today = new Date().toISOString().split("T")[0];
+
+                    // Set the value of the date input to today's date
+                    filterDateInput.value = today;
                 });
             </script>
             <footer class="mt-5 footer mt-auto py-3" style="background: #fff;">

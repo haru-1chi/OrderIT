@@ -117,19 +117,26 @@ if (!isset($_SESSION["admin_log"])) {
                     $sql = "SELECT dp.*, dt.depart_name 
                         FROM data_report AS dp
                         LEFT JOIN depart AS dt ON dp.department = dt.depart_id
-                        WHERE dp.username = :username 
-                        AND status = :status 
-                        AND date_report BETWEEN :dateStart AND :dateEnd
+                        WHERE dp.username = :username ";
+
+                    if ($status !== "") {
+                        $sql .= " AND status = :status";
+                    }
+
+                    $sql .= "   AND date_report BETWEEN :dateStart AND :dateEnd
                         ORDER BY dp.id DESC";
+
                     $stmt = $conn->prepare($sql);
                     $stmt->bindParam(":username", $admin);
-                    $stmt->bindParam(":status", $status);
+                    if ($status !== "") {
+                        $stmt->bindParam(":status", $status);
+                    }
                     $stmt->bindParam(":dateStart", $dateStart_buddhist);
                     $stmt->bindParam(":dateEnd", $dateEnd_buddhist);
                 } else {
                     // If checkDate is not set, retrieve all records without date range filter
                     $dateEnd = date('Y-m-d');
-                    $dateStart = date('Y-m-d', strtotime('-7 days', strtotime($dateEnd)));
+                    $dateStart = date('Y-m-d', strtotime('-3 days', strtotime($dateEnd)));
 
                     $yearStart = date("Y", strtotime($dateStart)) + 543;
                     $yearEnd = date("Y", strtotime($dateEnd)) + 543;
@@ -140,12 +147,10 @@ if (!isset($_SESSION["admin_log"])) {
                     $sql = "SELECT dp.*, dt.depart_name 
                         FROM data_report AS dp
                         LEFT JOIN depart AS dt ON dp.department = dt.depart_id
-                        WHERE dp.username = :username AND date_report BETWEEN :dateStart AND :dateEnd
+                        WHERE dp.username = :username AND status = 2
                         ORDER BY dp.id DESC";
                     $stmt = $conn->prepare($sql);
                     $stmt->bindParam(":username", $admin);
-                    $stmt->bindParam(":dateStart", $dateStart_buddhist);
-                    $stmt->bindParam(":dateEnd", $dateEnd_buddhist);
                 }
 
                 // Prepare and execute the SQL query
@@ -163,7 +168,6 @@ if (!isset($_SESSION["admin_log"])) {
 
                     <form action="" method="post">
                         <div class="d-flex gap-4">
-
                             <select class="form-select" name="status_my_work" id="numberWork" style="width: 250px;">
                                 <option value="2" <?php if (isset($status) == 2 && $status == 2)
                                                         echo "selected"; ?>>
@@ -177,6 +181,9 @@ if (!isset($_SESSION["admin_log"])) {
                                 <option value="4" <?php if (isset($status) == 4 && $status == 4)
                                                         echo "selected"; ?>>
                                     เสร็จสิ้น</option>
+                                <option value="" <?php if (isset($status) && $status == '')
+                                                        echo "selected"; ?>>
+                                    ทั้งหมด</option>
                             </select>
 
                             <input type="date" value="<?= isset($dateStart) ? $dateStart : ''; ?>" name="dateStart_my_work"
@@ -185,8 +192,6 @@ if (!isset($_SESSION["admin_log"])) {
                                 class="form-control" style="width: 250px;">
                             <button type="submit" name="checkDate_my_work" class="btn btn-primary">ยืนยัน</button>
                         </div>
-
-
                     </form>
                 </div>
 
@@ -248,7 +253,7 @@ if (!isset($_SESSION["admin_log"])) {
                                 } else if ($row['status'] == 5) {
                                     $statusText = "ส่งซ่อม";
                                 } else if ($row['status'] == 6) {
-                                    $statusText = "รอกรอกรายละเอียด". ' ' . $row['withdraw'];
+                                    $statusText = "รอกรอกรายละเอียด" . ' ' . $row['withdraw'];
                                 }
                                 ?>
                                 <td>
@@ -2992,7 +2997,7 @@ if (!isset($_SESSION["admin_log"])) {
                 if (hiddenInput && hiddenInput.name.startsWith('update_number_device')) {
                     // Case 1: Soft delete
                     const getModalId = e.target.getAttribute('data-row-id');
-                    const modalId = getModalId.split('-').pop(); 
+                    const modalId = getModalId.split('-').pop();
                     const isMain = getModalId.includes('main');
                     const deviceId = e.target.getAttribute('data-device-id');
                     const container = document.querySelector(`#device-number-container-${isMain ? 'main' : 'unComplete'}-${modalId}`);

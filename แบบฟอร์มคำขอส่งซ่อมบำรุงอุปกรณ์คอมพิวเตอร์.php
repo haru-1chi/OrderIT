@@ -287,7 +287,7 @@ ORDER BY nd.id, oi.id
         </div>
         <p style="text-align:center;line-height:10pt">กลุ่มงานเทคโนโลยีสารสนเทศ โรงพยาบาลแม่สอด</p>
         <br>
-        <p style="text-align:right;line-height:10pt">วัน / เดือน / ปี <?= date('d', $timestamp) . ' ' . $monthThai . ' ' . date('Y', $timestamp); ?></p>
+        <p style="text-align:right;line-height:10pt">วัน / เดือน / ปี <?= date('d', $timestamp) . ' ' . $monthThai . ' ' . (date('Y', $timestamp) + 543); ?></p>
         <br>
         <p style="line-height:10pt">ส่งซ่อมอุปกรณ์ คอมพิวเตอร์ : <?= $order['device_name'] ?></p>
         <div style="margin-top: -20pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ........................................................................................................................................................................................................................</div>
