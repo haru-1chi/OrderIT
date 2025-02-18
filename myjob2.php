@@ -75,9 +75,7 @@ if (!isset($_SESSION["admin_log"])) {
         <div class="card card-body rounded-4 mt-5 shadow-sm">
             <form action="system/insert.php" method="POST">
                 <div class="row">
-                    <input required type="hidden" name="date_report" class="form-control thaiDateInput">
                     <input value="<?= $admin ?>" type="hidden" name="username" class="form-control">
-                    <input type="hidden" name="time_report" class="time_report form-control">
                     <input type="hidden" value="" name="device">
                     <input class="form-control" type="hidden" id="receiveTimeInput" name="take">
                     <!-- !!!!!!!!!! (ถ้าไม่ป้อนจะเป็น null) ให้ gen เป็นเวลาปัจจุบัน -->
@@ -89,6 +87,19 @@ if (!isset($_SESSION["admin_log"])) {
                     <!-- !!!!!!!!!! เป็นค่าว่างได้ -->
                     <input type="hidden" value="1" class="form-control" name="countList">
                     <!-- !!!!!!!!! บังคับไม่เป็นค่าว่าง ให้มีค่าเริ่มต้นเป็น 1 -->
+
+
+
+                    <div class="col-6 mb-3">
+                        <label class="form-label" for="issueInput">วันที่แจ้ง</label>
+                        <input required type="date" name="date_report" class="form-control thaiDateInput">
+                    </div>
+
+                    <div class="col-6 mb-3">
+                        <label class="form-label" for="issueInput">เวลาที่แจ้ง</label>
+                        <input type="time" name="time_report" class="time_report form-control">
+                    </div>
+
                     <div class="col-4 mb-3">
                         <label class="form-label" for="issueInput">ผู้แจ้ง</label>
                         <input class="form-control" value="-" type="text" name="reporter" required>

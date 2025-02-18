@@ -10,7 +10,10 @@ $groupByClause = '';
 switch ($filter) {
     case 'day':
         $selectClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%d') AS period";
-        $groupByClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%d')";
+        $groupByClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%d'),
+        DATE_SUB(date_report, INTERVAL 543 YEAR)";
+        $range = "DATE_SUB(date_report, INTERVAL 543 YEAR) >= CURDATE() - INTERVAL 30 DAY";
+        $period = "DATE_SUB(date_report, INTERVAL 543 YEAR)";
         break;
     case 'week':
         $selectClause = "DATE_FORMAT(
@@ -27,18 +30,27 @@ switch ($filter) {
         ),
         '%Y-%m-%d'
     )";
+        $range = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) = YEAR(CURDATE())";
+        $period = "period ";
         break;
     case 'month':
         $selectClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%m-%Y') AS period";
         $groupByClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%m-%Y')";
+        $range = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) = YEAR(CURDATE())";
+        $period = "period ";
         break;
     case 'year':
         $selectClause = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) AS period";
         $groupByClause = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR))";
+        $range = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) = YEAR(CURDATE())";
+        $period = "period ";
         break;
     default:
-        $selectClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%d-%m-%Y') AS period";
-        $groupByClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%d-%m-%Y')";
+        $selectClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%d') AS period";
+        $groupByClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%d'),
+    DATE_SUB(date_report, INTERVAL 543 YEAR)";
+        $range = "DATE_SUB(date_report, INTERVAL 543 YEAR) >= CURDATE() - INTERVAL 30 DAY";
+        $period = "DATE_SUB(date_report, INTERVAL 543 YEAR)";
         break;
 }
 
@@ -50,11 +62,11 @@ $sql = "
         data_report
     WHERE 
         status = 4 
-        AND YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) = YEAR(CURDATE())
+        AND $range
     GROUP BY 
         $groupByClause
     ORDER BY 
-        period ASC";
+        $period ASC";
 
 $stmt = $conn->prepare($sql);
 $stmt->execute();

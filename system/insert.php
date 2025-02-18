@@ -1498,6 +1498,9 @@ if (isset($_POST['CheckAll'])) {
     $refUsername = $_POST["username"];
     $refOffer = 4;
     $quotation = "-";
+    if ($_POST['update_status']) {
+        $update_status = array_map('intval', $_POST['update_status']);
+    }
     // $receiptDate = $_POST["dateWithdraw"];
     // $deliveryDate = $_POST["dateWithdraw"];
     // $closeDate = $_POST["dateWithdraw"];
@@ -1511,8 +1514,12 @@ if (isset($_POST['CheckAll'])) {
     $amounts = $_POST['amount'];
     $prices = $_POST['price'];
     $units = $_POST['unit'];
+
     // echo '<pre>';
     // var_dump([
+    //     '$_POST[update_status]' => $_POST['update_status'],
+    //     '$update_status' => $update_status,
+        
     //     'numberWork' => $numberWork,
     //     'dateWithdraw' => $dateWithdraw,
     //     'refUsername' => $refUsername,
@@ -1521,8 +1528,6 @@ if (isset($_POST['CheckAll'])) {
     //     'refDevice' => $refDevice,
     //     'reason' => $reason,
     //     'report' => $report,
-    //     // 'numberDevices' => $numberDevices,
-
     //     'refDepart' => $refDepart,
     //     'refOffer' => $refOffer,
     //     'quotation' => $quotation,
@@ -1587,7 +1592,20 @@ if (isset($_POST['CheckAll'])) {
             $statusStmt->bindParam(':status', $status);
             $statusStmt->bindParam(':timestamp', $timestamp);
             $statusStmt->execute();
+            //-------------------------------
+            if ($_POST['update_status']) {
+                $update_status_Sql = "INSERT INTO order_status (order_id, status, timestamp) VALUES (:order_id, :status, :timestamp)";
+                $update_status_Stmt = $conn->prepare($update_status_Sql);
 
+                foreach ($update_status as $order_id) {
+                    $update_status_Stmt->execute([
+                        'order_id' => $order_id,
+                        'status' => $status,
+                        'timestamp' => $timestamp
+                    ]);
+                }
+            }
+            //-------------------------------
             $conn->commit();
 
             $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";

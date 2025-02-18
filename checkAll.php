@@ -30,6 +30,10 @@ if (!isset($_SESSION["admin_log"])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <style>
+        body {
+            background-color: #F9FDFF;
+        }
+
         .container-custom {
             max-width: 1600px;
             margin-left: auto;
@@ -40,8 +44,7 @@ if (!isset($_SESSION["admin_log"])) {
 
 <body>
 
-    <?php navbar();
-    ?>
+    <?php navbar(); ?>
 
     <div class="container-custom mt-5">
         <div class="mt-5">
@@ -128,7 +131,7 @@ if (!isset($_SESSION["admin_log"])) {
                os.status = 2 AND
                (nd.is_deleted = 0 OR nd.is_deleted IS NULL)
                AND (oi.is_deleted = 0 OR oi.is_deleted IS NULL)
-               ORDER BY nd.id, oi.id
+               ORDER BY od.id
              ";
 
 
@@ -193,6 +196,7 @@ if (!isset($_SESSION["admin_log"])) {
                             <th class="text-center">เพิ่มไปยังใบเบิกประจำสัปดาห์</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php
                         $groupedItems = [];
@@ -218,7 +222,12 @@ if (!isset($_SESSION["admin_log"])) {
                                 <td><?= $firstRow["amount"] ?></td>
                                 <td><?= $firstRow["price"] ?></td>
                                 <td style="display: none;"><?= $firstRow["unit"] ?></td>
-                                <td><button type="button" class="btn btn-primary confirm-status" data-order-id="<?= $firstRow['id'] ?>">ยืนยัน</button></td>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input confirm-status-switch" type="checkbox" data-order-id="<?= $firstRow['id'] ?>">
+                                        <label class="form-check-label" for="confirm-switch-<?= $firstRow['id'] ?>"></label>
+                                    </div>
+                                </td>
                                 <td>
                                     <div class="form-check form-switch">
                                         <input class="form-check-input copy-row-switch" type="checkbox" data-numberwork="<?= $numberWork ?>" id="switch-<?= $numberWork ?>">
@@ -645,100 +654,6 @@ if (!isset($_SESSION["admin_log"])) {
             }
         });
 
-        // document.querySelector('#example').addEventListener('click', function(e) {
-        //     if (e.target && e.target.classList.contains('copy-row')) {
-        //         const row = e.target.closest('tr');
-        //         const numberWork = row.querySelector('td:nth-child(2)').textContent.trim();
-
-        //         const relatedRows = Array.from(document.querySelectorAll(`tr[data-numberwork="${numberWork}"]`));
-        //         relatedRows.unshift(row);
-
-        //         relatedRows.forEach(row => {
-        //             const listId = row.querySelector('td:nth-child(3)').getAttribute('data-id');
-        //             const listName = row.querySelector('td:nth-child(3)').textContent.trim();
-        //             const quality = row.querySelector('td:nth-child(4)').textContent.trim();
-        //             const amount = parseInt(row.querySelector('td:nth-child(5)').textContent.trim(), 10) || 0;
-        //             const price = parseFloat(row.querySelector('td:nth-child(6)').textContent.trim()) || 0;
-
-        //             const tableBody = document.querySelector('#table-body');
-        //             const existingRows = Array.from(tableBody.querySelectorAll('tr'));
-
-        //             let isUpdated = false;
-
-        //             existingRows.forEach(existingRow => {
-        //                 const existingName = existingRow.querySelector('select option:checked').textContent.trim();
-        //                 const existingQuality = existingRow.querySelector('textarea').value.trim();
-        //                 const existingAmountInput = existingRow.querySelector('input[name="amount[]"]');
-        //                 const existingPriceInput = existingRow.querySelector('input[name="price[]"]');
-
-        //                 if (existingName === listName && existingQuality === quality) {
-        //                     const existingAmount = parseInt(existingAmountInput.value, 10) || 0;
-        //                     existingAmountInput.value = existingAmount + amount; // Update the amount
-        //                     isUpdated = true;
-
-        //                     const sumInput = existingRow.querySelector('input.sum');
-        //                     sumInput.value = (parseFloat(existingAmountInput.value) || 0) * (parseFloat(existingPriceInput.value) || 0);
-
-        //                     calculateTotal();
-        //                 }
-        //             });
-
-        //             if (!isUpdated) {
-        //                 const firstRow = tableBody.querySelector('tr');
-        //                 const isFirstRowEmpty = firstRow && !(
-        //                     firstRow.querySelector('select').value ||
-        //                     firstRow.querySelector('textarea').value.trim() ||
-        //                     firstRow.querySelector('input[name="amount[]"]').value.trim() ||
-        //                     firstRow.querySelector('input[name="price[]"]').value.trim()
-        //                 );
-
-        //                 if (isFirstRowEmpty) {
-        //                     const select = firstRow.querySelector('select');
-        //                     const amountInput = firstRow.querySelector('input[name="amount[]"]');
-        //                     const priceInput = firstRow.querySelector('input[name="price[]"]');
-
-        //                     select.value = listId;
-        //                     firstRow.querySelector('textarea').value = quality;
-        //                     firstRow.querySelector('input[name="amount[]"]').value = amount;
-        //                     firstRow.querySelector('input[name="price[]"]').value = price;
-        //                     const sumInput = firstRow.querySelector('input.sum');
-
-        //                     amountInput.value = amount;
-        //                     priceInput.value = price;
-
-        //                     sumInput.value = (parseFloat(amountInput.value) || 0) * (parseFloat(priceInput.value) || 0);
-        //                     calculateTotal();
-        //                 } else {
-        //                     // Create a new row if no match is found
-        //                     const newRow = document.createElement('tr');
-        //                     newRow.className = 'text-center';
-        //                     newRow.innerHTML = `
-        //                 <td>
-        //                     <select class="form-select device-select" name="list[]" data-row="${rowIndex}">
-        //                         <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-        //                         <?php foreach ($result as $d): ?>
-        //                             <option value="<?= $d['models_id'] ?>" ${listId === '<?= $d['models_id'] ?>' ? 'selected' : ''}>
-        //                                 <?= $d['models_name'] ?>
-        //                             </option>
-        //                         <?php endforeach; ?>
-        //                     </select>
-        //                 </td>
-        //                 <td><textarea rows="2" maxlength="60" name="quality[]" class="form-control">${quality}</textarea></td>
-        //                 <td><input value="${amount}" style="width: 3rem; margin: 0 auto;" type="text" name="amount[]" class="form-control"></td>
-        //                 <td><input value="${price}" style="width: 5rem; margin: 0 auto;" type="text" name="price[]" class="form-control"></td>
-        //                 <td><input disabled style="width: 5rem;" type="text" class="form-control sum" value="${amount*price}"></td>
-        //                 <td><button type="button" class="btn btn-warning remove-row">ลบ</button></td>
-
-        //                 `;
-        //                     tableBody.appendChild(newRow);
-        //                     updateRowIndexes();
-        //                     calculateTotal();
-        //                 }
-        //             }
-        //         });
-        //     }
-        // });
-
         // Remove row functionality
         document.getElementById('table-body').addEventListener('click', function(e) {
             if (e.target && e.target.classList.contains('remove-row')) {
@@ -812,34 +727,94 @@ if (!isset($_SESSION["admin_log"])) {
         updateRowIndexes();
     </script>
     <script>
-        document.querySelectorAll('.confirm-status').forEach(button => {
-            button.addEventListener('click', function() {
-                const orderId = this.dataset.orderId;
-                const status = 2;
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll(".confirm-status-switch").forEach((checkbox) => {
+                checkbox.addEventListener("change", function() {
+                    let numberWork = this.getAttribute("data-order-id");
+                    let form = document.querySelector("form[action='system/insert.php']"); // Target the form
 
-                if (confirm("คุณต้องการยืนยันสถานะ 'ส่งเอกสารไปยังพัสดุแล้ว' หรือไม่")) {
-                    fetch('update_status.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded'
-                            },
-                            body: new URLSearchParams({
-                                status,
-                                order_id: orderId
-                            })
-                        })
-                        .then(response => response.text())
-                        .then(data => {
-                            alert(data); // Alert with success or error message
-                            location.reload(); // Reload page to reflect updated status
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Something went wrong.');
-                        });
-                }
+                    if (this.checked) {
+                        // Create hidden input
+                        let hiddenInput = document.createElement("input");
+                        hiddenInput.type = "hidden";
+                        hiddenInput.name = "update_status[]"; // Name for submission
+                        hiddenInput.value = numberWork; // Store the numberWork ID
+                        hiddenInput.id = "hidden-input-" + numberWork; // Unique ID
+                        form.appendChild(hiddenInput);
+                    } else {
+                        // Remove hidden input if unchecked
+                        let hiddenInput = document.getElementById("hidden-input-" + numberWork);
+                        if (hiddenInput) {
+                            form.removeChild(hiddenInput);
+                        }
+                    }
+                });
             });
         });
+
+
+        // document.querySelectorAll('.confirm-status').forEach(button => {
+        //     button.addEventListener('click', function() {
+        //         const orderId = this.dataset.orderId;
+        //         const status = 2;
+
+        //         if (confirm("คุณต้องการยืนยันสถานะ 'ส่งเอกสารไปยังพัสดุแล้ว' หรือไม่")) {
+        //             fetch('update_status.php', {
+        //                     method: 'POST',
+        //                     headers: {
+        //                         'Content-Type': 'application/x-www-form-urlencoded'
+        //                     },
+        //                     body: new URLSearchParams({
+        //                         status,
+        //                         order_id: orderId
+        //                     })
+        //                 })
+        //                 .then(response => response.text())
+        //                 .then(data => {
+        //                     alert(data); // Alert with success or error message
+        //                     location.reload(); // Reload page to reflect updated status
+        //                 })
+        //                 .catch(error => {
+        //                     console.error('Error:', error);
+        //                     alert('Something went wrong.');
+        //                 });
+        //         }
+        //     });
+        // });
+
+        // document.querySelectorAll('.confirm-status-switch').forEach(switchInput => {
+        //     switchInput.addEventListener('change', function() {
+        //         const orderId = this.dataset.orderId;
+        //         const status = 3;
+
+        //         if (this.checked) {
+        //             if (confirm("คุณต้องการยืนยันสถานะ 'ส่งเอกสารไปยังพัสดุแล้ว' หรือไม่")) {
+        //                 fetch('update_status.php', {
+        //                         method: 'POST',
+        //                         headers: {
+        //                             'Content-Type': 'application/x-www-form-urlencoded'
+        //                         },
+        //                         body: new URLSearchParams({
+        //                             status,
+        //                             order_id: orderId
+        //                         })
+        //                     })
+        //                     .then(response => response.text())
+        //                     .then(data => {
+        //                         alert(data); // Alert with success or error message
+        //                         location.reload(); // Reload page to reflect updated status
+        //                     })
+        //                     .catch(error => {
+        //                         console.error('Error:', error);
+        //                         alert('Something went wrong.');
+        //                     });
+        //             } else {
+        //                 // User canceled, revert the switch state
+        //                 this.checked = false;
+        //             }
+        //         }
+        //     });
+        // });
     </script>
 
     <script>

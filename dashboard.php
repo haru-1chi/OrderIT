@@ -41,7 +41,7 @@ if (!isset($_SESSION["admin_log"])) {
             location.reload();
         }
 
-        // Set timeout to refresh the page every 1 minute (60000 milliseconds)
+        // Set timeout to refresh the page every 1 m inute (60000 milliseconds)
         setTimeout(refreshPage, 30000);
     </script>
     <style>
@@ -118,6 +118,18 @@ if (!isset($_SESSION["admin_log"])) {
         <div class="row">
             <div class="col-sm-12 col-lg-12 col-md-12">
                 <h1 class="text-center my-4">สรุปยอดจำนวนงาน</h1>
+                <div class="d-flex">
+                    <div class="card p-3 mt-0 m-4" style="width: 1850px; height: 400px;">
+                        <input type="hidden" id="filter-date" class="form-control mb-3" />
+                        <select id="timelineFilter" class="form-control">
+                            <option value="problem" selected>Activity Report</option>
+                            <option value="device">รูปแบบการทำงาน</option>
+                            <option value="report">อาการรับแจ้ง</option>
+                            <option value="sla">SLA</option>
+                        </select>
+                        <canvas id="gantt-summary" width="800" height="200"></canvas>
+                    </div>
+                </div>
                 <div class="row d-flex justify-content-center">
                     <?php
                     $sql = "SELECT status, COUNT(*) as count FROM data_report GROUP BY status";
@@ -176,7 +188,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <?php } ?>
                     <!-- </div> -->
                 </div>
-                <div class="card rounded-4 shadow-sm p-3 mt-5 col-sm-12 col-lg-12 col-md-12">
+                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
                     <h1>งานวันนี้</h1>
                     <div class="table-responsive">
                         <table id="dataAll" class="table table-danger">
@@ -744,7 +756,7 @@ if (!isset($_SESSION["admin_log"])) {
                                 foreach ($result as $row) {
                                 ?>
                                     <tr>
-                                    
+
                                         <td><?= $row['service_channel'] ?></td>
                                         <td class="text-center"><?= $row['issue_resolved'] ?></td>
                                         <td class="text-center"><?= $row['service_speed'] ?></td>
@@ -928,11 +940,162 @@ if (!isset($_SESSION["admin_log"])) {
                     });
                 });
             </script>
-            <footer class="mt-5 footer mt-auto py-3" style="background: #fff;">
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const filterDateInput = document.getElementById("filter-date");
+                    const timelineFilterSelect = document.getElementById("timelineFilter");
+                    const ganttChartCanvas = document.getElementById("gantt-summary");
+                    let chart;
+                    const colorMap = {}; // Stores unique colors for each task type
 
+                    function generateColor(index) {
+                        const hue = (index * 137.5) % 360; // Ensures distinct hues
+                        return `hsla(${hue}, 90%, 50%, 0.5)`;
+                    }
+
+                    // Stores assigned colors
+                    function getColor(taskType, index) {
+                        if (!colorMap[taskType]) {
+                            colorMap[taskType] = generateColor(index);
+                        }
+                        return colorMap[taskType];
+                    }
+
+                    function summarizeTasks(tasks) {
+                        const summary = {};
+
+                        tasks.forEach((task) => {
+                            const taskStart = new Date(`2023-01-01 ${task.start}`);
+                            const taskEnd = new Date(`2023-01-01 ${task.end}`);
+
+                            for (let hour = 7; hour < 18; hour++) {
+                                const rangeStart = new Date(`2023-01-01 ${String(hour).padStart(2, "0")}:30`);
+                                const rangeEnd = new Date(`2023-01-01 ${String(hour + 1).padStart(2, "0")}:30`);
+                                const rangeKey = `${task.name}-${String(hour).padStart(2, "0")}:30 - ${String(hour + 1).padStart(2, "0")}:30`;
+
+                                if (taskEnd > rangeStart && taskStart < rangeEnd) {
+                                    const overlap = Math.min(taskEnd, rangeEnd) - Math.max(taskStart, rangeStart);
+
+                                    if (!summary[rangeKey] || overlap > summary[rangeKey].duration) {
+                                        summary[rangeKey] = {
+                                            name: task.name,
+                                            problem: task.problem,
+                                            range: `${String(hour).padStart(2, "0")}:30 - ${String(hour + 1).padStart(2, "0")}:30`,
+                                            duration: overlap,
+                                        };
+                                    }
+                                }
+                            }
+                        });
+
+                        return Object.values(summary);
+                    }
+
+                    function fetchDataAndRenderChart(date = null, filter = null) {
+                        // Clear previous color mapping while keeping the same object reference
+                        Object.keys(colorMap).forEach(key => delete colorMap[key]);
+
+                        const url = new URL("fetch_data.php", window.location.href);
+                        if (date) url.searchParams.append("date", date);
+                        if (filter) url.searchParams.append("filter", filter);
+
+                        fetch(url)
+                            .then((response) => response.json())
+                            .then((data) => {
+                                const summarizedData = summarizeTasks(data);
+                                const taskTypes = [...new Set(summarizedData.map(task => task.problem))];
+                                const datasets = summarizedData.map((task, index) => ({
+                                    x: [
+                                        new Date(`2023-01-01 ${task.range.split(" - ")[0]}`),
+                                        new Date(`2023-01-01 ${task.range.split(" - ")[1]}`),
+                                    ],
+                                    y: task.name,
+                                    backgroundColor: getColor(task.problem, taskTypes.indexOf(task.problem)), // Assign color based on index
+                                    borderColor: getColor(task.problem, taskTypes.indexOf(task.problem)).replace('0.5', '1'),
+                                    problem: task.problem,
+                                    range: task.range,
+                                }));
+
+                                if (chart) {
+                                    chart.destroy(); // Destroy previous chart instance before creating a new one
+                                }
+
+                                chart = new Chart(ganttChartCanvas, {
+                                    type: "bar",
+                                    data: {
+                                        datasets: [{
+                                            label: "Summary Schedule",
+                                            data: datasets,
+                                            borderWidth: 1,
+                                            backgroundColor: datasets.map(d => d.backgroundColor),
+                                        }],
+                                    },
+                                    options: {
+                                        // Ensures it fills the container
+                                        indexAxis: "y",
+                                        scales: {
+                                            x: {
+                                                type: "time",
+                                                position: "top",
+                                                time: {
+                                                    unit: "minute",
+                                                    displayFormats: {
+                                                        minute: "HH:mm",
+                                                    },
+                                                },
+                                                min: "2023-01-01 07:30",
+                                                max: "2023-01-01 17:30",
+                                                ticks: {
+                                                    stepSize: 30,
+                                                },
+                                            },
+                                            y: {
+                                                type: "category",
+                                                reverse: true,
+                                            },
+                                        },
+                                        plugins: {
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: (ctx) => `${ctx.raw.problem} (${ctx.raw.range})`,
+                                                },
+                                            },
+                                            legend: {
+                                                display: true,
+                                                labels: {
+                                                    generateLabels: (chart) => {
+                                                        return Object.keys(colorMap).map((taskType) => ({
+                                                            text: taskType,
+                                                            fillStyle: colorMap[taskType],
+                                                            hidden: false,
+                                                        }));
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                });
+                            })
+                            .catch((err) => console.error(err));
+                    }
+
+
+                    fetchDataAndRenderChart();
+
+                    filterDateInput.addEventListener("change", function() {
+                        fetchDataAndRenderChart(this.value, timelineFilterSelect.value);
+                    });
+
+                    timelineFilterSelect.addEventListener("change", function() {
+                        fetchDataAndRenderChart(filterDateInput.value || null, this.value);
+                    });
+                });
+            </script>
+            <footer class="mt-5 footer mt-auto py-3" style="background: #fff;">
                 <marquee class="font-thai" style="font-weight: bold; font-size: 1rem"><span class="text-muted text-center">Design website by นายอภิชน ประสาทศรี , พุฒิพงศ์ ใหญ่แก้ว &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Coding โดย นายอานุภาพ ศรเทียน &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ควบคุมโดย นนท์ บรรณวัฒน์ นักวิชาการคอมพิวเตอร์ ปฏิบัติการ</span>
                 </marquee>
-
             </footer>
             <?php SC5() ?>
 

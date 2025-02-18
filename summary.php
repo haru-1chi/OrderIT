@@ -141,22 +141,23 @@ if (!isset($_SESSION["admin_log"])) {
                 </div>
                 <canvas id="lineChart" style="width: 100%; height: 100%;"></canvas>
             </div>
-
-            <div class="card p-3 ms-4 me-4 mt-4">
+            <div class="card p-3 ms-4 me-4 mt-4" style="width: 700px; height: 400px;">
                 <p>สรุปความพึงพอใจ</p>
-                <div style="width: 600px; height: 80px;">
+                <div style="display: flex; flex-direction: column; align-items: center; width: 600px; height: 80px;">
                     <canvas id="serviceBarChart" style="width: 100%; height: 100%;"></canvas>
                     <canvas id="solvingBarChart" style="width: 100%; height: 100%;"></canvas>
-                    <canvas id="averageScoresChart" style="width: 100%; height: 100%;"></canvas>
+                    <!-- <div style="width: 600px; height: 60px;">
+                        <canvas id="averageScoresChart" style="width: 100%; height: 100%;"></canvas>
+                    </div> -->
                 </div>
-                <div style="width: 600px; height: 150px; margin-top: 150px;">
+                <div style="width: 600px; height: 150px; margin-top: 100px;">
                     <canvas id="horizontalBarChart" style="width: 100%; height: 100%;"></canvas>
                 </div>
             </div>
         </div>
 
         <div class="d-flex">
-            <div class="card p-3 m-4">
+            <div class="card p-3 mt-2 me-4 ms-4" style="width: 500px; height: 400px;">
                 <div class="d-flex justify-content-between">
                     <p>SLA%</p>
                     <select id="pieChartFilter" style="margin-bottom: 15px;">
@@ -166,10 +167,12 @@ if (!isset($_SESSION["admin_log"])) {
                         <option value="year">ปีนี้</option>
                     </select>
                 </div>
-                <canvas id="pieChart" style="width: 250px; height: 250px;"></canvas>
+                <div class="d-flex justify-content-center align-items-center" style="margin-top: 20px;">
+                    <canvas id="pieChart" style="width: 275px; height: 275px;"></canvas>
+                </div>
             </div>
 
-            <div class="card p-3 mt-4" style="width: 700px; height: 400px;">
+            <div class="card p-3 mt-2" style="width: 700px; height: 400px;">
                 <div class="d-flex justify-content-between">
                     <p>งานที่ใช้เวลานานเกิน SLA โดยเฉลี่ย</p>
                     <select id="avgSLAFilter" style="margin-bottom: 15px;">
@@ -181,10 +184,59 @@ if (!isset($_SESSION["admin_log"])) {
                 </div>
                 <canvas id="avgSLAChart" style="width: 100%; height: 100%;"></canvas>
             </div>
+
+            <div class="card p-3 mt-2 me-4 ms-4" style="width: 600px; height: 400px;">
+                <div class="d-flex justify-content-between">
+                    <p>ประเภทปัญหาที่พบ</p>
+                    <div>
+                        <select id="taskChartFilter" style="margin-bottom: 15px;">
+                            <option value="problem" selected>Activity Report</option>
+                            <option value="device">รูปแบบการทำงาน</option>
+                            <option value="report">อาการรับแจ้ง</option>
+                            <option value="sla">SLA</option>
+                        </select>
+                        <select id="filterTaskDropdown" style="margin-bottom: 15px;">
+                            <option value="day" selected>วันนี้</option>
+                            <option value="week">สัปดาห์นี้</option>
+                            <option value="month">เดือนนี้</option>
+                            <option value="year">ปีนี้</option>
+                        </select>
+                        <select id="personChartFilter" style="margin-bottom: 15px;">
+                            <option value="all" selected>ทุกคน</option>
+
+                            <?php
+                            // Fetch all admin usernames
+                            $sql = "SELECT * FROM admin";
+                            $stmt = $conn->prepare($sql);
+                            $stmt->execute();
+                            $checkD = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                            // First, show the logged-in admin's username
+                            foreach ($checkD as $d) {
+                                if ($d['username'] === $_SESSION['admin_log']) {
+                                    echo "<option value='{$d['username']}'>{$d['username']}</option>";
+                                }
+                            }
+
+                            // Then, show other usernames
+                            foreach ($checkD as $d) {
+                                if ($d['username'] !== $_SESSION['admin_log']) {
+                                    echo "<option value='{$d['username']}'>{$d['username']}</option>";
+                                }
+                            }
+                            ?>
+                        </select>
+
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center align-items-center">
+                    <canvas id="taskChart" style="width: 500px; height: 300px;"></canvas>
+                </div>
+            </div>
         </div>
 
         <div class="d-flex">
-            <div class="card p-3 m-4" style="width: 1800px; height: 800px;">
+            <div class="card p-3 m-4" style="width: 1850px; height: 800px;">
                 <input type="date" id="filter-date" class="form-control mb-3" />
                 <select id="timelineFilter" class="form-control">
                     <option value="problem" selected>Activity Report</option>
@@ -192,9 +244,10 @@ if (!isset($_SESSION["admin_log"])) {
                     <option value="report">อาการรับแจ้ง</option>
                     <option value="sla">SLA</option>
                 </select>
-                <canvas id="gantt-chart" width="800" height="100"></canvas>
-                <canvas id="gantt-summary" style="width: 100%; height: 100%;"></canvas>
-                <canvas id="summary-chart" width="800" height="100"></canvas>
+                <canvas id="gantt-chart" width="800" height="150"></canvas>
+                <canvas id="gantt-summary" width="800" height="150"></canvas>
+
+                <!-- <canvas id="summary-chart" width="800" height="100"></canvas> -->
             </div>
         </div>
 
@@ -240,13 +293,19 @@ if (!isset($_SESSION["admin_log"])) {
                 ];
 
                 // Generate unique colors for each task type
+
+                function generateColor(index) {
+                    const hue = (index * 60) % 360; // Unique hue
+                    return `hsla(${hue}, 90%, 60%, 0.5)`;
+                }
+
                 const taskColors = {};
                 taskTypes.forEach((type, index) => {
                     const baseColor = baseColors[index % baseColors.length];
                     const [r, g, b] = baseColor;
                     taskColors[type] = {
-                        backgroundColor: `rgba(${r}, ${g}, ${b}, 0.5)`,
-                        borderColor: `rgba(${r}, ${g}, ${b}, 1)`,
+                        backgroundColor: generateColor(index),
+                        borderColor: generateColor(index).replace('0.5', '1'),
                     };
                 });
 
@@ -291,7 +350,7 @@ if (!isset($_SESSION["admin_log"])) {
                             tooltip: {
                                 callbacks: {
                                     label: context => {
-                                        return `${context.dataset.label}: ${context.raw}`;
+                                        return `${context.dataset.label}`;
                                     },
                                 },
                             },
@@ -307,90 +366,6 @@ if (!isset($_SESSION["admin_log"])) {
                 chart = new Chart(ctx, config);
             }
 
-            // function renderChart(data) {
-            //     const summarizedTasks = summarizeTasks(data);
-
-            //     const labels = summarizedTasks.map(item => item.timeRange);
-            //     // Function to generate a random color similar to a base color
-            //     function getRandomColorFromBase(baseColor, opacity = 0.5) {
-            //         const [r, g, b] = baseColor; // Extract the RGB values from the base color
-            //         const variation = 30; // Maximum variation for randomness
-            //         const randomize = (value) => Math.min(255, Math.max(0, value + Math.floor(Math.random() * (variation * 2) - variation)));
-            //         const newR = randomize(r);
-            //         const newG = randomize(g);
-            //         const newB = randomize(b);
-            //         return `rgba(${newR}, ${newG}, ${newB}, ${opacity})`;
-            //     }
-
-            //     // Base colors (RGB only)
-            //     const baseColors = [
-            //         [255, 99, 132], // Similar to 'rgba(255, 99, 132, 0.5)'
-            //         [255, 206, 86], // Similar to 'rgba(255, 206, 86, 0.5)'
-            //         [54, 162, 235] // Similar to 'rgba(54, 162, 235, 0.5)'
-            //     ];
-
-            //     // Function to map unique task types to similar colors
-            //     const taskColors = {}; // Store generated colors for each task type
-            //     function getTaskColor(taskType, opacity = 0.5) {
-            //         if (!taskColors[taskType]) {
-            //             const baseColor = baseColors[Math.floor(Math.random() * baseColors.length)];
-            //             taskColors[taskType] = getRandomColorFromBase(baseColor, opacity);
-            //         }
-            //         return taskColors[taskType];
-            //     }
-
-            //     // Chart Data with Pantone-like Random Colors
-            //     const chartData = {
-            //         labels: labels,
-            //         datasets: [{
-            //             label: 'Task Summary',
-            //             data: summarizedTasks.map(item => (item.taskType !== 'Nothing' ? 1 : 0)),
-            //             backgroundColor: summarizedTasks.map(item => getTaskColor(item.taskType, 0.5)),
-            //             borderColor: summarizedTasks.map(item => getTaskColor(item.taskType, 1).replace(/0\.5\)$/, '1)')),
-            //             borderWidth: 1,
-            //         }]
-            //     };
-
-
-            //     const config = {
-            //         type: 'bar',
-            //         data: chartData,
-            //         options: {
-            //             indexAxis: 'x',
-            //             scales: {
-            //                 x: {
-            //                     position: 'top',
-            //                     title: {
-            //                         display: true,
-            //                         text: 'Time Range',
-            //                     },
-            //                 },
-            //                 y: {
-            //                     display: false,
-            //                 },
-            //             },
-            //             plugins: {
-            //                 tooltip: {
-            //                     callbacks: {
-            //                         label: context => {
-            //                             const taskType = summarizedTasks[context.dataIndex].taskType;
-            //                             return `${taskType}`;
-            //                         },
-            //                     },
-            //                 },
-            //             },
-            //         },
-            //     };
-
-            //     // If chart exists, destroy it before creating a new one
-            //     if (chart) {
-            //         chart.destroy();
-            //     }
-            //     const ctx = document.getElementById('summary-chart').getContext('2d');
-            //     chart = new Chart(ctx, config);
-            // }
-
-            // Initialize the chart with event listeners
             async function initChart() {
                 const dateInput = document.getElementById('filter-date');
                 const filterSelect = document.getElementById('timelineFilter');
@@ -475,586 +450,668 @@ if (!isset($_SESSION["admin_log"])) {
             initChart();
         </script>
 
-        <div class="row">
-            <div class="col-sm-12 col-lg-12 col-md-12">
-                <h1 class="text-center my-4">อยู่ในระหว่างการสร้างหน้าเว็บนี้...</h1>
-                <div class="card rounded-4 shadow-sm p-3 mt-5 col-sm-12 col-lg-12 col-md-12">
-                    <h1>รายการความพึงพอใจ</h1>
-                    <div class="table-responsive">
-                        <table id="dataAll" class="table table-primary">
-                            <thead>
-                                <tr class="text-center">
-                                    <th scope="col">ช่องทางที่ใช้บริการ</th>
-                                    <th scope="col">ปัญหาได้รับการแก้ไข</th>
-                                    <th scope="col">ความรวดเร็ว</th>
-                                    <th scope="col">การแก้ปัญหา</th>
-                                    <th scope="col">การให้บริการ</th>
-                                    <th scope="col">ข้อเสนอแนะ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $sql = "SELECT *
+        <div class="">
+            <div class="card rounded-4 shadow-sm p-3 ms-4 me-4">
+                <h1>รายการความพึงพอใจ</h1>
+                <div class="table-responsive">
+                    <table id="dataAll" class="table table-primary">
+                        <thead>
+                            <tr class="text-center">
+                                <th scope="col">ช่องทางที่ใช้บริการ</th>
+                                <th scope="col">ปัญหาได้รับการแก้ไข</th>
+                                <th scope="col">ความรวดเร็ว</th>
+                                <th scope="col">การแก้ปัญหา</th>
+                                <th scope="col">การให้บริการ</th>
+                                <th scope="col">ข้อเสนอแนะ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $sql = "SELECT *
                     FROM rating
                     ";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                foreach ($result as $row) {
-                                ?>
-                                    <tr>
-                                        <td><?= $row['service_channel'] ?></td>
-                                        <td><?= $row['issue_resolved'] ?></td>
-                                        <td><?= $row['service_speed'] ?></td>
-                                        <td><?= $row['problem_satisfaction'] ?></td>
-                                        <td><?= $row['service_satisfaction'] ?></td>
-                                        <td><?= $row['suggestion'] ?></td>
-                                    </tr>
-                                <?php }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
+                            $stmt = $conn->prepare($sql);
+                            $stmt->execute();
+                            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                            foreach ($result as $row) {
+                            ?>
+                                <tr>
+                                    <td><?= $row['service_channel'] ?></td>
+                                    <td><?= $row['issue_resolved'] ?></td>
+                                    <td><?= $row['service_speed'] ?></td>
+                                    <td><?= $row['problem_satisfaction'] ?></td>
+                                    <td><?= $row['service_satisfaction'] ?></td>
+                                    <td><?= $row['suggestion'] ?></td>
+                                </tr>
+                            <?php }
+                            ?>
+                        </tbody>
+                    </table>
                 </div>
-                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const horizontalChartCanvas = document.getElementById('averageScoresChart');
-                        let horizontalChartInstance;
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const horizontalChartCanvas = document.getElementById('averageScoresChart');
+                    let horizontalChartInstance;
 
-                        function fetchAverageScores() {
-                            return fetch('fetch_total_score.php', {
-                                    method: 'GET',
-                                })
-                                .then((response) => {
-                                    if (!response.ok) throw new Error('Network error');
-                                    return response.json();
-                                })
-                                .catch((error) => console.error('Error fetching data:', error));
-                        }
-
-                        function createHorizontalChart(canvas, data) {
-                            return new Chart(canvas, {
-                                type: 'bar',
-                                data: {
-                                    labels: [data.label],
-                                    datasets: [{
-                                        label: 'คะแนนเฉลี่ย',
-                                        data: [data.score],
-                                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                                        borderColor: 'rgba(75, 192, 192, 1)',
-                                        borderWidth: 1,
-                                    }, ],
-                                },
-                                options: {
-                                    indexAxis: 'y', // Horizontal bar
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            display: false,
-                                            position: 'top',
-                                        },
-                                    },
-                                    scales: {
-                                        x: {
-                                            title: {
-                                                display: true,
-
-                                            },
-                                            beginAtZero: true,
-                                            max: 5,
-                                        },
-                                        y: {
-                                            title: {
-                                                display: true,
-                                            },
-                                        },
-                                    },
-                                },
-                            });
-                        }
-
-                        fetchAverageScores().then((data) => {
-                            if (data.error) {
-                                console.error('Error:', data.error);
-                                return;
-                            }
-                            if (!horizontalChartInstance) {
-                                horizontalChartInstance = createHorizontalChart(horizontalChartCanvas, data);
-                            } else {
-                                horizontalChartInstance.data.labels = [data.label];
-                                horizontalChartInstance.data.datasets[0].data = [data.score];
-                                horizontalChartInstance.update();
-                            }
-                        });
-                    });
-                </script>
-                <script>
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const endpoints = {
-                            service: 'fetch_service_channel.php',
-                            solving: 'fetch_solving.php',
-                        };
-
-                        const chartConfigs = {
-                            serviceBarChart: {
-                                title: 'ช่องทางการให้บริการ',
-                            },
-                            solvingBarChart: {
-                                title: 'ปัญหาได้รับการแก้ไข',
-                            },
-                        };
-
-                        // Initialize charts
-                        Object.entries(chartConfigs).forEach(([chartId, config]) => {
-                            initializeChart(chartId, endpoints[chartId.split('Bar')[0]], config);
-                        });
-                    });
-
-                    // Function to fetch data from API
-                    async function fetchData(url) {
-                        try {
-                            const response = await fetch(url);
-                            if (!response.ok) throw new Error('Failed to fetch data');
-                            return await response.json();
-                        } catch (error) {
-                            console.error(error);
-                            alert('Error fetching chart data. Please try again.');
-                            return null;
-                        }
+                    function fetchAverageScores() {
+                        return fetch('fetch_total_score.php', {
+                                method: 'GET',
+                            })
+                            .then((response) => {
+                                if (!response.ok) throw new Error('Network error');
+                                return response.json();
+                            })
+                            .catch((error) => console.error('Error fetching data:', error));
                     }
 
-                    // Function to initialize a chart
-                    async function initializeChart(chartId, endpoint, config) {
-                        const data = await fetchData(endpoint);
-                        if (!data) return;
-
-                        const {
-                            labels,
-                            data: chartData
-                        } = data;
-                        const datasets = labels.map((label, index) => ({
-                            label,
-                            data: [chartData[index]],
-                            backgroundColor: getColor(index, 0.5),
-                            borderColor: getColor(index, 1),
-                            borderWidth: 1,
-                        }));
-
-                        const ctx = document.getElementById(chartId).getContext('2d');
-                        new Chart(ctx, {
+                    function createHorizontalChart(canvas, data) {
+                        return new Chart(canvas, {
                             type: 'bar',
                             data: {
-                                labels: [config.title],
-                                datasets,
+                                labels: [data.label],
+                                datasets: [{
+                                    label: 'คะแนนเฉลี่ย',
+                                    data: data.score,
+                                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    borderWidth: 1,
+                                }, ],
                             },
                             options: {
-                                indexAxis: 'y',
+                                indexAxis: 'y', // Horizontal bar
                                 responsive: true,
                                 maintainAspectRatio: false,
                                 plugins: {
                                     legend: {
-                                        display: true,
+                                        display: false,
                                         position: 'top',
-                                        align: 'end',
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: (tooltipItem) =>
-                                                `${tooltipItem.dataset.label}: ${tooltipItem.raw}%`,
-                                        },
-                                    },
-                                },
-                                scales: {
-                                    x: {
-                                        stacked: true,
-                                        ticks: {
-                                            beginAtZero: true,
-                                            stepSize: 10,
-                                        },
-                                    },
-                                    y: {
-                                        stacked: true,
-                                    },
-                                },
-                            },
-                        });
-                    }
-
-                    // Function to generate colors
-                    function getColor(index, alpha) {
-                        const colors = [
-                            `rgba(255, 99, 132, ${alpha})`,
-                            `rgba(75, 192, 192, ${alpha})`,
-                            `rgba(54, 162, 235, ${alpha})`,
-                            `rgba(255, 206, 86, ${alpha})`,
-                            `rgba(153, 102, 255, ${alpha})`,
-                        ];
-                        return colors[index % colors.length];
-                    }
-                </script>
-
-                <style>
-                    .chart-container {
-                        width: 600px;
-                        height: 100px;
-                    }
-
-                    canvas {
-                        width: 100%;
-                        height: 100%;
-                    }
-                </style>
-                <script>
-                    document.addEventListener("DOMContentLoaded", function() {
-                        const endpoint = "fetch_avg_sla.php"; // Backend endpoint
-                        const canvas = document.getElementById("avgSLAChart");
-                        const filterDropdown = document.getElementById("avgSLAFilter");
-                        let chartInstance;
-
-                        // Fetch data from the backend
-                        function fetchData(filter) {
-                            return fetch(endpoint, {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify({
-                                        filter
-                                    }),
-                                })
-                                .then((response) => {
-                                    if (!response.ok) throw new Error("Network error");
-                                    return response.json();
-                                })
-                                .catch((error) => console.error("Error fetching data:", error));
-                        }
-
-                        // Create or update the chart
-                        function updateChart(data) {
-                            const chartData = {
-                                labels: data.labels,
-                                datasets: [{
-                                        label: "เวลาที่กำหนด",
-                                        data: data.in_time_values,
-                                        borderColor: "rgba(54, 162, 235, 1)",
-                                        backgroundColor: "rgba(54, 162, 235, 0.2)",
-                                        fill: false,
-                                        tension: 0.3,
-                                    },
-                                    {
-                                        label: "เวลาที่ใช้",
-                                        data: data.avg_time_values,
-                                        borderColor: "rgba(255, 99, 132, 1)",
-                                        backgroundColor: "rgba(255, 99, 132, 0.2)",
-                                        fill: false,
-                                        tension: 0.3,
-                                    },
-                                ],
-                            };
-
-                            const chartOptions = {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: {
-                                        display: true,
-                                        position: "top",
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function(context) {
-                                                let value = context.raw || 0;
-                                                return `${value} นาที`;
-                                            },
-                                        },
                                     },
                                 },
                                 scales: {
                                     x: {
                                         title: {
                                             display: true,
+
                                         },
+                                        beginAtZero: true,
+                                        max: 5,
                                     },
                                     y: {
-                                        beginAtZero: true,
+                                        title: {
+                                            display: true,
+                                        },
                                     },
                                 },
-                            };
+                            },
+                        });
+                    }
 
-                            if (chartInstance) {
-                                chartInstance.destroy(); // Destroy existing chart instance
-                            }
+                    fetchAverageScores().then((data) => {
+                        if (data.error) {
+                            console.error('Error:', data.error);
+                            return;
+                        }
+                        if (!horizontalChartInstance) {
+                            horizontalChartInstance = createHorizontalChart(horizontalChartCanvas, data);
+                        } else {
+                            horizontalChartInstance.data.labels = [data.label];
+                            horizontalChartInstance.data.datasets[0].data = [data.score];
+                            horizontalChartInstance.update();
+                        }
+                    });
+                });
+            </script>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const endpoints = {
+                        service: 'fetch_service_channel.php',
+                        solving: 'fetch_solving.php',
+                    };
 
-                            chartInstance = new Chart(canvas, {
-                                type: "line",
-                                data: chartData,
-                                options: chartOptions,
-                            });
+                    const chartConfigs = {
+                        serviceBarChart: {
+                            title: 'ช่องทางการให้บริการ',
+                        },
+                        solvingBarChart: {
+                            title: 'ปัญหาได้รับการแก้ไข',
+                        },
+                    };
+
+                    // Initialize charts
+                    Object.entries(chartConfigs).forEach(([chartId, config]) => {
+                        initializeChart(chartId, endpoints[chartId.split('Bar')[0]], config);
+                    });
+                });
+
+                // Function to fetch data from API
+                async function fetchData(url) {
+                    try {
+                        const response = await fetch(url);
+                        if (!response.ok) throw new Error('Failed to fetch data');
+                        return await response.json();
+                    } catch (error) {
+                        console.error(error);
+                        alert('Error fetching chart data. Please try again.');
+                        return null;
+                    }
+                }
+
+                // Function to initialize a chart
+                async function initializeChart(chartId, endpoint, config) {
+                    const data = await fetchData(endpoint);
+                    if (!data) return;
+
+                    const {
+                        labels,
+                        data: chartData
+                    } = data;
+                    const datasets = labels.map((label, index) => ({
+                        label,
+                        data: [chartData[index]],
+                        backgroundColor: getColor(index, 0.5),
+                        borderColor: getColor(index, 1),
+                        borderWidth: 1,
+                    }));
+
+                    const ctx = document.getElementById(chartId).getContext('2d');
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: [config.title],
+                            datasets,
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                    align: 'end',
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (tooltipItem) =>
+                                            `${tooltipItem.dataset.label}: ${tooltipItem.raw}%`,
+                                    },
+                                },
+                            },
+                            scales: {
+                                x: {
+                                    stacked: true,
+                                    ticks: {
+                                        beginAtZero: true,
+                                        stepSize: 10,
+                                    },
+                                },
+                                y: {
+                                    stacked: true,
+                                },
+                            },
+                        },
+                    });
+                }
+
+                // Function to generate colors
+                function getColor(index, alpha) {
+                    const colors = [
+                        `rgba(255, 99, 132, ${alpha})`,
+                        `rgba(75, 192, 192, ${alpha})`,
+                        `rgba(54, 162, 235, ${alpha})`,
+                        `rgba(255, 206, 86, ${alpha})`,
+                        `rgba(153, 102, 255, ${alpha})`,
+                    ];
+                    return colors[index % colors.length];
+                }
+            </script>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const endpoint = "fetch_avg_sla.php"; // Backend endpoint
+                    const canvas = document.getElementById("avgSLAChart");
+                    const filterDropdown = document.getElementById("avgSLAFilter");
+                    let chartInstance;
+
+                    // Fetch data from the backend
+                    function fetchData(filter) {
+                        return fetch(endpoint, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                    filter
+                                }),
+                            })
+                            .then((response) => {
+                                if (!response.ok) throw new Error("Network error");
+                                return response.json();
+                            })
+                            .catch((error) => console.error("Error fetching data:", error));
+                    }
+
+                    // Create or update the chart
+                    function updateChart(data) {
+                        const chartData = {
+                            labels: data.labels,
+                            datasets: [{
+                                    label: "เวลาที่กำหนด",
+                                    data: data.in_time_values,
+                                    borderColor: "rgba(54, 162, 235, 1)",
+                                    backgroundColor: "rgba(54, 162, 235, 0.2)",
+                                    fill: false,
+                                    tension: 0.3,
+                                },
+                                {
+                                    label: "เวลาที่ใช้",
+                                    data: data.avg_time_values,
+                                    borderColor: "rgba(255, 99, 132, 1)",
+                                    backgroundColor: "rgba(255, 99, 132, 0.2)",
+                                    fill: false,
+                                    tension: 0.3,
+                                },
+                            ],
+                        };
+
+                        const chartOptions = {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: "top",
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let value = context.raw || 0;
+                                            return `${value} นาที`;
+                                        },
+                                    },
+                                },
+                            },
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                    },
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                },
+                            },
+                        };
+
+                        if (chartInstance) {
+                            chartInstance.destroy(); // Destroy existing chart instance
                         }
 
-                        // Event listener for dropdown change
-                        filterDropdown.addEventListener("change", function() {
-                            const selectedFilter = this.value;
-                            fetchData(selectedFilter).then(updateChart);
+                        chartInstance = new Chart(canvas, {
+                            type: "line",
+                            data: chartData,
+                            options: chartOptions,
                         });
+                    }
 
-                        // Initial load with default filter
-                        fetchData(filterDropdown.value).then(updateChart);
+                    // Event listener for dropdown change
+                    filterDropdown.addEventListener("change", function() {
+                        const selectedFilter = this.value;
+                        fetchData(selectedFilter).then(updateChart);
                     });
-                </script>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const charts = [{
-                                canvasId: 'pairedChart',
-                                dropdownId: 'filterDropdown',
-                                endpoint: 'fetch_staff.php',
-                                type: 'bar',
-                                datasets: (data) => [{
-                                        label: 'จำนวนรับงาน',
-                                        data: data.taker_counts,
-                                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                                        borderColor: 'rgba(255, 99, 132, 1)',
-                                        borderWidth: 1,
-                                    },
-                                    {
-                                        label: 'จำนวนคีย์งาน',
-                                        data: data.creator_counts,
-                                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
-                                        borderColor: 'rgba(75, 192, 192, 1)',
-                                        borderWidth: 1,
-                                    },
-                                ],
-                            },
-                            {
-                                canvasId: 'lineChart',
-                                dropdownId: 'filterDropdown1',
-                                endpoint: 'fetch_count_task.php',
-                                type: 'line',
-                                datasets: (data) => [{
-                                    label: 'จำนวนงาน',
-                                    data: data.task_counts,
+
+                    // Initial load with default filter
+                    fetchData(filterDropdown.value).then(updateChart);
+                });
+            </script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const charts = [{
+                            canvasId: 'pairedChart',
+                            dropdownId: 'filterDropdown',
+                            endpoint: 'fetch_staff.php',
+                            type: 'bar',
+                            datasets: (data) => [{
+                                    label: 'จำนวนรับงาน',
+                                    data: data.taker_counts,
+                                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    borderWidth: 1,
+                                },
+                                {
+                                    label: 'จำนวนคีย์งาน',
+                                    data: data.creator_counts,
                                     backgroundColor: 'rgba(75, 192, 192, 0.5)',
                                     borderColor: 'rgba(75, 192, 192, 1)',
-                                    fill: false,
-                                    tension: 0.2,
-                                }, ],
+                                    borderWidth: 1,
+                                },
+                            ],
+                        },
+                        {
+                            canvasId: 'lineChart',
+                            dropdownId: 'filterDropdown1',
+                            endpoint: 'fetch_count_task.php',
+                            type: 'line',
+                            datasets: (data) => [{
+                                label: 'จำนวนงาน',
+                                data: data.task_counts,
+                                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                fill: false,
+                                tension: 0.2,
+                            }, ],
+                        },
+                    ];
+
+                    function fetchData(endpoint, filter) {
+                        return fetch(endpoint, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    filter
+                                }),
+                            })
+                            .then((response) => {
+                                if (!response.ok) throw new Error('Network error');
+                                return response.json();
+                            })
+                            .catch((error) => console.error('Error fetching data:', error));
+                    }
+
+                    function createChart(canvas, type, data, datasetsFn) {
+                        return new Chart(canvas, {
+                            type: type,
+                            data: {
+                                labels: data.labels,
+                                datasets: datasetsFn(data),
                             },
-                        ];
-
-                        function fetchData(endpoint, filter) {
-                            return fetch(endpoint, {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        filter
-                                    }),
-                                })
-                                .then((response) => {
-                                    if (!response.ok) throw new Error('Network error');
-                                    return response.json();
-                                })
-                                .catch((error) => console.error('Error fetching data:', error));
-                        }
-
-                        function createChart(canvas, type, data, datasetsFn) {
-                            return new Chart(canvas, {
-                                type: type,
-                                data: {
-                                    labels: data.labels,
-                                    datasets: datasetsFn(data),
-                                },
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            display: true,
-                                            position: 'top'
-                                        },
-                                    },
-                                    scales: {
-                                        x: {
-                                            title: {
-                                                display: true
-                                            }
-                                        },
-                                        y: {
-                                            beginAtZero: true
-                                        },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: 'top'
                                     },
                                 },
-                            });
-                        }
-
-                        charts.forEach(({
-                            canvasId,
-                            dropdownId,
-                            endpoint,
-                            type,
-                            datasets
-                        }) => {
-                            const canvas = document.getElementById(canvasId);
-                            const dropdown = document.getElementById(dropdownId);
-                            let chartInstance;
-
-                            function updateChart(filter) {
-                                fetchData(endpoint, filter).then((data) => {
-                                    if (!chartInstance) {
-                                        chartInstance = createChart(canvas, type, data, datasets);
-                                    } else {
-                                        chartInstance.data.labels = data.labels;
-                                        chartInstance.data.datasets = datasets(data);
-                                        chartInstance.update();
-                                    }
-                                });
-                            }
-
-                            dropdown.addEventListener('change', () => updateChart(dropdown.value));
-                            updateChart('day');
-                        });
-                    });
-                </script>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const pieChartCanvas = document.getElementById('pieChart');
-                        const pieChartDropdown = document.getElementById('pieChartFilter');
-                        let pieChartInstance;
-
-                        function fetchPieData(filter) {
-                            return fetch('fetch_percentage_sla.php', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        filter
-                                    })
-                                })
-                                .then(response => response.json())
-                                .catch(error => console.error('Error fetching pie chart data:', error));
-                        }
-
-                        function updatePieChart(filter) {
-                            fetchPieData(filter).then(data => {
-                                const chartData = {
-                                    labels: ['เสร็จภายในเวลา', 'เกินเวลาที่กำหนด'],
-                                    datasets: [{
-                                        data: [data.in_time, data.over_time],
-                                        backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(255, 99, 132, 0.5)'],
-                                        borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
-                                        borderWidth: 1
-                                    }]
-                                };
-
-                                if (!pieChartInstance) {
-                                    pieChartInstance = new Chart(pieChartCanvas, {
-                                        type: 'pie',
-                                        data: chartData,
-                                        options: {
-                                            responsive: false,
-                                            maintainAspectRatio: false,
-                                            plugins: {
-                                                legend: {
-                                                    display: true,
-                                                    position: 'bottom'
-                                                },
-                                                tooltip: {
-                                                    callbacks: {
-                                                        label: function(context) {
-                                                            // Format the value with a '%' symbol
-                                                            let value = context.raw || 0;
-                                                            return `${context.label}: ${value}%`;
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                scales: {
+                                    x: {
+                                        title: {
+                                            display: true
                                         }
-                                    });
+                                    },
+                                    y: {
+                                        beginAtZero: true
+                                    },
+                                },
+                            },
+                        });
+                    }
+
+                    charts.forEach(({
+                        canvasId,
+                        dropdownId,
+                        endpoint,
+                        type,
+                        datasets
+                    }) => {
+                        const canvas = document.getElementById(canvasId);
+                        const dropdown = document.getElementById(dropdownId);
+                        let chartInstance;
+
+                        function updateChart(filter) {
+                            fetchData(endpoint, filter).then((data) => {
+                                if (!chartInstance) {
+                                    chartInstance = createChart(canvas, type, data, datasets);
                                 } else {
-                                    pieChartInstance.data = chartData;
-                                    pieChartInstance.update();
+                                    chartInstance.data.labels = data.labels;
+                                    chartInstance.data.datasets = datasets(data);
+                                    chartInstance.update();
                                 }
                             });
                         }
 
-                        pieChartDropdown.addEventListener('change', () => updatePieChart(pieChartDropdown.value));
-                        updatePieChart('day');
+                        dropdown.addEventListener('change', () => updateChart(dropdown.value));
+                        updateChart('day');
                     });
-                </script>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const chartData = {
-                            canvasId: 'horizontalBarChart',
-                            endpoint: 'fetch_average_scores.php', // API to retrieve the averages
-                            type: 'bar',
-                            datasets: (data) => [{
-                                label: 'คะแนนเฉลี่ย',
-                                data: data.scores,
-                                backgroundColor: [
-                                    'rgba(255, 99, 132, 0.5)',
-                                    'rgba(255, 206, 86, 0.5)',
-                                    'rgba(54, 162, 235, 0.5)',
-                                ],
-                                borderColor: [
-                                    'rgba(255, 99, 132, 1)',
-                                    'rgba(255, 206, 86, 1)',
-                                    'rgba(54, 162, 235, 1)',
-                                ],
-                                borderWidth: 1,
-                            }, ],
-                        };
+                });
+            </script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const pieChartCanvas = document.getElementById('taskChart');
+                    const taskChartFilter = document.getElementById('taskChartFilter');
+                    const filterDropdown = document.getElementById('filterTaskDropdown');
+                    const personChartFilter = document.getElementById('personChartFilter');
+                    if (!pieChartCanvas) {
+                        console.error("Canvas element #taskChart not found.");
+                        return;
+                    }
 
-                        const canvas = document.getElementById(chartData.canvasId);
+                    let pieChartInstance;
 
-                        function fetchChartData(endpoint) {
-                            return fetch(endpoint, {
-                                    method: 'GET',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                })
-                                .then((response) => response.json())
-                                .catch((error) => console.error('Error fetching data:', error));
-                        }
+                    function fetchPieData(filter, username, period) {
+                        return fetch(`fetch_problem_counts.php?filter=${filter}&username=${username}&period=${period}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log("API Response:", data);
+                                return data;
+                            })
+                            .catch(error => console.error('Error fetching pie chart data:', error));
+                    }
 
-                        function createHorizontalBarChart(canvas, data, datasetsFn) {
-                            return new Chart(canvas, {
-                                type: 'bar',
-                                data: {
-                                    labels: data.labels,
-                                    datasets: datasetsFn(data),
-                                },
-                                options: {
-                                    indexAxis: 'y', // Horizontal bar chart
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            display: false
-                                        },
-                                    },
-                                    scales: {
-                                        x: {
-                                            beginAtZero: true,
-                                            max: 5,
-                                        },
-                                    },
-                                },
-                            });
-                        }
+                    function updatePieChart() {
+                        const filter = taskChartFilter.value;
+                        const username = personChartFilter.value;
+                        const period = filterDropdown.value;
 
-                        fetchChartData(chartData.endpoint).then((data) => {
-                            createHorizontalBarChart(canvas, data, chartData.datasets);
+                        fetchPieData(filter, username, period).then(data => {
+                            if (!data.labels || !data.counts) {
+                                console.error("Invalid data received:", data);
+                                return;
+                            }
+
+                            const chartData = {
+                                labels: data.labels,
+                                datasets: [{
+                                    data: data.counts,
+                                    backgroundColor: [
+                                        'rgba(255, 99, 132, 0.5)', 'rgba(54, 162, 235, 0.5)',
+                                        'rgba(255, 206, 86, 0.5)', 'rgba(75, 192, 192, 0.5)',
+                                        'rgba(153, 102, 255, 0.5)', 'rgba(255, 159, 64, 0.5)',
+                                        'rgba(0, 204, 102, 0.5)', 'rgba(204, 0, 102, 0.5)' // Added two new colors
+                                    ],
+                                    borderColor: [
+                                        'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)',
+                                        'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)',
+                                        'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)',
+                                        'rgba(0, 204, 102, 1)', 'rgba(204, 0, 102, 1)' // Added two new colors
+                                    ],
+                                    borderWidth: 1
+                                }]
+                            };
+
+                            if (!pieChartInstance) {
+                                pieChartInstance = new Chart(pieChartCanvas.getContext('2d'), {
+                                    type: 'pie',
+                                    data: chartData,
+                                    options: {
+                                        responsive: false,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                display: true,
+                                                position: 'right'
+                                            },
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: function(context) {
+                                                        const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                                        const value = context.raw;
+                                                        const percentage = ((value / total) * 100).toFixed(2);
+                                                        return `${value} งาน, ${percentage}%`;
+                                                    }
+                                                }
+                                            }
+
+                                        }
+                                    }
+                                });
+                            } else {
+                                pieChartInstance.data = chartData;
+                                pieChartInstance.update();
+                            }
                         });
+                    }
+
+                    // Initial load
+                    updatePieChart();
+
+                    // Event listener for dropdown change
+                    taskChartFilter.addEventListener('change', updatePieChart);
+                    filterDropdown.addEventListener('change', updatePieChart);
+                    personChartFilter.addEventListener('change', updatePieChart);
+                });
+            </script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const pieChartCanvas = document.getElementById('pieChart');
+                    const pieChartDropdown = document.getElementById('pieChartFilter');
+                    let pieChartInstance;
+
+                    function fetchPieData(filter) {
+                        return fetch('fetch_percentage_sla.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    filter
+                                })
+                            })
+                            .then(response => response.json())
+                            .catch(error => console.error('Error fetching pie chart data:', error));
+                    }
+
+                    function updatePieChart(filter) {
+                        fetchPieData(filter).then(data => {
+                            const chartData = {
+                                labels: ['เสร็จภายในเวลา', 'เกินเวลาที่กำหนด'],
+                                datasets: [{
+                                    data: [data.in_time, data.over_time],
+                                    backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(255, 99, 132, 0.5)'],
+                                    borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+                                    borderWidth: 1
+                                }]
+                            };
+
+                            if (!pieChartInstance) {
+                                pieChartInstance = new Chart(pieChartCanvas, {
+                                    type: 'pie',
+                                    data: chartData,
+                                    options: {
+                                        responsive: false,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                display: true,
+                                                position: 'bottom'
+                                            },
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: function(context) {
+                                                        // Format the value with a '%' symbol
+                                                        let value = context.raw || 0;
+                                                        return `${context.label}: ${value}%`;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                });
+                            } else {
+                                pieChartInstance.data = chartData;
+                                pieChartInstance.update();
+                            }
+                        });
+                    }
+
+                    pieChartDropdown.addEventListener('change', () => updatePieChart(pieChartDropdown.value));
+                    updatePieChart('day');
+                });
+            </script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const chartData = {
+                        canvasId: 'horizontalBarChart',
+                        endpoint: 'fetch_average_scores.php', // API to retrieve the averages
+                        type: 'bar',
+                        datasets: (data) => [{
+                            label: 'คะแนนเฉลี่ย',
+                            data: data.scores,
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.5)',
+                                'rgba(255, 99, 132, 0.5)',
+                                'rgba(255, 206, 86, 0.5)',
+                                'rgba(54, 162, 235, 0.5)',
+                            ],
+                            borderColor: [
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(54, 162, 235, 1)',
+                            ],
+                            borderWidth: 1,
+                        }, ],
+                    };
+
+                    const canvas = document.getElementById(chartData.canvasId);
+
+                    function fetchChartData(endpoint) {
+                        return fetch(endpoint, {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                            })
+                            .then((response) => response.json())
+                            .catch((error) => console.error('Error fetching data:', error));
+                    }
+
+                    function createHorizontalBarChart(canvas, data, datasetsFn) {
+                        return new Chart(canvas, {
+                            type: 'bar',
+                            data: {
+                                labels: data.labels,
+                                datasets: datasetsFn(data),
+                            },
+                            options: {
+                                indexAxis: 'y', // Horizontal bar chart
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                },
+                                scales: {
+                                    x: {
+                                        beginAtZero: true,
+                                        max: 5,
+                                    },
+                                },
+                            },
+                        });
+                    }
+
+                    fetchChartData(chartData.endpoint).then((data) => {
+                        createHorizontalBarChart(canvas, data, chartData.datasets);
                     });
-                </script>
-                <hr>
-            </div>
-            <br>
+                });
+            </script>
             <script>
                 // Get the current date and time
                 const now = new Date();
@@ -1156,85 +1213,6 @@ if (!isset($_SESSION["admin_log"])) {
 
             <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
             <script>
-                // document.addEventListener("DOMContentLoaded", function() {
-                //     const filterDateInput = document.getElementById("filter-date");
-                //     const ganttChartCanvas = document.getElementById("gantt-chart");
-                //     let chart;
-
-                //     function fetchDataAndRenderChart(date = null) {
-                //         const url = date ? `fetch_data.php?date=${date}` : 'fetch_data.php';
-                //         fetch(url)
-                //             .then(response => response.json())
-                //             .then(data => {
-                //                 // Prepare datasets with unique labels and groups
-                //                 const uniqueLabels = [...new Set(data.map(item => item.name))];
-                //                 const datasets = data.map((task, index) => ({
-                //                     label: `${task.name} (${index})`,
-                //                     data: [{
-                //                         x: [new Date(`2023-01-01 ${task.start}`), new Date(`2023-01-01 ${task.end}`)],
-                //                         y: task.name
-                //                     }],
-                //                     backgroundColor: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.7)`,
-                //                     borderWidth: 1,
-                //                 }));
-
-                //                 if (chart) {
-                //                     chart.data.datasets = datasets;
-                //                     chart.update();
-                //                 } else {
-                //                     chart = new Chart(ganttChartCanvas, {
-                //                         type: 'bar',
-                //                         data: {
-                //                             datasets: datasets,
-                //                         },
-                //                         options: {
-                //                             indexAxis: 'y',
-                //                             responsive: true,
-                //                             scales: {
-                //                                 x: {
-                //                                     type: 'time',
-                //                                     time: {
-                //                                         unit: 'hour',
-                //                                         displayFormats: {
-                //                                             hour: 'HH:mm'
-                //                                         }
-                //                                     },
-                //                                     min: '2023-01-01 08:00',
-                //                                     max: '2023-01-01 17:00',
-                //                                 },
-                //                                 y: {
-                //                                     type: 'category',
-                //                                     reverse: true,
-                //                                 },
-                //                             },
-                //                             plugins: {
-                //                                 tooltip: {
-                //                                     callbacks: {
-                //                                         label: (ctx) => {
-                //                                             const {
-                //                                                 x
-                //                                             } = ctx.raw;
-                //                                             const [start, end] = x;
-                //                                             return `Start: ${start.toLocaleTimeString()} - End: ${end.toLocaleTimeString()}`;
-                //                                         }
-                //                                     }
-                //                                 }
-                //                             },
-                //                             barPercentage: 0.8, // Bar width adjustment
-                //                             categoryPercentage: 0.9 // Space between grouped bars
-                //                         },
-                //                     });
-                //                 }
-                //             })
-                //             .catch(err => console.error(err));
-                //     }
-
-                //     // Initial load and event listener
-                //     fetchDataAndRenderChart();
-                //     filterDateInput.addEventListener("change", function() {
-                //         fetchDataAndRenderChart(this.value);
-                //     });
-                // });
                 document.addEventListener("DOMContentLoaded", function() {
                     const filterDateInput = document.getElementById("filter-date");
                     const timelineFilterSelect = document.getElementById("timelineFilter");
@@ -1341,134 +1319,6 @@ if (!isset($_SESSION["admin_log"])) {
                     });
                 });
 
-                // document.addEventListener("DOMContentLoaded", function() {
-                //     const filterDateInput = document.getElementById("filter-date");
-                //     const timelineFilterSelect = document.getElementById("timelineFilter");
-                //     const ganttChartCanvas = document.getElementById("gantt-summary");
-                //     let chart;
-
-                //     function getHourRange(time) {
-                //         const [hour, minute] = time.split(":").map(Number);
-                //         const startHour = minute >= 30 ? hour : hour - 1;
-                //         return `${String(startHour).padStart(2, "0")}:30 - ${String(startHour + 1).padStart(2, "0")}:30`;
-                //     }
-
-                //     function summarizeTasks(tasks) {
-                //         const summary = {};
-
-                //         tasks.forEach((task) => {
-                //             const taskStart = new Date(`2023-01-01 ${task.start}`);
-                //             const taskEnd = new Date(`2023-01-01 ${task.end}`);
-
-                //             for (let hour = 7; hour < 18; hour++) {
-                //                 const rangeStart = new Date(`2023-01-01 ${String(hour).padStart(2, "0")}:30`);
-                //                 const rangeEnd = new Date(`2023-01-01 ${String(hour + 1).padStart(2, "0")}:30`);
-                //                 const rangeKey = `${task.name}-${String(hour).padStart(2, "0")}:30 - ${String(hour + 1).padStart(2, "0")}:30`;
-
-                //                 if (taskEnd > rangeStart && taskStart < rangeEnd) {
-                //                     const overlap = Math.min(taskEnd, rangeEnd) - Math.max(taskStart, rangeStart);
-
-                //                     if (!summary[rangeKey] || overlap > summary[rangeKey].duration) {
-                //                         summary[rangeKey] = {
-                //                             name: task.name,
-                //                             problem: task.problem,
-                //                             range: `${String(hour).padStart(2, "0")}:30 - ${String(hour + 1).padStart(2, "0")}:30`,
-                //                             duration: overlap,
-                //                         };
-                //                     }
-                //                 }
-                //             }
-                //         });
-
-                //         return Object.values(summary);
-                //     }
-
-
-                //     function fetchDataAndRenderChart(date = null, filter = null) {
-                //         const url = new URL("fetch_data.php", window.location.href);
-                //         if (date) url.searchParams.append("date", date);
-                //         if (filter) url.searchParams.append("filter", filter);
-
-                //         fetch(url)
-                //             .then((response) => response.json())
-                //             .then((data) => {
-                //                 const summarizedData = summarizeTasks(data);
-
-                //                 const datasets = summarizedData.map((task) => ({
-                //                     x: [
-                //                         new Date(`2023-01-01 ${task.range.split(" - ")[0]}`),
-                //                         new Date(`2023-01-01 ${task.range.split(" - ")[1]}`),
-                //                     ],
-                //                     y: task.name,
-                //                     backgroundColor: `rgba(${Math.floor(Math.random() * 255)}, 
-                //         ${Math.floor(Math.random() * 255)}, 
-                //         ${Math.floor(Math.random() * 255)}, 0.5)`,
-                //                     problem: task.problem,
-                //                     range: task.range,
-                //                 }));
-
-                //                 if (chart) {
-                //                     chart.data.datasets[0].data = datasets;
-                //                     chart.update();
-                //                 } else {
-                //                     chart = new Chart(ganttChartCanvas, {
-                //                         type: "bar",
-                //                         data: {
-                //                             datasets: [{
-                //                                 label: "Summary Schedule",
-                //                                 data: datasets,
-                //                                 borderWidth: 1,
-                //                             }, ],
-                //                         },
-                //                         options: {
-                //                             indexAxis: "y",
-                //                             scales: {
-                //                                 x: {
-                //                                     type: "time",
-                //                                     position: "top",
-                //                                     time: {
-                //                                         unit: "minute",
-                //                                         displayFormats: {
-                //                                             minute: "HH:mm",
-                //                                         },
-                //                                     },
-                //                                     min: "2023-01-01 07:30",
-                //                                     max: "2023-01-01 17:30",
-                //                                     ticks: {
-                //                                         stepSize: 30,
-                //                                     },
-                //                                 },
-                //                                 y: {
-                //                                     type: "category",
-                //                                     reverse: true,
-                //                                 },
-                //                             },
-                //                             plugins: {
-                //                                 tooltip: {
-                //                                     callbacks: {
-                //                                         label: (ctx) => {
-                //                                             return `${ctx.raw.problem} (${ctx.raw.range})`;
-                //                                         },
-                //                                     },
-                //                                 },
-                //                             },
-                //                         },
-                //                     });
-                //                 }
-                //             })
-                //             .catch((err) => console.error(err));
-                //     }
-
-                //     fetchDataAndRenderChart();
-
-                //     filterDateInput.addEventListener("change", function() {
-                //         fetchDataAndRenderChart(this.value, timelineFilterSelect.value);
-                //     });
-
-                //     timelineFilterSelect.addEventListener("change", function() {
-                //         fetchDataAndRenderChart(filterDateInput.value || null, this.value);
-                //     });
-                // });
                 document.addEventListener("DOMContentLoaded", function() {
                     const filterDateInput = document.getElementById("filter-date");
                     const timelineFilterSelect = document.getElementById("timelineFilter");
@@ -1476,16 +1326,18 @@ if (!isset($_SESSION["admin_log"])) {
                     let chart;
                     const colorMap = {}; // Stores unique colors for each task type
 
-                    function generateColor(taskType) { // Use taskType (problem) instead of task name
+                    function generateColor(index) {
+                        const hue = (index * 137.5) % 360; // Ensures distinct hues
+                        return `hsla(${hue}, 90%, 50%, 0.5)`;
+                    }
+
+                    // Stores assigned colors
+                    function getColor(taskType, index) {
                         if (!colorMap[taskType]) {
-                            const randomColor = `rgba(${Math.floor(Math.random() * 255)}, 
-            ${Math.floor(Math.random() * 255)}, 
-            ${Math.floor(Math.random() * 255)}, 0.7)`;
-                            colorMap[taskType] = randomColor;
+                            colorMap[taskType] = generateColor(index);
                         }
                         return colorMap[taskType];
                     }
-
 
                     function summarizeTasks(tasks) {
                         const summary = {};
@@ -1529,14 +1381,15 @@ if (!isset($_SESSION["admin_log"])) {
                             .then((response) => response.json())
                             .then((data) => {
                                 const summarizedData = summarizeTasks(data);
-
-                                const datasets = summarizedData.map((task) => ({
+                                const taskTypes = [...new Set(summarizedData.map(task => task.problem))];
+                                const datasets = summarizedData.map((task, index) => ({
                                     x: [
                                         new Date(`2023-01-01 ${task.range.split(" - ")[0]}`),
                                         new Date(`2023-01-01 ${task.range.split(" - ")[1]}`),
                                     ],
                                     y: task.name,
-                                    backgroundColor: generateColor(task.problem), // Generate a new color map for each filter
+                                    backgroundColor: getColor(task.problem, taskTypes.indexOf(task.problem)), // Assign color based on index
+                                    borderColor: getColor(task.problem, taskTypes.indexOf(task.problem)).replace('0.5', '1'),
                                     problem: task.problem,
                                     range: task.range,
                                 }));
@@ -1556,6 +1409,7 @@ if (!isset($_SESSION["admin_log"])) {
                                         }],
                                     },
                                     options: {
+                                        // Ensures it fills the container
                                         indexAxis: "y",
                                         scales: {
                                             x: {

@@ -30,6 +30,10 @@ if (!isset($_SESSION["admin_log"])) {
   <title>ตรวจสอบ | IT ORDER PRO</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
+    body {
+      background-color: #F9FDFF;
+    }
+
     .ui-autocomplete {
       z-index: 1055 !important;
     }
@@ -94,12 +98,14 @@ dp.depart_name,
 of.offer_name,
 nd.numberDevice, 
 nd.id AS numberDevice_id, 
+nd.is_deleted AS deleted_numberDevice, 
 oi.id AS item_id, 
 oi.list, 
 oi.quality, 
 oi.amount, 
 oi.price, 
-oi.unit
+oi.unit,
+oi.is_deleted AS deleted_item
 FROM 
 orderdata_new AS od
 LEFT JOIN 
@@ -117,9 +123,7 @@ order_numberdevice AS nd ON od.id = nd.order_item
 LEFT JOIN 
 order_items AS oi ON od.id = oi.order_id
 WHERE 
-(od.numberWork = :numberWork) AND
-(nd.is_deleted = 0 OR nd.is_deleted IS NULL)
-AND (oi.is_deleted = 0 OR oi.is_deleted IS NULL)
+(od.numberWork = :numberWork)
 ORDER BY nd.id, oi.id
 ";
 
@@ -136,16 +140,16 @@ ORDER BY nd.id, oi.id
 
     foreach ($results as $row) {
       // Collect unique devices
-      if (!empty($row['numberDevice_id']) && !isset($devices[$row['numberDevice_id']])) {
+      if (!empty($row['numberDevice_id']) && !isset($devices[$row['numberDevice_id']]) && ($row['deleted_numberDevice'] != '1')) {
         $devices[$row['numberDevice_id']] =
           [
             'numberDevice_id' => $row['numberDevice_id'],
-            'numberDevice' => $row['numberDevice']
+            'numberDevice' => $row['numberDevice'],
           ];
       }
 
       // Collect unique items
-      if (!empty($row['item_id']) && !isset($items[$row['item_id']])) {
+      if (!empty($row['item_id']) && !isset($items[$row['item_id']]) && ($row['deleted_item'] != '1')) {
         $items[$row['item_id']] = [
           'item_id' => $row['item_id'],
           'list' => $row['list'],
