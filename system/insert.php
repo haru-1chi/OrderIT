@@ -658,6 +658,9 @@ if (isset($_POST['submit_with_work'])) {
     $prices = $_POST['price'];
     $units = $_POST['unit'];
     // Additional fields from Bantext
+    $date_report = $_POST['date_report'] ?? null;
+    $time_report = $_POST['time_report'] ?? null;
+    $take = $_POST['take'] ?? null;
     $problem = $_POST['problem'] ?? null;
     $description = $_POST['description'] ?? null;
     $withdraw = $_POST['withdraw'] ?? $_POST['withdraw2'] ?? null;
@@ -665,7 +668,7 @@ if (isset($_POST['submit_with_work'])) {
     $repair_count = $_POST['repair_count'] ?? null;
     $device = $_POST['device'] ?? null;
     $deviceName = $_POST['deviceName'] ?? null;
-    $noteTask = $_POST["noteTask"];
+    $noteTask = $_POST["noteTask"] ?? null;
     $sla = $_POST['sla'] ?? null;
     $kpi = $_POST['kpi'] ?? null;
     $close_date = $_POST['close_date'] ?? null;
@@ -809,7 +812,7 @@ if (isset($_POST['submit_with_work'])) {
                 $firstNumberDevice = $firstNumberDevice ?? null;
 
                 $updateSql = "UPDATE data_report 
-                              SET problem = :problem, description = :description, note = :note, withdraw = :withdraw,
+                              SET date_report = :date_report, time_report = :time_report, take = :take, problem = :problem, description = :description, note = :note, withdraw = :withdraw,
                                   number_device = :number_device, device = :device, deviceName = :deviceName, sla = :sla, 
                                   kpi = :kpi, repair_count = :repair_count, close_date = :close_date, department = :department";
 
@@ -819,6 +822,9 @@ if (isset($_POST['submit_with_work'])) {
 
                 $updateSql .= " WHERE id = :id_ref";
                 $updateStmt = $conn->prepare($updateSql);
+                $updateStmt->bindParam(":date_report", $date_report);
+                $updateStmt->bindParam(":time_report", $time_report);
+                $updateStmt->bindParam(":take", $take);
                 $updateStmt->bindParam(":problem", $problem);
                 $updateStmt->bindParam(":description", $description);
                 $updateStmt->bindParam(":note", $noteTask);
@@ -887,6 +893,9 @@ if (isset($_POST['save_with_work'])) {
     $deleted_items = $_POST['deleted_items'];
 
     // Additional fields from Bantext
+    $date_report = $_POST['date_report'] ?? null;
+    $time_report = $_POST['time_report'] ?? null;
+    $take = $_POST['take'] ?? null;
     $problem = $_POST['problem'] ?? null;
     $description = $_POST['description'] ?? null;
     $withdraw = $_POST['withdraw'] ?? $_POST['withdraw2'] ?? null;
@@ -894,7 +903,7 @@ if (isset($_POST['save_with_work'])) {
     $repair_count = $_POST['repair_count'] ?? null;
     $device = $_POST['device'] ?? null;
     $deviceName = $_POST['deviceName'] ?? null;
-    $noteTask = $_POST["noteTask"];
+    $noteTask = $_POST["noteTask"] ?? null;
     $sla = $_POST['sla'] ?? null;
     $kpi = $_POST['kpi'] ?? null;
     $close_date = $_POST['close_date'] ?? null;
@@ -1117,7 +1126,7 @@ if (isset($_POST['save_with_work'])) {
                 }
 
                 $updateSql = "UPDATE data_report 
-                              SET problem = :problem, description = :description, note = :note, withdraw = :withdraw,
+                              SET date_report = :date_report, time_report = :time_report, take = :take,problem = :problem, description = :description, note = :note, withdraw = :withdraw,
                                   number_device = :number_device, device = :device, deviceName = :deviceName, sla = :sla, 
                                   kpi = :kpi, repair_count = :repair_count, close_date = :close_date, department = :department";
 
@@ -1127,6 +1136,9 @@ if (isset($_POST['save_with_work'])) {
 
                 $updateSql .= " WHERE id = :id_ref";
                 $updateStmt = $conn->prepare($updateSql);
+                $updateStmt->bindParam(":date_report", $date_report);
+                $updateStmt->bindParam(":time_report", $time_report);
+                $updateStmt->bindParam(":take", $take);
                 $updateStmt->bindParam(":problem", $problem);
                 $updateStmt->bindParam(":description", $description);
                 $updateStmt->bindParam(":note", $noteTask);
@@ -1764,6 +1776,9 @@ if (isset($_POST['disWork'])) {
 }
 if (isset($_POST['CloseSubmit'])) {
     $id = $_POST['id'];
+    $date_report = $_POST['date_report'];
+    $time_report = $_POST['time_report'];
+    $take = $_POST['take'];
     $problem = $_POST['problem'];
     $description = $_POST['description'];
     $note = $_POST['noteTask'];
@@ -1799,7 +1814,7 @@ if (isset($_POST['CloseSubmit'])) {
 
     try {
         $sql = "UPDATE data_report 
-                SET problem = :problem, 
+                SET date_report = :date_report, time_report = :time_report, take = :take,problem = :problem, 
                     description = :description, 
                     device = :device, 
                     deviceName = :deviceName, 
@@ -1814,6 +1829,9 @@ if (isset($_POST['CloseSubmit'])) {
                 WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":status", $status);
+        $stmt->bindParam(":date_report", $date_report);
+        $stmt->bindParam(":time_report", $time_report);
+        $stmt->bindParam(":take", $take);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":device", $device);
@@ -1874,6 +1892,9 @@ if (isset($_POST['clam'])) {
 }
 if (isset($_POST['Bantext'])) {
     $id = $_POST['id'];
+    $date_report = $_POST['date_report'];
+    $time_report = $_POST['time_report'];
+    $take = $_POST['take'];
     $problem = $_POST['problem'];
     $description = $_POST['description'];
     $withdraw = $_POST['withdraw'];
@@ -1917,7 +1938,8 @@ if (isset($_POST['Bantext'])) {
 
         // Prepare the SQL query dynamically
         $sql = "UPDATE data_report 
-                SET problem = :problem, 
+                SET date_report = :date_report, time_report = :time_report, take = :take,
+                    problem = :problem, 
                     description = :description, 
                     note = :note, 
                     withdraw = :withdraw, 
@@ -1939,6 +1961,9 @@ if (isset($_POST['Bantext'])) {
         $stmt = $conn->prepare($sql);
 
         // Bind common parameters
+        $stmt->bindParam(":date_report", $date_report);
+        $stmt->bindParam(":time_report", $time_report);
+        $stmt->bindParam(":take", $take);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":note", $note);

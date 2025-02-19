@@ -304,20 +304,20 @@ if (!isset($_SESSION["admin_log"])) {
                                                             </div>
                                                             <div class="col-6">
                                                                 <label>วันที่</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= $row['date_report'] ?>" disabled>
+                                                                <input type="date" class="form-control" name="date_report"
+                                                                    value="<?= $row['date_report'] ?>">
                                                             </div>
                                                         </div>
                                                         <div class="row">
                                                             <div class="col-4">
                                                                 <label>เวลาแจ้ง</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= date('H:i', strtotime($row['time_report'])) ?>" disabled>
+                                                                <input type="time" class="form-control" name="time_report"
+                                                                    value="<?= date('H:i', strtotime($row['time_report'])) ?>">
                                                             </div>
                                                             <div class="col-4">
                                                                 <label>เวลารับงาน</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= date('H:i', strtotime($row['take']))  ?>" disabled>
+                                                                <input type="time" class="form-control" name="take"
+                                                                    value="<?= date('H:i', strtotime($row['take']))  ?>">
                                                             </div>
                                                             <div class="col-4">
                                                                 <label>เวลาปิดงาน (ถ้ามี)</label>
@@ -551,46 +551,6 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 </select>
                                                             </div>
                                                         </div>
-
-                                                        <!-- !!!!! -->
-
-                                                        <?php
-                                                        $sql = "SELECT * FROM orderdata";
-                                                        $stmt = $conn->prepare($sql);
-                                                        $stmt->execute();
-                                                        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                                        if (!$result) {
-                                                            $newValueToCheck = "1/67";
-                                                        } else {
-                                                            foreach ($result as $d) {
-                                                                if ($d) {
-                                                                    $selectedValue = $d['numberWork'];
-                                                                    list($numerator, $denominator) = explode('/', $selectedValue);
-
-                                                                    $currentDate = new DateTime();
-
-                                                                    // Set $october10 to be October 10 of the current year
-                                                                    $october1 = new DateTime($currentDate->format('Y') . '-10-10');
-
-                                                                    // Check if the current date is after October 10
-                                                                    if ($currentDate > $october1) {
-                                                                        // Add 1 to the numerator and set the denominator to 1
-                                                                        $newNumerator = intval($numerator) + 1;
-                                                                        //$newDenominator = intval($denominator) + 1; // เริ่มต้นที่ 1 ในปีถัดไป
-                                                                        $newDenominator = intval($denominator);
-                                                                    } else {
-                                                                        // Keep the numerator and increment the denominator
-                                                                        $newNumerator = intval($numerator) + 1;
-                                                                        $newDenominator = intval($denominator);
-                                                                    }
-
-                                                                    $newValueToCheck = $newNumerator . '/' . $newDenominator;
-                                                                }
-                                                            }
-                                                        }
-                                                        ?>
-
                                                     </div>
 
                                                     <div class="modal-footer" style="justify-content: space-between; border: none;">
@@ -859,14 +819,14 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                     });
                                                                                 }
 
-                                                                                $("input[id^='deviceInput']").each(function() {
-                                                                                    const i = $(this).attr("id").replace("deviceInput", ""); // Extract index
+                                                                                $("input[id^='departInput']").each(function() {
+                                                                                    const i = $(this).attr("id").replace("departInput", ""); // Extract index
                                                                                     setupAutocomplete(
                                                                                         "depart",
                                                                                         `#departInput${i}`,
                                                                                         `#departId${i}`,
                                                                                         "autocomplete.php",
-                                                                                        "insertDevice.php",
+                                                                                        "insertDepart.php",
                                                                                         "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
                                                                                     );
                                                                                 });
@@ -1245,14 +1205,14 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 });
                                                                             }
 
-                                                                            $("input[id^='deviceInput']").each(function() {
-                                                                                const i = $(this).attr("id").replace("deviceInput", ""); // Extract index
+                                                                            $("input[id^='departInput']").each(function() {
+                                                                                const i = $(this).attr("id").replace("departInput", ""); // Extract index
                                                                                 setupAutocomplete(
                                                                                     "depart",
                                                                                     `#departInput${i}`,
                                                                                     `#departId${i}`,
                                                                                     "autocomplete.php",
-                                                                                    "insertDevice.php",
+                                                                                    "insertDepart.php",
                                                                                     "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
                                                                                 );
                                                                             });
@@ -1395,24 +1355,16 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 </div>
                                                             <?php }
                                                             ?>
-
                                                         </div>
                                                     </div>
-
-
                                                 </div>
-
-
                                             </div>
-
                                         </div>
-
             </div>
             </form>
             </td>
             </tr>
         <?php
-
                         }
         ?>
         </tbody>
@@ -1422,47 +1374,174 @@ if (!isset($_SESSION["admin_log"])) {
     </div>
 
     <div class="container-fluid">
+        <?php
+        if (isset($_POST['checkDate_status_6'])) {
+            // Get values from form
+            $dateStartB = $_POST['dateStart_unfilled'];
+            $dateEndB = $_POST['dateEnd_unfilled'];
+
+            // Convert to Buddhist Year
+            $yearStartB = date("Y", strtotime($dateStartB)) + 543;
+            $yearEndB = date("Y", strtotime($dateEndB)) + 543;
+
+            $dateStart_buddhistB = $yearStartB . "-" . date("m-d", strtotime($dateStartB));
+            $dateEnd_buddhistB = $yearEndB . "-" . date("m-d", strtotime($dateEndB));
+
+            $sql = "
+SELECT * 
+FROM (
+    SELECT dp.*, dt.depart_name, 
+        SEC_TO_TIME(
+            CASE
+                WHEN sla LIKE 'คอมพิวเตอร์ ใช้งานไม่ได้%' THEN 30 * 60
+                WHEN sla LIKE 'เครื่องพิมพ์ ใช้งานไม่ได้ - 30 นาที%' THEN 30 * 60
+                WHEN sla LIKE 'PMK ใช้งานไม่ได้%' THEN 15 * 60
+                WHEN sla LIKE 'Internet ใช้งานไม่ได้%' THEN 20 * 60
+                ELSE 0
+            END
+        ) AS use_time, 
+        SEC_TO_TIME(ABS(TIME_TO_SEC(TIMEDIFF(close_date, take)))) AS time_range, 
+        SEC_TO_TIME(
+            GREATEST(
+                ABS(TIME_TO_SEC(TIMEDIFF(close_date, take))) - 
+                CASE
+                    WHEN sla LIKE 'คอมพิวเตอร์ ใช้งานไม่ได้%' THEN 30 * 60
+                    WHEN sla LIKE 'เครื่องพิมพ์ ใช้งานไม่ได้ - 30 นาที%' THEN 30 * 60
+                    WHEN sla LIKE 'PMK ใช้งานไม่ได้%' THEN 15 * 60
+                    WHEN sla LIKE 'Internet ใช้งานไม่ได้%' THEN 20 * 60
+                    ELSE 0
+                END, 
+                0
+            )
+        ) AS over_time 
+    FROM data_report AS dp
+    LEFT JOIN depart AS dt ON dp.department = dt.depart_id
+    WHERE dp.username = :username 
+      AND sla IS NOT NULL
+      AND sla != ''
+      AND sla != 'ไม่ใช่'
+      AND note = ''
+      AND dp.date_report BETWEEN :dateStart AND :dateEnd
+        AND GREATEST(
+ABS(TIME_TO_SEC(TIMEDIFF(close_date, take))) - 
+CASE
+    WHEN sla LIKE 'คอมพิวเตอร์ ใช้งานไม่ได้%' THEN 30 * 60
+    WHEN sla LIKE 'เครื่องพิมพ์ ใช้งานไม่ได้ - 30 นาที%' THEN 30 * 60
+    WHEN sla LIKE 'PMK ใช้งานไม่ได้%' THEN 15 * 60
+    WHEN sla LIKE 'Internet ใช้งานไม่ได้%' THEN 20 * 60
+    ELSE 0
+END, 
+0
+) > 0
+
+    UNION 
+
+    SELECT dp.*, dt.depart_name, 
+        NULL AS use_time, 
+        NULL AS time_range, 
+        NULL AS over_time 
+    FROM data_report AS dp
+    LEFT JOIN depart AS dt ON dp.department = dt.depart_id
+    WHERE dp.username = :username 
+      AND dp.status = 6 
+      AND dp.date_report BETWEEN :dateStart AND :dateEnd
+) AS combined_result
+GROUP BY id
+ORDER BY id DESC;
+";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(":username", $admin);
+            $stmt->bindParam(":dateStart", $dateStart_buddhistB);
+            $stmt->bindParam(":dateEnd", $dateEnd_buddhistB);
+        } else {
+            $sql = "
+SELECT * 
+FROM (
+    SELECT dp.*, dt.depart_name, 
+        SEC_TO_TIME(
+            CASE
+                WHEN sla LIKE 'คอมพิวเตอร์ ใช้งานไม่ได้%' THEN 30 * 60
+                WHEN sla LIKE 'เครื่องพิมพ์ ใช้งานไม่ได้ - 30 นาที%' THEN 30 * 60
+                WHEN sla LIKE 'PMK ใช้งานไม่ได้%' THEN 15 * 60
+                WHEN sla LIKE 'Internet ใช้งานไม่ได้%' THEN 20 * 60
+                ELSE 0
+            END
+        ) AS use_time, 
+        SEC_TO_TIME(ABS(TIME_TO_SEC(TIMEDIFF(close_date, take)))) AS time_range, 
+        SEC_TO_TIME(
+            GREATEST(
+                ABS(TIME_TO_SEC(TIMEDIFF(close_date, take))) - 
+                CASE
+                    WHEN sla LIKE 'คอมพิวเตอร์ ใช้งานไม่ได้%' THEN 30 * 60
+                    WHEN sla LIKE 'เครื่องพิมพ์ ใช้งานไม่ได้ - 30 นาที%' THEN 30 * 60
+                    WHEN sla LIKE 'PMK ใช้งานไม่ได้%' THEN 15 * 60
+                    WHEN sla LIKE 'Internet ใช้งานไม่ได้%' THEN 20 * 60
+                    ELSE 0
+                END, 
+                0
+            )
+        ) AS over_time 
+    FROM data_report AS dp
+    LEFT JOIN depart AS dt ON dp.department = dt.depart_id
+    WHERE dp.username = :username 
+      AND sla IS NOT NULL
+      AND sla != ''
+      AND sla != 'ไม่ใช่'
+      AND note = ''
+        AND GREATEST(
+ABS(TIME_TO_SEC(TIMEDIFF(close_date, take))) - 
+CASE
+    WHEN sla LIKE 'คอมพิวเตอร์ ใช้งานไม่ได้%' THEN 30 * 60
+    WHEN sla LIKE 'เครื่องพิมพ์ ใช้งานไม่ได้ - 30 นาที%' THEN 30 * 60
+    WHEN sla LIKE 'PMK ใช้งานไม่ได้%' THEN 15 * 60
+    WHEN sla LIKE 'Internet ใช้งานไม่ได้%' THEN 20 * 60
+    ELSE 0
+END, 
+0
+) > 0
+
+    UNION 
+
+    SELECT dp.*, dt.depart_name, 
+        NULL AS use_time, 
+        NULL AS time_range, 
+        NULL AS over_time 
+    FROM data_report AS dp
+    LEFT JOIN depart AS dt ON dp.department = dt.depart_id
+    WHERE dp.username = :username 
+      AND dp.status = 6 
+) AS combined_result
+GROUP BY id
+ORDER BY id DESC;
+";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(":username", $admin);
+        }
+
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $hasOverTime = false;
+        foreach ($result as $row) {
+            if (!empty($row['over_time']) && $row['over_time'] !== '00:00:00') {
+                $hasOverTime = true;
+                break;
+            }
+        }
+        ?>
+
         <h1 class="mt-5">งานที่ยังไม่ได้กรอกรายละเอียด</h1>
+
+        <?php if ($hasOverTime): ?>
+            <div class="alert alert-danger" role="alert">
+                คุณมีงานที่เกิน SLA แต่ยังไม่ได้ระบุหมายเหตุ!
+            </div>
+        <?php endif; ?>
+
         <div class="card rounded-4 shadow-sm p-3 mb-5 col-sm-12 col-lg-12 col-md-12">
             <div class="table-responsive">
-                <?php
-                if (isset($_POST['checkDate_status_6'])) {
-                    // Get values from form
-                    $dateStartB = $_POST['dateStart_unfilled'];
-                    $dateEndB = $_POST['dateEnd_unfilled'];
-
-                    // แปลงวันที่เริ่มต้นเป็น พ.ศ.
-                    $yearStartB = date("Y", strtotime($dateStartB)) + 543;
-                    $yearEndB = date("Y", strtotime($dateEndB)) + 543;
-
-                    $dateStart_buddhistB = $yearStartB . "-" . date("m-d", strtotime($dateStartB));
-                    $dateEnd_buddhistB = $yearEndB . "-" . date("m-d", strtotime($dateEndB));
-
-                    $sql = "SELECT dp.*, dt.depart_name 
-                        FROM data_report AS dp
-                        LEFT JOIN depart AS dt ON dp.department = dt.depart_id
-                        WHERE dp.username = :username 
-                        AND status = 6
-                        AND date_report BETWEEN :dateStart AND :dateEnd
-                        ORDER BY dp.id DESC";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bindParam(":username", $admin);
-                    $stmt->bindParam(":dateStart", $dateStart_buddhistB);
-                    $stmt->bindParam(":dateEnd", $dateEnd_buddhistB);
-                } else {
-                    $dateEndB = date('Y-m-d');
-                    $sql = "SELECT dp.*, dt.depart_name 
-        FROM data_report AS dp
-        LEFT JOIN depart AS dt ON dp.department = dt.depart_id
-        WHERE dp.username = :username 
-        AND dp.status = 6
-        ORDER BY dp.id DESC";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bindParam(":username", $admin);
-                }
-                $stmt->execute();
-                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                ?>
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <form method="post" action="export.php">
@@ -1538,49 +1617,62 @@ if (!isset($_SESSION["admin_log"])) {
                                 <td class="text-start"><?= $row['tel'] ?></td>
                                 <td class="text-start"><?= $closeTimeFormatted ?></td>
                                 <?php
-                                if ($row['status'] == 1) {
-                                    $statusText = "ยังไม่ได้ดำเนินการ";
-                                } else if ($row['status'] == 2) {
-                                    $statusText = "กำลังดำเนินการ";
-                                } else if ($row['status'] == 3) {
-                                    $statusText = "รออะไหล่" . ' ' . $row['withdraw'];
-                                } else if ($row['status'] == 4) {
-                                    $statusText = "เสร็จสิ้น" . ' ' . $row['withdraw'];
-                                } else if ($row['status'] == 5) {
-                                    $statusText = "ส่งซ่อม";
-                                } else if ($row['status'] == 6) {
-                                    $statusText = "รอกรอกรายละเอียด";
+
+                                if (!empty($row['over_time']) && $row['over_time'] !== "00:00:00") {
+                                    $statusText = "เกิน SLA";
+                                    $buttonColor = "red";
+                                } else {
+
+                                    if ($row['status'] == 1) {
+                                        $statusText = "ยังไม่ได้ดำเนินการ";
+                                    } else if ($row['status'] == 2) {
+                                        $statusText = "กำลังดำเนินการ";
+                                    } else if ($row['status'] == 3) {
+                                        $statusText = "รออะไหล่" . ' ' . $row['withdraw'];
+                                    } else if ($row['status'] == 4) {
+                                        $statusText = "เสร็จสิ้น" . ' ' . $row['withdraw'];
+                                    } else if ($row['status'] == 5) {
+                                        $statusText = "ส่งซ่อม";
+                                    } else if ($row['status'] == 6) {
+                                        $statusText = "รอกรอกรายละเอียด";
+                                    }
+
+                                    // Default button colors based on status
+                                    switch ($row['status']) {
+                                        case 1:
+                                            $buttonColor = "orange";
+                                            break;
+                                        case 2:
+                                            $buttonColor = "orange";
+                                            break;
+                                        case 3:
+                                            $buttonColor = "blue";
+                                            break;
+                                        case 4:
+                                            $buttonColor = "green";
+                                            break;
+                                        case 5:
+                                            $buttonColor = "#D673D3";
+                                            break;
+                                        case 6:
+                                            $buttonColor = "green";
+                                            break;
+                                        default:
+                                            $buttonColor = "gray";
+                                            break;
+                                    }
                                 }
                                 ?>
 
 
 
                                 <td>
-                                    <?php if ($row['status'] == 1) { ?>
-                                        <button type="submit" name="inTime"
-                                            style=" background-color: orange;color:white;border: 1px solid orange"
-                                            class="btn mb-3 btn-primary">เริ่มดำเนินการ</button>
-                                    <?php } else if ($row['status'] == 2) { ?>
-                                        <button type="button"
-                                            style="background-color: orange;color:white;border: 1px solid orange"
-                                            class="btn mb-3 btn-primary" onclick="toggleModal('#workflowModalUncomplete<?= $row['id'] ?>')"><?= $statusText ?></button>
-                                    <?php } else if ($row['status'] == 3) { ?>
-                                        <button type="button"
-                                            style=" background-color: blue;color:white;border: 1px solid orange"
-                                            class="btn mb-3 btn-primary" onclick="toggleModal('#workflowModalUncomplete<?= $row['id'] ?>')"><?= $statusText ?></button>
-                                    <?php } else if ($row['status'] == 4) { ?>
-                                        <button type="button"
-                                            style=" background-color: green;color:white;border: 1px solid orange"
-                                            class="btn mb-3 btn-primary" onclick="toggleModal('#workflowModalUncomplete<?= $row['id'] ?>')"><?= $statusText ?></button>
-                                    <?php } else if ($row['status'] == 5) { ?>
-                                        <button type="button"
-                                            style=" background-color: #D673D3;color:white;border: 1px solid orange"
-                                            class="btn mb-3 btn-primary" onclick="toggleModal('#workflowModalUncomplete<?= $row['id'] ?>')"><?= $statusText ?></button>
-                                    <?php } else if ($row['status'] == 6) { ?>
-                                        <button type="button"
-                                            style=" background-color: green;color:white;border: 1px solid orange"
-                                            class="btn mb-3 btn-primary" onclick="toggleModal('#workflowModalUncomplete<?= $row['id'] ?>')"><?= $statusText ?></button>
-                                    <?php } ?>
+                                    <button type="button"
+                                        style="width: 80%; background-color: <?= $buttonColor ?>; color: white; border: 1px solid <?= $buttonColor ?>;"
+                                        class="btn mb-3 btn-primary"
+                                        onclick="toggleModal('#workflowModalUncomplete<?= $row['id'] ?>')">
+                                        <?= $statusText ?>
+                                    </button>
 
                                     <form action="system/insert.php" method="post">
                                         <input type="hidden" name="id" value="<?= $row['id'] ?>">
@@ -1603,20 +1695,20 @@ if (!isset($_SESSION["admin_log"])) {
                                                             </div>
                                                             <div class="col-6">
                                                                 <label>วันที่</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= $row['date_report'] ?>" disabled>
+                                                                <input type="date" class="form-control" name="date_report"
+                                                                    value="<?= $row['date_report'] ?>">
                                                             </div>
                                                         </div>
                                                         <div class="row">
                                                             <div class="col-4">
                                                                 <label>เวลาแจ้ง</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= date('H:i', strtotime($row['time_report'])) ?>" disabled>
+                                                                <input type="time" class="form-control" name="time_report"
+                                                                    value="<?= date('H:i', strtotime($row['time_report'])) ?>">
                                                             </div>
                                                             <div class="col-4">
                                                                 <label>เวลารับงาน</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= date('H:i', strtotime($row['take']))  ?>" disabled>
+                                                                <input type="time" class="form-control" name="take"
+                                                                    value="<?= date('H:i', strtotime($row['take']))  ?>">
                                                             </div>
                                                             <div class="col-4">
                                                                 <label>เวลาปิดงาน (ถ้ามี)</label>
@@ -1733,11 +1825,18 @@ if (!isset($_SESSION["admin_log"])) {
                                                         </div>
                                                         <div class="row">
                                                             <div class="col-12">
-                                                                <label>หมายเหตุ</label>
-                                                                <input value="<?= $row['note'] ?>" type="text"
+                                                                <?php if (!empty($row['over_time']) && $row['over_time'] !== '00:00:00'): ?>
+                                                                    <label class="text-danger">*กรุณากรอกหมายเหตุที่เกิน SLA</label>
+                                                                <?php else: ?>
+                                                                    <label>หมายเหตุ</label>
+                                                                <?php endif; ?>
+
+                                                                <input value="<?= htmlspecialchars($row['note']) ?>" type="text"
                                                                     class="form-control" name="noteTask">
                                                             </div>
                                                         </div>
+
+
 
                                                         <div class="row">
                                                             <div class="col-6">
@@ -1793,6 +1892,27 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     }
                                                                     ?>
                                                                 </select>
+                                                                <?php
+                                                                if (!empty($row['over_time']) && $row['over_time'] !== '00:00:00') {
+                                                                    // Convert over_time to hours and minutes
+                                                                    list($hours, $minutes, $seconds) = explode(":", $row['over_time']);
+                                                                    $hours = (int) $hours; // Convert to integer to remove leading zeros
+                                                                    $minutes = (int) $minutes;
+
+                                                                    // Format output
+                                                                    $formattedOverTime = "";
+                                                                    if ($hours > 0) {
+                                                                        $formattedOverTime .= "$hours ชั่วโมง ";
+                                                                    }
+                                                                    if ($minutes > 0) {
+                                                                        $formattedOverTime .= "$minutes นาที";
+                                                                    }
+
+                                                                    // Display formatted text
+                                                                    echo "<p style='color: red;'>เกินเวลา SLA ไป - $formattedOverTime</p>";
+                                                                }
+                                                                ?>
+
                                                             </div>
                                                         </div>
 
@@ -2109,14 +2229,14 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                     });
                                                                                 }
 
-                                                                                $("input[id^='deviceInput']").each(function() {
-                                                                                    const i = $(this).attr("id").replace("deviceInput", ""); // Extract index
+                                                                                $("input[id^='departInput']").each(function() {
+                                                                                    const i = $(this).attr("id").replace("departInput", ""); // Extract index
                                                                                     setupAutocomplete(
                                                                                         "depart",
                                                                                         `#departInput${i}`,
                                                                                         `#departId${i}`,
                                                                                         "autocomplete.php",
-                                                                                        "insertDevice.php",
+                                                                                        "insertDepart.php",
                                                                                         "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
                                                                                     );
                                                                                 });
@@ -2493,14 +2613,14 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 });
                                                                             }
 
-                                                                            $("input[id^='deviceInput']").each(function() {
-                                                                                const i = $(this).attr("id").replace("deviceInput", ""); // Extract index
+                                                                            $("input[id^='departInput']").each(function() {
+                                                                                const i = $(this).attr("id").replace("departInput", ""); // Extract index
                                                                                 setupAutocomplete(
                                                                                     "depart",
                                                                                     `#departInput${i}`,
                                                                                     `#departId${i}`,
                                                                                     "autocomplete.php",
-                                                                                    "insertDevice.php",
+                                                                                    "insertDepart.php",
                                                                                     "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
                                                                                 );
                                                                             });
