@@ -114,7 +114,7 @@ function navbar()
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
                             <li><a class="dropdown-item" href="../repair/borrow.php">ยืม</a></li>
-                            <li><a class="dropdown-item" href="../repair/admin.php">เพิ่มข้อมูลคอมพิวเตอร์ </a></li>
+                            <li><a class="dropdown-item" href="../repair/admin.php">สำหรับเจ้าหน้าที่</a></li>
                         </ul>
                     </div>
                     <li class="nav-item ms-5">

@@ -2,6 +2,14 @@
 session_start();
 require_once '../config/db.php';
 
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+
+// echo '<pre>';
+// print_r($_POST);
+// echo '</pre>';
+// exit;
+
 if (isset($_POST['addUsers'])) { // เพิ่ม Admin
     $username = $_POST['username'];
     $password = $_POST['password'];
