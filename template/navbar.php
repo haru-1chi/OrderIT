@@ -1,6 +1,12 @@
 <?php
-function navbar()
-{ ?>
+function navbar($report_count = null)
+{
+
+    if ($report_count === null) {
+        $report_count = $_SESSION['report_count'] ?? 0;
+    }
+
+?>
     <style>
         /* เพิ่มสไตล์ CSS เพื่อปรับแต่ง Navbar */
         .navbar {
@@ -65,12 +71,13 @@ function navbar()
             </button>
             <div class="collapse navbar-collapse align-items-center" id="navbarSupportedContent">
 
-
-
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     <div class="dropdown">
                         <button class="btn dropdown-toggle" type="button" id="dropdownMenu2" data-bs-toggle="dropdown" aria-expanded="false" style="color: #fff; margin-top: 1px">
                             Dashboard
+                            <?php if ($report_count > 0): ?>
+                                <span class="badge bg-danger"><?= $report_count ?></span>
+                            <?php endif; ?>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
                             <li><a class="dropdown-item" href="dashboard.php">Dashboard</a></li>

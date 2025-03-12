@@ -46,7 +46,12 @@ LEFT JOIN device AS dv ON od.refDevice = dv.device_id
 LEFT JOIN order_numberdevice AS nd ON od.id = nd.order_item
 LEFT JOIN order_items AS oi ON od.id = oi.order_id
 LEFT JOIN device_models AS dm ON oi.list = dm.models_id
-WHERE nd.numberDevice IN ($placeholders)";
+WHERE od.numberWork IN (
+    SELECT DISTINCT od2.numberWork
+    FROM orderdata_new AS od2
+    LEFT JOIN order_numberdevice AS nd2 ON od2.id = nd2.order_item
+    WHERE nd2.numberDevice IN ($placeholders)
+)";
 
     $stmt = $conn->prepare($sql);
     $stmt->execute($deviceNumbers);
@@ -59,12 +64,12 @@ WHERE nd.numberDevice IN ($placeholders)";
         foreach ($results as $row) {
             $orderId = $row['order_id'];
             $itemId = $row['item_id'];
-
+            $numberDevice = $row['numberDevice'];
+            
             // Create order structure if it doesn't exist
             if (!isset($orders[$orderId])) {
                 $orders[$orderId] = [
                     'numberWork' => $row['numberWork'],
-                    'numberDevice' => $row['numberDevice'],
                     'dateWithdraw' => $row['dateWithdraw'],
                     'note' => $row['note'],
                     'withdraw_name' => $row['withdraw_name'],
@@ -72,7 +77,9 @@ WHERE nd.numberDevice IN ($placeholders)";
                     'device_name' => $row['device_name'],
                     'depart_name' => $row['depart_name'],
                     'offer_name' => $row['offer_name'],
-                    'items' => []
+                    'items' => [],
+                    // 'numberDevice' => $row['numberDevice'],
+                    'numberDevice' => []
                 ];
             }
 
@@ -86,6 +93,10 @@ WHERE nd.numberDevice IN ($placeholders)";
                     'total' => $row['price'] * $row['amount'],
                     'unit' => $row['unit']
                 ];
+            }
+
+            if (!in_array($numberDevice, $orders[$orderId]['numberDevice'])) {
+                $orders[$orderId]['numberDevice'][] = $numberDevice;
             }
         }
 

@@ -2,13 +2,13 @@
 session_start();
 require_once '../config/db.php';
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
 
-echo '<pre>';
-print_r($_POST);
-echo '</pre>';
-exit;
+// echo '<pre>';
+// print_r($_POST);
+// echo '</pre>';
+// exit;
 
 if (isset($_POST['addUsers'])) { // เพิ่ม Admin
     $username = $_POST['username'];
@@ -367,7 +367,7 @@ function generateNumberWork($conn)
 }
 
 // ตรวจสอบว่ามีการส่งข้อมูลมาจากฟอร์มหรือไม่
-if (isset($_POST['submit'])) {
+if (isset($_POST['submitWithdraw'])) {
     // รับข้อมูลจากฟอร์ม
     $numberWork = generateNumberWork($conn);
     $dateWithdraw = $_POST["dateWithdraw"];
@@ -1653,6 +1653,12 @@ if (isset($_POST['takeaway'])) { // เพิ่ม รายการอุป�
         $stmt->bindParam(":id", $id);
 
         if ($stmt->execute()) {
+            $sql = "SELECT COUNT(*) as count FROM data_report WHERE `status` = 0";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $_SESSION['report_count'] = $row['count'] ?? 0;
+
             $_SESSION["success"] = "รับงานเรียบร้อยแล้ว";
             header("location: ../myjob.php");
         } else {

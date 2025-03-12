@@ -43,40 +43,6 @@ if (!isset($_SESSION["admin_log"])) {
       margin-left: auto;
       margin-right: auto;
     }
-
-    .modal-container {
-      background-color: rgba(0, 0, 0, 0.5);
-    }
-
-    .overlay-modal {
-      width: 600px;
-      height: fit-content;
-    }
-
-
-    @keyframes shrinkExpand {
-
-      0%,
-      100% {
-        transform: scale(1);
-      }
-
-      25% {
-        transform: scale(0.95);
-      }
-
-      50% {
-        transform: scale(1.05);
-      }
-
-      75% {
-        transform: scale(0.98);
-      }
-    }
-
-    .giggle {
-      animation: shrinkExpand 0.3s ease-in-out;
-    }
   </style>
 </head>
 
@@ -158,6 +124,7 @@ LEFT JOIN
 order_items AS oi ON od.id = oi.order_id
 WHERE 
 (od.numberWork = :numberWork)
+
 ORDER BY nd.id, oi.id
 ";
 
@@ -899,7 +866,7 @@ ORDER BY os.status;
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body p-3">
-          <form id="formRequisitionModal" action="system/insert.php" method="post">
+          <form action="system/insert.php" method="post">
             <div class="row">
               <div class="col-sm-6">
                 <div class="mb-3">
@@ -1051,12 +1018,8 @@ ORDER BY os.status;
                       $(inputId).on("blur", function() {
                         if (inputChanged && !alertShown) {
                           const userInput = $(this).val().trim();
-                          const hiddenValue = $(hiddenInputId).val();
                           if (userInput === "") return;
-                          if (hiddenValue !== "") {
-                            inputChanged = false;
-                            return;
-                          }
+
                           let found = false;
                           $(this).autocomplete("instance").menu.element.find("div").each(function() {
                             if ($(this).text() === userInput) {
@@ -1244,98 +1207,8 @@ ORDER BY os.status;
                 <button type="button" id="add-row-modal" class="btn btn-success">+ เพิ่มแถว</button>
               </div>
 
-              <input type="hidden" name="submitWithdraw" value="1">
-
               <div class="w-100 d-flex justify-content-center">
-                <button data-id="submit-modal" type="submit" name="submitWithdraw" class="w-100 btn btn-primary mt-3">บันทึกข้อมูล</button>
-              </div>
-            </div>
-
-            <!-- -------------------------------overlayModal------------------------------------- -->
-            <div id="overlayModalTask-modal" class="modal modal-container" style="display: none;">
-              <div class="p-5 d-flex justify-content-center gap-4">
-                <div class="modal-content overlay-modal">
-                  <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">พบรายการที่เคยเบิกไปแล้ว</h1>
-                    <button type="button" class="btn-close"
-                      onclick="toggleModal('#overlayModalTask-modal')">
-                    </button>
-
-                  </div>
-                  <div class="modal-body">
-                    <div class="row">
-                      <h5>หมายเลขครุภัณฑ์ <strong class="text-danger" id="duplicateAssetNumber"></strong> เคยเบิกไปแล้ว</h5>
-
-                      <div class="col-sm-12">
-                        <div class="btn-group my-2" role="group" aria-label="Order toggle button group" id="orderRadioGroup"></div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-3">
-                          <label id="basic-addon1">วันที่ออกใบเบิก</label>
-                          <input type="date" name="dateWithdraw" class="form-control" disabled>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-2">
-                          <label id="basic-addon1">หมายเลขครุภัณฑ์</label>
-
-                          <div class="d-flex device-number-row">
-                            <input type="text" class="form-control" disabled>
-                          </div>
-
-                        </div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-2">
-                          <label for="inputGroupSelect01">รายการอุปกรณ์</label>
-                          <input type="text" class="form-control" name="device_name" disabled>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-2">
-                          <label for="departInput">หน่วยงาน</label>
-                          <input type="text" class="form-control" name="depart_name" disabled>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-12">
-                        <div class="mb-2">
-                          <label for="inputGroupSelect01">หมายเหตุ
-                          </label>
-                          <input type="text" name="note" class="form-control" disabled>
-                        </div>
-                      </div>
-
-                      <div class="d-flex justify-content-end align-items-center mb-2">
-                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-sub" class="fs-4 fw-bold text-primary">0</span> บาท</p>
-                      </div>
-                      <table id="pdf" style="width: 100%;" class="table mb-4">
-                        <thead class="table-primary">
-                          <tr class="text-center">
-                            <th scope="col" style="text-align:center;">ลำดับ</th>
-                            <th scope="col" style="text-align:center;">รายการ</th>
-                            <th scope="col" style="text-align:center;">จำนวน</th>
-                            <th scope="col" style="text-align:center;">ราคา</th>
-                            <th scope="col" style="text-align:center;">รวม</th>
-                          </tr>
-                        </thead>
-
-                        <tbody id="table-body-sub">
-                        </tbody>
-                      </table>
-                      <div class="col-sm-6">
-                        <button type="button" class="w-100 btn btn-secondary" onclick="toggleModal('#overlayModalTask-modal')">ย้อนกลับ</button>
-                      </div>
-                      <div class="col-sm-6">
-                        <button type="submit" class="w-100 btn btn-success">ยืนยันที่จะเบิก</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <button type="submit" name="submit" class="w-100 btn btn-primary mt-3">บันทึกข้อมูล</button>
               </div>
             </div>
           </form>
@@ -1353,7 +1226,7 @@ ORDER BY os.status;
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body p-3">
-          <form id="formCopiedRequisitionModal" action="system/insert.php" method="post">
+          <form action="system/insert.php" method="post">
             <div class="row">
               <?php
               // Check if records exist in `orderdata_new` for the current `id`
@@ -1539,12 +1412,8 @@ ORDER BY os.status;
                         $(inputId).on("blur", function() {
                           if (inputChanged && !alertShown) {
                             const userInput = $(this).val().trim();
-                            const hiddenValue = $(hiddenInputId).val();
                             if (userInput === "") return;
-                            if (hiddenValue !== "") {
-                              inputChanged = false;
-                              return;
-                            }
+
                             let found = false;
                             $(this).autocomplete("instance").menu.element.find("div").each(function() {
                               if ($(this).text() === userInput) {
@@ -1738,107 +1607,16 @@ ORDER BY os.status;
                   <button type="button" id="add-row-copied" class="btn btn-success">+ เพิ่มแถว</button>
                 </div>
 
-                <input type="hidden" name="submitWithdraw" value="1">
-
                 <div class="w-100 d-flex justify-content-center">
-                  <button data-id="submit-copied" type="submit" name="submitWithdraw" class="w-100 btn btn-primary mt-3">บันทึกข้อมูล</button>
+                  <button type="submit" name="submit" class="w-100 btn btn-primary mt-3">บันทึกข้อมูล</button>
                 </div>
               <?php } ?>
-            </div>
-            <!-- -------------------------------overlayModal------------------------------------- -->
-            <div id="overlayModalTask-copied" class="modal modal-container" style="display: none;">
-              <div class="p-5 d-flex justify-content-center gap-4">
-                <div class="modal-content overlay-modal">
-                  <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">พบรายการที่เคยเบิกไปแล้ว</h1>
-                    <button type="button" class="btn-close"
-                      onclick="toggleModal('#overlayModalTask-copied')">
-                    </button>
-
-                  </div>
-                  <div class="modal-body">
-                    <div class="row">
-                      <h5>หมายเลขครุภัณฑ์ <strong class="text-danger" id="duplicateAssetNumber"></strong> เคยเบิกไปแล้ว</h5>
-
-                      <div class="col-sm-12">
-                        <div class="btn-group my-2" role="group" aria-label="Order toggle button group" id="orderRadioGroup"></div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-3">
-                          <label id="basic-addon1">วันที่ออกใบเบิก</label>
-                          <input type="date" name="dateWithdraw" class="form-control" disabled>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-2">
-                          <label id="basic-addon1">หมายเลขครุภัณฑ์</label>
-
-                          <div class="d-flex device-number-row">
-                            <input type="text" class="form-control" disabled>
-                          </div>
-
-                        </div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-2">
-                          <label for="inputGroupSelect01">รายการอุปกรณ์</label>
-                          <input type="text" class="form-control" name="device_name" disabled>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-2">
-                          <label for="departInput">หน่วยงาน</label>
-                          <input type="text" class="form-control" name="depart_name" disabled>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-12">
-                        <div class="mb-2">
-                          <label for="inputGroupSelect01">หมายเหตุ
-                          </label>
-                          <input type="text" name="note" class="form-control" disabled>
-                        </div>
-                      </div>
-
-                      <div class="d-flex justify-content-end align-items-center mb-2">
-                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-sub" class="fs-4 fw-bold text-primary">0</span> บาท</p>
-                      </div>
-                      <table id="pdf" style="width: 100%;" class="table mb-4">
-                        <thead class="table-primary">
-                          <tr class="text-center">
-                            <th scope="col" style="text-align:center;">ลำดับ</th>
-                            <th scope="col" style="text-align:center;">รายการ</th>
-                            <th scope="col" style="text-align:center;">จำนวน</th>
-                            <th scope="col" style="text-align:center;">ราคา</th>
-                            <th scope="col" style="text-align:center;">รวม</th>
-                          </tr>
-                        </thead>
-
-                        <tbody id="table-body-sub">
-                        </tbody>
-                      </table>
-                      <div class="col-sm-6">
-                        <button type="button" class="w-100 btn btn-secondary" onclick="toggleModal('#overlayModalTask-copied')">ย้อนกลับ</button>
-                      </div>
-                      <div class="col-sm-6">
-                        <button type="submit" class="w-100 btn btn-success">ยืนยันที่จะเบิก</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </form>
         </div>
       </div>
     </div>
   </div>
-
-
 
   <script>
     //ฟังก์ชั่น sumTotal ที่ทำงานเฉพาะ main
@@ -2224,7 +2002,6 @@ ORDER BY os.status;
       // Check if the entered value is not in autocomplete
     });
   </script>
-
   <script>
     document.querySelectorAll('.confirm-btn, .cancel-btn').forEach(button => {
       button.addEventListener('click', function() {
@@ -2269,185 +2046,6 @@ ORDER BY os.status;
         ('0' + (currentDate.getMonth() + 1)).slice(-2) + '-' +
         ('0' + currentDate.getDate()).slice(-2);
     });
-  </script>
-  <script>
-    function toggleModal(modalId) {
-      const modal = document.querySelector(modalId);
-      if (modal) {
-        modal.style.display = modal.style.display === "none" || modal.style.display === "" ? "block" : "none";
-      } else {
-        console.error("Modal not found:", modalId);
-      }
-    }
-
-    document.addEventListener('click', async function(event) {
-      if (event.target.matches('[name="submitWithdraw"]')) {
-        event.preventDefault();
-
-        // Get the form and device number inputs
-        const button = event.target;
-        const form = button.closest('form');
-        console.log(form)
-        const deviceNumberInputs = form.querySelectorAll('input[name^="device_numbers"]');
-
-        let duplicateFound = false;
-        let deviceNumbers = [];
-
-        deviceNumberInputs.forEach(input => {
-          const deviceNumber = input.value.trim();
-          if (deviceNumber && deviceNumber !== '-') {
-            deviceNumbers.push(deviceNumber);
-          }
-        });
-
-        try {
-          // AJAX request to fetch duplicate data
-          const response = await fetch('check_duplicate.php', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `number_device=${encodeURIComponent(JSON.stringify(deviceNumbers))}`
-          });
-
-          const result = await response.json();
-          console.log(result)
-          if (result.found) {
-            duplicateFound = true;
-
-            const getModalId = event.target.getAttribute('data-id');
-            const status = getModalId.split('-')[1];
-            // Show modal and populate fields dynamically
-            const modal = document.querySelector(`#overlayModalTask-${status}`);
-            modal.style.display = 'block';
-            console.log('modal', modal)
-            const cardModal = modal.querySelector('.modal-content.overlay-modal');
-            cardModal.classList.add('giggle');
-            setTimeout(() => {
-              cardModal.classList.remove('giggle');
-            }, 300);
-
-            modal.querySelector('#duplicateAssetNumber').textContent = deviceNumbers.join(', ');
-            // Extract and group orders by numberWork
-            const ordersByNumberWork = {};
-
-            Object.keys(result.orders).forEach(orderId => {
-              const order = result.orders[orderId]; // Get the order object
-              const numberWork = order.numberWork;
-
-              if (!ordersByNumberWork[numberWork]) {
-                ordersByNumberWork[numberWork] = {
-                  order: order,
-                  items: []
-                };
-              }
-
-              // Add items from this order to the grouped structure
-              Object.keys(order.items).forEach(itemId => {
-                ordersByNumberWork[numberWork].items.push(order.items[itemId]);
-              });
-            });
-
-
-            // Populate the radio button group
-            const orderRadioGroup = modal.querySelector('#orderRadioGroup');
-            orderRadioGroup.innerHTML = ''; // Clear existing buttons
-
-            console.log('Modal:', modal);
-            console.log('Order Radio Group:', orderRadioGroup);
-
-
-            const orderCount = Object.keys(ordersByNumberWork).length;
-            orderRadioGroup.classList.remove('w-25', 'w-50', 'w-100', 'btn-group-vertical', 'btn-group'); // Remove old classes
-
-            if (orderCount === 1) {
-              orderRadioGroup.classList.add('btn-group', 'w-25');
-            } else if (orderCount === 2) {
-              orderRadioGroup.classList.add('btn-group', 'w-50');
-            } else if (orderCount > 8) {
-              orderRadioGroup.classList.add('btn-group-vertical', 'w-100');
-            } else {
-              orderRadioGroup.classList.add('btn-group', 'w-100');
-            }
-
-            console.log('ordersByNumberWork', ordersByNumberWork);
-
-            Object.keys(ordersByNumberWork).forEach((numberWork, index) => {
-
-              const radioButton = document.createElement('input');
-              radioButton.type = 'radio';
-              radioButton.classList.add('btn-check');
-              radioButton.name = 'orderRadio';
-              radioButton.id = `orderRadio-${numberWork}`;
-              radioButton.value = numberWork;
-              radioButton.checked = index === 0; // Select the first by default
-
-              const label = document.createElement('label');
-              label.classList.add('btn', 'btn-outline-danger');
-              label.setAttribute('for', `orderRadio-${numberWork}`);
-              label.textContent = `ใบเบิก ${numberWork}`;
-
-              orderRadioGroup.appendChild(radioButton);
-              orderRadioGroup.appendChild(label);
-
-              console.log('radioButton', radioButton);
-              console.log('label', label);
-
-              // Add event listener for radio change
-              radioButton.addEventListener('change', () => {
-                displayOrderDetails(modal, ordersByNumberWork[numberWork]);
-              });
-
-              // Display first order by default
-              if (index === 0) {
-                displayOrderDetails(modal, ordersByNumberWork[numberWork]);
-              }
-            });
-          }
-        } catch (error) {
-          console.error('Error checking device number:', error);
-        }
-
-        if (!duplicateFound) {
-          // If no duplicate is found, you can submit the form if needed
-          form.submit();
-        }
-      }
-    });
-
-    // Function to display order details
-    function displayOrderDetails(modal, orderData) {
-      // Populate order info
-      modal.querySelector('input[name="dateWithdraw"]').value = orderData.order.dateWithdraw || '';
-      modal.querySelector('input[name="device_name"]').value = orderData.order.device_name || '';
-      modal.querySelector('input[name="note"]').value = orderData.order.note || '';
-      modal.querySelector('input[name="depart_name"]').value = orderData.order.depart_name || '';
-      modal.querySelector('.device-number-row input').value = orderData.order.numberDevice || '';
-
-      // Populate items in the table
-      const tableBody = modal.querySelector('tbody');
-      tableBody.innerHTML = '';
-
-      let totalAmount = 0;
-      orderData.items.forEach((item, index) => {
-        totalAmount += parseFloat(item.total);
-
-        const row = `
-            <tr class="text-center">
-                <th scope="row">${index + 1}</th>
-                <td><input style="width: 200px; margin: 0 auto;" type="text" class="form-control" value="${item.list_name}" disabled></td>
-                <td><input style="width: 3rem; margin: 0 auto;" type="text" class="form-control" value="${item.amount}" disabled></td>
-                <td><input style="width: 5rem; margin: 0 auto;" type="text" class="form-control" value="${item.price}" disabled></td>
-                <td><input disabled style="width: 5rem;" type="text" class="form-control no-toggle" value="${item.total}"></td>
-            </tr>
-        `;
-        tableBody.innerHTML += row;
-      });
-
-      // console.log('#total-amount-sub-' + modal.id.split('-')[1] + '-' + modal.id.split('-')[2])
-      // Update total amount
-      modal.querySelector('#total-amount-sub').textContent = totalAmount;
-    }
   </script>
   <?php SC5() ?>
 </body>

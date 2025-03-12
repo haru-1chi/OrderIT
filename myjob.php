@@ -432,7 +432,12 @@ if (!isset($_SESSION["admin_log"])) {
                                                                             $(inputId).on("blur", function() {
                                                                                 if (inputChanged && !alertShown) {
                                                                                     const userInput = $(this).val().trim();
+                                                                                    const hiddenValue = $(hiddenInputId).val();
                                                                                     if (userInput === "") return;
+                                                                                    if (hiddenValue !== "") {
+                                                                                        inputChanged = false;
+                                                                                        return;
+                                                                                    }
 
                                                                                     let found = false;
                                                                                     $(this).autocomplete("instance").menu.element.find("div").each(function() {
@@ -700,6 +705,7 @@ if (!isset($_SESSION["admin_log"])) {
 
                                                     <div class="modal-footer" style="justify-content: space-between; border: none;">
                                                         <button type="submit" class="btn btn-danger"
+                                                            onclick="removeHiddenInputOnModalClose('#requisitionModal<?= $row['id'] ?>')"
                                                             name="disWork">คืนงาน</button>
                                                         <button type="button" class="btn btn-primary" onclick="toggleModal('#requisitionModal<?= $row['id'] ?>')">เบิก/ส่งซ่อม</button>
                                                         <button type="submit" class="btn me-3 btn-primary"
@@ -919,8 +925,12 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                     $(inputId).on("blur", function() {
                                                                                         if (inputChanged && !alertShown) {
                                                                                             const userInput = $(this).val().trim();
+                                                                                            const hiddenValue = $(hiddenInputId).val();
                                                                                             if (userInput === "") return;
-
+                                                                                            if (hiddenValue !== "") {
+                                                                                                inputChanged = false;
+                                                                                                return;
+                                                                                            }
                                                                                             let found = false;
                                                                                             $(this).autocomplete("instance").menu.element.find("div").each(function() {
                                                                                                 if ($(this).text() === userInput) {
@@ -1305,8 +1315,12 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 $(inputId).on("blur", function() {
                                                                                     if (inputChanged && !alertShown) {
                                                                                         const userInput = $(this).val().trim();
+                                                                                        const hiddenValue = $(hiddenInputId).val();
                                                                                         if (userInput === "") return;
-
+                                                                                        if (hiddenValue !== "") {
+                                                                                            inputChanged = false;
+                                                                                            return;
+                                                                                        }
                                                                                         let found = false;
                                                                                         $(this).autocomplete("instance").menu.element.find("div").each(function() {
                                                                                             if ($(this).text() === userInput) {
@@ -1517,7 +1531,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                             <div class="modal-header">
                                                                 <h1 class="modal-title fs-5" id="staticBackdropLabel">พบรายการที่เคยเบิกไปแล้ว</h1>
                                                                 <button type="button" class="btn-close"
-                                                                    onclick="toggleModal('#overlayModalTask<?= $row['id'] ?>')">
+                                                                    onclick="toggleModal('#overlayModalTask-main-<?= $row['id'] ?>')">
                                                                 </button>
                                                             </div>
                                                             <div class="modal-body">
@@ -1568,7 +1582,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     </div>
 
                                                                     <div class="d-flex justify-content-end align-items-center mb-2">
-                                                                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-sub-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-sub-main-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
                                                                     </div>
                                                                     <table id="pdf" style="width: 100%;" class="table mb-4">
                                                                         <thead class="table-primary">
@@ -1585,7 +1599,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                         </tbody>
                                                                     </table>
                                                                     <div class="col-sm-6">
-                                                                        <button type="button" class="w-100 btn btn-secondary" onclick="toggleModal('#overlayModalTask<?= $row['id'] ?>')">ย้อนกลับ</button>
+                                                                        <button type="button" class="w-100 btn btn-secondary" onclick="toggleModal('#overlayModalTask-main-<?= $row['id'] ?>')">ย้อนกลับ</button>
                                                                     </div>
                                                                     <div class="col-sm-6">
                                                                         <button type="submit" class="w-100 btn btn-success">ยืนยันที่จะเบิก</button>
@@ -2032,8 +2046,12 @@ ORDER BY id DESC;
                                                                             $(inputId).on("blur", function() {
                                                                                 if (inputChanged && !alertShown) {
                                                                                     const userInput = $(this).val().trim();
+                                                                                    const hiddenValue = $(hiddenInputId).val();
                                                                                     if (userInput === "") return;
-
+                                                                                    if (hiddenValue !== "") {
+                                                                                        inputChanged = false;
+                                                                                        return;
+                                                                                    }
                                                                                     let found = false;
                                                                                     $(this).autocomplete("instance").menu.element.find("div").each(function() {
                                                                                         if ($(this).text() === userInput) {
@@ -2326,6 +2344,7 @@ ORDER BY id DESC;
                                                     </div>
                                                     <div class="modal-footer" style="justify-content: space-between; border: none;">
                                                         <button type="submit" class="btn btn-danger"
+                                                            onclick="removeHiddenInputOnModalClose('#requisitionModal<?= $row['id'] ?>')"
                                                             name="disWork">คืนงาน</button>
                                                         <button type="button" class="btn btn-primary" onclick="toggleModal('#UnCompleteModal<?= $row['id'] ?>')">เบิก/ส่งซ่อม</button>
                                                         <button type="submit" class="btn me-3 btn-primary"
@@ -2541,8 +2560,12 @@ ORDER BY id DESC;
                                                                                     $(inputId).on("blur", function() {
                                                                                         if (inputChanged) {
                                                                                             const userInput = $(this).val().trim();
+                                                                                            const hiddenValue = $(hiddenInputId).val();
                                                                                             if (userInput === "") return;
-
+                                                                                            if (hiddenValue !== "") {
+                                                                                                inputChanged = false;
+                                                                                                return;
+                                                                                            }
                                                                                             let found = false;
                                                                                             $(this).autocomplete("instance").menu.element.find("div").each(function() {
                                                                                                 if ($(this).text() === userInput) {
@@ -2925,8 +2948,12 @@ ORDER BY id DESC;
                                                                                 $(inputId).on("blur", function() {
                                                                                     if (inputChanged) {
                                                                                         const userInput = $(this).val().trim();
+                                                                                        const hiddenValue = $(hiddenInputId).val();
                                                                                         if (userInput === "") return;
-
+                                                                                        if (hiddenValue !== "") {
+                                                                                            inputChanged = false;
+                                                                                            return;
+                                                                                        }
                                                                                         let found = false;
                                                                                         $(this).autocomplete("instance").menu.element.find("div").each(function() {
                                                                                             if ($(this).text() === userInput) {
@@ -3134,7 +3161,7 @@ ORDER BY id DESC;
                                                     <div class="modal-header">
                                                         <h1 class="modal-title fs-5" id="staticBackdropLabel">พบรายการที่เคยเบิกไปแล้ว</h1>
                                                         <button type="button" class="btn-close"
-                                                            onclick="toggleModal('#overlayModalTask<?= $row['id'] ?>')">
+                                                            onclick="toggleModal('#overlayModalTask-unComplete-<?= $row['id'] ?>')">
                                                         </button>
 
                                                     </div>
@@ -3187,7 +3214,7 @@ ORDER BY id DESC;
                                                             </div>
 
                                                             <div class="d-flex justify-content-end align-items-center mb-2">
-                                                                <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-sub-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+                                                                <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-sub-unComplete-<?= $row['id'] ?>" class="fs-4 fw-bold text-primary">0</span> บาท</p>
                                                             </div>
                                                             <table id="pdf" style="width: 100%;" class="table mb-4">
                                                                 <thead class="table-primary">
@@ -3204,7 +3231,7 @@ ORDER BY id DESC;
                                                                 </tbody>
                                                             </table>
                                                             <div class="col-sm-6">
-                                                                <button type="button" class="w-100 btn btn-secondary" onclick="toggleModal('#overlayModalTask<?= $row['id'] ?>')">ย้อนกลับ</button>
+                                                                <button type="button" class="w-100 btn btn-secondary" onclick="toggleModal('#overlayModalTask-unComplete-<?= $row['id'] ?>')">ย้อนกลับ</button>
                                                             </div>
                                                             <div class="col-sm-6">
                                                                 <button type="submit" class="w-100 btn btn-success">ยืนยันที่จะเบิก</button>
@@ -3292,8 +3319,13 @@ ORDER BY id DESC;
             $(inputId).on("blur", function() {
                 if (inputChanged) {
                     const userInput = $(this).val().trim();
+                    if (userInput !== "") {
+                        inputChanged = false;
+                        return;
+                    }
                     if (userInput === "") return;
 
+                    
                     let found = false;
                     $(this).autocomplete("instance").menu.element.find("div").each(function() {
                         if ($(this).text() === userInput) {
@@ -3647,18 +3679,17 @@ ORDER BY id DESC;
                 });
 
                 const result = await response.json();
-                console.log(JSON.stringify(deviceNumbers));
-                console.log(result);
-
+                console.log(result)
                 if (result.found) {
                     duplicateFound = true;
 
                     // Get modal ID dynamically
                     const getModalId = event.target.getAttribute('data-id');
+                    const status = getModalId.split('-')[1];
                     const submitId = getModalId.split('-').pop();
 
                     // Show modal and populate fields dynamically
-                    const modal = document.querySelector(`#overlayModalTask${submitId}`);
+                    const modal = document.querySelector(`#overlayModalTask-${status}-${submitId}`);
                     modal.style.display = 'block';
 
                     const cardModal = modal.querySelector('.modal-content.overlay-modal');
@@ -3688,39 +3719,50 @@ ORDER BY id DESC;
                         });
                     });
 
+
                     // Populate the radio button group
                     const orderRadioGroup = modal.querySelector('#orderRadioGroup');
                     orderRadioGroup.innerHTML = ''; // Clear existing buttons
 
+                    console.log('Modal:', modal);
+                    console.log('Order Radio Group:', orderRadioGroup);
+
+
                     const orderCount = Object.keys(ordersByNumberWork).length;
-                    orderRadioGroup.classList.remove('w-25', 'w-50', 'w-100', 'btn-group-vertical','btn-group'); // Remove old classes
+                    orderRadioGroup.classList.remove('w-25', 'w-50', 'w-100', 'btn-group-vertical', 'btn-group'); // Remove old classes
 
                     if (orderCount === 1) {
-                        orderRadioGroup.classList.add('btn-group','w-25');
+                        orderRadioGroup.classList.add('btn-group', 'w-25');
                     } else if (orderCount === 2) {
-                        orderRadioGroup.classList.add('btn-group','w-50');
+                        orderRadioGroup.classList.add('btn-group', 'w-50');
                     } else if (orderCount > 8) {
-                        orderRadioGroup.classList.add('btn-group-vertical','w-100');
+                        orderRadioGroup.classList.add('btn-group-vertical', 'w-100');
                     } else {
-                        orderRadioGroup.classList.add('btn-group','w-100');
+                        orderRadioGroup.classList.add('btn-group', 'w-100');
                     }
 
+                    console.log('ordersByNumberWork', ordersByNumberWork);
+
                     Object.keys(ordersByNumberWork).forEach((numberWork, index) => {
+
                         const radioButton = document.createElement('input');
                         radioButton.type = 'radio';
                         radioButton.classList.add('btn-check');
                         radioButton.name = 'orderRadio';
-                        radioButton.id = `orderRadio${index}`;
+                        radioButton.id = `orderRadio-${numberWork}`;
                         radioButton.value = numberWork;
                         radioButton.checked = index === 0; // Select the first by default
 
                         const label = document.createElement('label');
                         label.classList.add('btn', 'btn-outline-danger');
-                        label.htmlFor = `orderRadio${index}`;
+                        label.setAttribute('for', `orderRadio-${numberWork}`);
                         label.textContent = `ใบเบิก ${numberWork}`;
 
                         orderRadioGroup.appendChild(radioButton);
                         orderRadioGroup.appendChild(label);
+
+                        console.log('radioButton', radioButton);
+                        console.log('label', label);
 
                         // Add event listener for radio change
                         radioButton.addEventListener('change', () => {
@@ -3790,8 +3832,9 @@ ORDER BY id DESC;
             tableBody.innerHTML += row;
         });
 
+        // console.log('#total-amount-sub-' + modal.id.split('-')[1] + '-' + modal.id.split('-')[2])
         // Update total amount
-        modal.querySelector('#total-amount-sub-' + modal.id.split('Task')[1]).textContent = totalAmount;
+        modal.querySelector('#total-amount-sub-' + modal.id.split('-')[1] + '-' + modal.id.split('-')[2]).textContent = totalAmount;
     }
 </script>
 <?php SC5() ?>
