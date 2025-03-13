@@ -1642,7 +1642,8 @@ if (isset($_POST['CheckAll'])) {
 if (isset($_POST['takeaway'])) { // เพิ่ม รายการอุปกรณ์
     $id = $_POST['id'];
     $username = $_POST['username'];
-    $take = $_POST['take'];
+    date_default_timezone_set('Asia/Bangkok');
+    $take = date('H:i:s');
     $status = 2;
     try {
         $sql = "UPDATE data_report SET username = :username, take = :take, status = :status WHERE id = :id";

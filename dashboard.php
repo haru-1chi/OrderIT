@@ -2,10 +2,14 @@
 session_start();
 require_once 'config/db.php';
 require_once 'template/navbar.php';
+// $dateNow = new DateTime();
+// $dateNow->modify("+543 years");
+
+// $dateThai = $dateNow->format("Y/m/d");
+
 $dateNow = new DateTime();
 $dateNow->modify("+543 years");
-
-$dateThai = $dateNow->format("Y/m/d");
+$dateThai = $dateNow->format("Y-m-d");
 
 if (isset($_SESSION['admin_log'])) {
     $admin = $_SESSION['admin_log'];
@@ -37,12 +41,12 @@ if (!isset($_SESSION["admin_log"])) {
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <script>
         // Function to reload the page
-        function refreshPage() {
-            location.reload();
-        }
+        // function refreshPage() {
+        //     location.reload();
+        // }
 
-        // Set timeout to refresh the page every 1 m inute (60000 milliseconds)
-        setTimeout(refreshPage, 30000);
+        // // Set timeout to refresh the page every 1 m inute (60000 milliseconds)
+        // setTimeout(refreshPage, 30000);
     </script>
     <style>
         body {
@@ -87,7 +91,18 @@ if (!isset($_SESSION["admin_log"])) {
 </head>
 
 <body>
-    <?php navbar() ?>
+    <?php
+    //แสดง Badge จำนวนงาน
+    $sql = "SELECT COUNT(*) as count FROM data_report WHERE `status` = 0";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch only one row
+
+    $_SESSION['report_count'] = $row['count'] ?? 0; // Get the count value
+    ?>
+
+    <?php navbar($_SESSION['report_count']) ?>
+
     <div class="container">
         <?php if (isset($_SESSION['error'])) { ?>
             <div class="alert alert-danger" role="alert">
@@ -188,6 +203,68 @@ if (!isset($_SESSION["admin_log"])) {
                     <?php } ?>
                     <!-- </div> -->
                 </div>
+
+                <!-- ------------------- notification -------------------- -->
+                <!-- <button type="button" class="btn btn-primary" id="liveToastBtn">Show live toast</button> -->
+
+                <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
+                <script>
+                    let lastReportId = 0; // Track the highest ID we've seen
+
+                    function checkNewReports() {
+                        fetch('check_new_reports.php')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.reports && data.reports.length > 0) {
+                                    data.reports.forEach(report => {
+                                        if (report.id > lastReportId) {
+                                            lastReportId = report.id; // Update last seen ID
+                                            showNotification(report);
+                                        }
+                                    });
+                                }
+                            })
+                            .catch(error => console.error('Error:', error));
+                    }
+
+                    function showNotification(report) {
+                        const toastContainer = document.getElementById('toastContainer');
+
+                        const toastElement = document.createElement('div');
+                        toastElement.className = 'toast bg-primary text-white mb-2';
+                        toastElement.setAttribute('role', 'alert');
+                        toastElement.setAttribute('aria-live', 'assertive');
+                        toastElement.setAttribute('aria-atomic', 'true');
+
+                        toastElement.innerHTML = `
+        <div class="toast-header">
+            <strong class="me-auto">หน่วยงาน ${report.depart_name}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body">
+            ${report.report}
+        </div>
+    `;
+
+                        toastContainer.appendChild(toastElement);
+
+                        const toast = new bootstrap.Toast(toastElement);
+                        toast.show();
+
+                        // Optional: Auto-remove toast from DOM after hidden
+                        toastElement.addEventListener('hidden.bs.toast', () => {
+                            toastElement.remove();
+                        });
+                    }
+
+                    // First check immediately
+                    checkNewReports();
+
+                    // Check every 30 seconds
+                    setInterval(checkNewReports, 30000);
+                </script>
+
                 <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
                     <h1>งานวันนี้</h1>
                     <div class="table-responsive">
@@ -207,113 +284,6 @@ if (!isset($_SESSION["admin_log"])) {
                                 </tr>
                             </thead>
                             <tbody>
-
-
-                                <?php
-                                // function toMonthThai($m)
-                                // {
-                                //     $monthNamesThai = array(
-                                //         "",
-                                //         "มกราคม",
-                                //         "กุมภาพันธ์",
-                                //         "มีนาคม",
-                                //         "เมษายน",
-                                //         "พฤษภาคม",
-                                //         "มิถุนายน",
-                                //         "กรกฎาคม",
-                                //         "สิงหาคม",
-                                //         "กันยายน",
-                                //         "ตุลาคม",
-                                //         "พฤศจิกายน",
-                                //         "ธันวาคม"
-                                //     );
-                                //     return $monthNamesThai[$m];
-                                // }
-
-                                // function formatDateThai($date)
-                                // {
-                                //     if ($date == null || $date == "") {
-                                //         return ""; // ถ้าวันที่เป็นค่าว่างให้คืนค่าว่างเปล่า
-                                //     }
-
-                                //     // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp
-                                //     $timestamp = strtotime($date);
-
-                                //     // ดึงปีไทย
-                                //     $yearThai = date('Y', $timestamp);
-
-                                //     // ดึงเดือน
-                                //     $monthNumber = date('n', $timestamp);
-
-                                //     // แปลงเดือนเป็นภาษาไทย
-                                //     $monthThai = toMonthThai($monthNumber);
-
-                                //     // ดึงวันที่
-                                //     $day = date('d', $timestamp);
-
-                                //     // สร้างรูปแบบวันที่ใหม่
-                                //     $formattedDate = "$day $monthThai $yearThai";
-
-                                //     return $formattedDate;
-                                // }
-
-                                $sql = "SELECT dp.*,dt.depart_name 
-                    FROM data_report as dp
-                    LEFT JOIN depart as dt ON dp.department = dt.depart_id
-                    WHERE DATE(date_report) = :dateNow
-                    ";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->bindParam(":dateNow", $dateThai);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                $i = 0;
-                                foreach ($result as $row) {
-                                    $i++;
-                                    // $dateWithdrawFromDB = $row['date_report'];
-
-                                    // $dateWithdrawThai = formatDateThai($dateWithdrawFromDB);
-
-                                    $dateString = $row['date_report'];
-                                    $timestamp = strtotime($dateString);
-                                    $dateFormatted = date('d/m/Y', $timestamp);
-
-                                    $timeString = $row['time_report'];
-                                    $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
-                                    if ($row['status'] == 0) {
-                                ?>
-                                        <tr>
-                                            <td scope="row"><?= $row['id'] ?></td>
-                                            <td scope="row"><?= $dateFormatted ?></td>
-                                            <td><?= $timeFormatted ?></td>
-                                            <td><?= $row['deviceName'] ?></td>
-                                            <td><?= $row['report'] ?></td>
-                                            <td><?= $row['reporter'] ?></td>
-                                            <td><?= $row['depart_name'] ?></td>
-                                            <td><?= $row['tel'] ?></td>
-                                            <td><?= $row['create_by'] ?></td>
-                                            <td>
-                                                <?php
-                                                if (!$row['username']) { ?>
-                                                    <form action="system/insert.php" method="post">
-                                                        <input type="hidden" name="username" value="<?= $admin ?>">
-                                                        <input type="hidden" name="take" class="time_report" value="<?= $currentTime ?>">
-                                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                                        <button type="submit" name="takeaway" class="btn btn-primary">รับงาน</button>
-                                                    </form>
-                                                <?php } else { ?>
-                                                    <form action="system/insert.php" method="post">
-                                                        <input type="hidden" name="username" value="<?= $admin ?>">
-                                                        <input type="hidden" name="take" class="time_report" value="<?= $currentTime ?>">
-                                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                                        <button type="submit" name="takeaway" class="btn btn-primary">รับงาน</button>
-                                                    </form>
-                                                <?php  }
-                                                ?>
-                                            </td>
-                                        </tr>
-                                <?php }
-                                }
-                                ?>
                             </tbody>
                         </table>
                     </div>
@@ -334,51 +304,13 @@ if (!isset($_SESSION["admin_log"])) {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php
-                                $sql = "SELECT dp.id, dp.device, dp.report, dp.time_report, dp.take, dt.depart_name, adm.fname, adm.lname,dp.deviceName
-        FROM data_report as dp
-        LEFT JOIN depart as dt ON dp.department = dt.depart_id 
-        INNER JOIN admin as adm ON dp.username = adm.username
-        WHERE dp.status = 2
-        ORDER BY dp.id DESC";
-
-                                $stmt = $conn->prepare($sql);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                foreach ($result as $row) {
-                                    $timeString = $row['time_report'];
-                                    $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
-
-                                    $takeTimeString = $row['take'];
-                                    if (empty($takeTimeString) || $takeTimeString === '00:00:00.000000') {
-                                        $takeFormatted = '-';
-                                    } else {
-                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . ' น.';
-                                    }
-                                ?>
-                                    <tr class="text-center">
-                                        <td><?= $row['id'] ?></td>
-                                        <td><?= $row['fname'] . ' ' . $row['lname'] ?></td>
-                                        <td><?= $row['deviceName'] ?></td>
-                                        <td><?= $row['report'] ?></td>
-                                        <td><?= $row['depart_name'] ?></td>
-                                        <td><?= $timeFormatted ?></td>
-                                        <td><?= $takeFormatted ?></td>
-                                    </tr>
-                                <?php
-                                }
-
-                                ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
-
                 <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
                     <h1>งานที่ถูกบันทึกไว้</h1>
                     <hr>
-
                     <div class="table-responsive">
                         <table id="dataAllNOTTAKE" class="table table-danger">
                             <thead>
@@ -396,192 +328,10 @@ if (!isset($_SESSION["admin_log"])) {
                                 </tr>
                             </thead>
                             <tbody>
-
-
-                                <?php
-                                // function toMonthThai($m)
-                                // {
-                                //     $monthNamesThai = array(
-                                //         "",
-                                //         "มกราคม",
-                                //         "กุมภาพันธ์",
-                                //         "มีนาคม",
-                                //         "เมษายน",
-                                //         "พฤษภาคม",
-                                //         "มิถุนายน",
-                                //         "กรกฎาคม",
-                                //         "สิงหาคม",
-                                //         "กันยายน",
-                                //         "ตุลาคม",
-                                //         "พฤศจิกายน",
-                                //         "ธันวาคม"
-                                //     );
-                                //     return $monthNamesThai[$m];
-                                // }
-
-                                // function formatDateThai($date)
-                                // {
-                                //     if ($date == null || $date == "") {
-                                //         return ""; // ถ้าวันที่เป็นค่าว่างให้คืนค่าว่างเปล่า
-                                //     }
-
-                                //     // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp
-                                //     $timestamp = strtotime($date);
-
-                                //     // ดึงปีไทย
-                                //     $yearThai = date('Y', $timestamp);
-
-                                //     // ดึงเดือน
-                                //     $monthNumber = date('n', $timestamp);
-
-                                //     // แปลงเดือนเป็นภาษาไทย
-                                //     $monthThai = toMonthThai($monthNumber);
-
-                                //     // ดึงวันที่
-                                //     $day = date('d', $timestamp);
-
-                                //     // สร้างรูปแบบวันที่ใหม่
-                                //     $formattedDate = "$day $monthThai $yearThai";
-
-                                //     return $formattedDate;
-                                // }
-
-                                $sql = "SELECT dp.*,dt.depart_name 
-                    FROM data_report as dp
-                    LEFT JOIN depart as dt ON dp.department = dt.depart_id
-                    WHERE DATE(date_report) <> :dateNow
-                    ";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->bindParam(":dateNow", $dateThai);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                $i = 0;
-                                foreach ($result as $row) {
-                                    $i++;
-                                    // $dateWithdrawFromDB = $row['date_report'];
-
-                                    // $dateWithdrawThai = formatDateThai($dateWithdrawFromDB);
-
-                                    $dateString = $row['date_report'];
-                                    $timestamp = strtotime($dateString);
-                                    $dateFormatted = date('d/m/Y', $timestamp);
-
-                                    if ($row['status'] == 0) {
-                                        $timeString = $row['time_report'];
-                                        $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
-                                ?>
-                                        <tr>
-                                            <td scope="row"><?= $row['id'] ?></td>
-                                            <td scope="row"><?= $dateFormatted ?></td>
-                                            <td><?= $timeFormatted ?></td>
-                                            <td><?= $row['deviceName'] ?></td>
-                                            <td><?= $row['report'] ?></td>
-                                            <td><?= $row['reporter'] ?></td>
-                                            <td><?= $row['depart_name'] ?></td>
-                                            <td><?= $row['tel'] ?></td>
-                                            <td><?= $row['create_by'] ?></td>
-                                            <td>
-                                                <?php
-                                                if (!$row['username']) { ?>
-                                                    <form action="system/insert.php" method="post">
-                                                        <input type="hidden" name="username" value="<?= $admin ?>">
-                                                        <input type="hidden" name="take" class="time_report" value="<?= $currentTime ?>">
-                                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                                        <button type="submit" name="takeaway" class="btn btn-primary">รับงาน</button>
-                                                    </form>
-                                                <?php } else { ?>
-                                                    <form action="system/insert.php" method="post">
-                                                        <input type="hidden" name="username" value="<?= $admin ?>">
-                                                        <input type="hidden" name="take" class="time_report" value="<?= $currentTime ?>">
-                                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                                        <button type="submit" name="takeaway" class="btn btn-primary">รับงาน</button>
-                                                    </form>
-                                                <?php  }
-                                                ?>
-                                            </td>
-                                        </tr>
-                                <?php }
-                                }
-                                ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
-
-
-                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
-                    <div class="table-responsive">
-                        <h1>ส่งซ่อม</h1>
-                        <hr>
-                        <table id="clam" class="table table-danger">
-                            <thead>
-                                <tr>
-                                    <th scope="col">หมายเลขงาน</th>
-                                    <th scope="col">ผู้ซ่อม</th>
-                                    <th scope="col">อุปกรณ์</th>
-                                    <th scope="col">อาการที่ได้รับแจ้ง</th>
-                                    <th scope="col">หน่วยงาน</th>
-                                    <th scope="col">เวลาแจ้ง</th>
-                                    <th scope="col">เวลารับงาน</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-
-                                $sql = "SELECT dp.*,dt.depart_name 
-                    FROM data_report as dp
-                    LEFT JOIN depart as dt ON dp.department = dt.depart_id
-                    ";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                foreach ($result as $row) {
-                                    $timeString = $row['time_report'];
-                                    $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
-
-                                    $takeTimeString = $row['take'];
-                                    if (empty($takeTimeString) || $takeTimeString === '00:00:00.000000') {
-                                        $takeFormatted = '-';
-                                    } else {
-                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . ' น.';
-                                    }
-                                    if ($row['status'] == 5) {
-
-                                ?>
-                                        <tr class="text-center">
-                                            <td><?= $row['id'] ?></td>
-                                            <td>
-                                                <?php
-                                                $sql = "SELECT * FROM admin";
-                                                $stmt = $conn->prepare($sql);
-                                                $stmt->execute();
-                                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                                foreach ($result as $row2) {
-                                                    if ($row['username'] == $row2['username']) {
-                                                        echo $row2['fname'] . ' ' . $row2['lname'];
-                                                    }
-                                                }
-                                                ?>
-                                            </td>
-                                            <td><?= $row['deviceName'] ?></td>
-                                            <td><?= $row['report'] ?></td>
-                                            <td><?= $row['depart_name'] ?></td>
-                                            <td><?= $timeFormatted ?></td>
-                                            <td><?= $takeFormatted ?></td>
-
-                                        </tr>
-                                <?php }
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                    <hr>
-                </div>
-
-
                 <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
                     <div class="table-responsive">
                         <h1>รออะไหล่</h1>
@@ -599,60 +349,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php
-                                $sql = "SELECT dp.*,dt.depart_name 
-                    FROM data_report as dp
-                    LEFT JOIN depart as dt ON dp.department = dt.depart_id
-                    ";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                foreach ($result as $row) {
-                                    $timeString = $row['time_report'];
-                                    $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
-
-                                    $takeTimeString = $row['take'];
-                                    if (empty($takeTimeString) || $takeTimeString === '00:00:00.000000') {
-                                        $takeFormatted = '-';
-                                    } else {
-                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . ' น.';
-                                    }
-                                    if ($row['status'] == 3) {
-                                ?>
-                                        <tr class="text-center">
-                                            <td><?= $row['id'] ?></td>
-                                            <td>
-                                                <?php
-                                                $sql = "SELECT * FROM admin";
-                                                $stmt = $conn->prepare($sql);
-                                                $stmt->execute();
-                                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                                foreach ($result as $row2) {
-                                                    if ($row['username'] == $row2['username']) {
-                                                        echo $row2['fname'] . ' ' . $row2['lname'];
-                                                    }
-                                                }
-                                                ?>
-                                            </td>
-                                            <td><?= $row['deviceName'] ?></td>
-                                            <td><?= $row['report'] ?></td>
-                                            <td><?= $row['depart_name'] ?></td>
-                                            <td><?= $timeFormatted ?></td>
-                                            <td><?= $takeFormatted ?></td>
-
-                                        </tr>
-                                <?php }
-                                }
-                                ?>
                             </tbody>
                         </table>
                     </div>
                     <hr>
                 </div>
-
-
                 <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
                     <div class="table-responsive">
                         <h1>งานที่เสร็จ</h1>
@@ -675,104 +376,112 @@ if (!isset($_SESSION["admin_log"])) {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php
-                                $sql = "SELECT dp.*,dt.depart_name 
-                        FROM data_report as dp
-                        LEFT JOIN depart as dt ON dp.department = dt.depart_id";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
-                                foreach ($result as $row) {
-                                    $reportTimeString = $row['time_report'];
-                                    $takeTimeString = $row['take'];
-                                    $closeTimeString = $row['close_date'];
-                                    if (empty($closeTimeString) || $closeTimeString === '00:00:00.000000' || empty($takeTimeString) || $takeTimeString === '00:00:00.000000' || empty($reportTimeString) || $reportTimeString === '00:00:00.000000') {
-                                        $reportFormatted = '-';
-                                        $takeFormatted = '-';
-                                        $closeTimeFormatted = '-';
-                                    } else {
-                                        $reportFormatted = date('H:i', strtotime($takeTimeString)) . 'น.';
-                                        $takeFormatted = date('H:i', strtotime($takeTimeString)) . 'น.';
-                                        $closeTimeFormatted = date('H:i', strtotime($closeTimeString)) . 'น.';
+                <script>
+                    function fetchTasks(type, tableId) {
+                        fetch(`dashboard_get_tasks.php?type=${type}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                let table = $.fn.dataTable.isDataTable(`#${tableId}`) ?
+                                    $(`#${tableId}`).DataTable() :
+                                    $(`#${tableId}`).DataTable({
+                                        order: [
+                                            [0, 'desc']
+                                        ],
+                                        destroy: true,
+                                    });
+
+                                table.clear();
+
+                                let tableBody = document.querySelector(`#${tableId} tbody`);
+                                tableBody.innerHTML = "";
+
+                                data.forEach(row => {
+                                    let tr = document.createElement("tr");
+                                    if (type === "today" || type === "over_due") {
+                                        tr.innerHTML = `
+                        <td>${row.id}</td>
+                        <td>${row.date_report}</td>
+                        <td>${row.time_report}</td>
+                        <td>${row.deviceName}</td>
+                        <td>${row.report}</td>
+                        <td>${row.reporter}</td>
+                        <td>${row.depart_name}</td>
+                        <td>${row.tel}</td>
+                        <td>${row.create_by}</td>
+                        <td>
+                            <form action="system/insert.php" method="post">
+                                <input type="hidden" name="username" value="<?= $admin ?>">
+                                <input type="hidden" name="id" value="${row.id}">
+                                <button type="submit" name="takeaway" class="btn btn-primary">รับงาน</button>
+                            </form>
+                        </td>
+                    `;
+                                    } else if (type === "in_progress") {
+                                        let takeFormatted = row.take ? row.take : "-";
+                                        tr.innerHTML = `
+                        <td>${row.id}</td>
+                        <td>${row.fname} ${row.lname}</td>
+                        <td>${row.deviceName}</td>
+                        <td>${row.report}</td>
+                        <td>${row.depart_name}</td>
+                        <td>${row.time_report}</td>
+                        <td>${takeFormatted}</td>
+                    `;
+                                    } else if (type === "calm") {
+                                        let reportFormatted = row.time_report ? row.time_report : "-";
+                                        let takeFormatted = row.take ? row.take : "-";
+                                        tr.innerHTML = `
+                        <td>${row.id}</td>
+                        <td>${row.fname} ${row.lname}</td>
+                        <td>${row.deviceName}</td>
+                        <td>${row.report}</td>
+                        <td>${row.depart_name}</td>
+                        <td>${reportFormatted}</td>
+                        <td>${takeFormatted}</td>
+                    `;
+                                    } else if (type === "finish") {
+                                        let reportFormatted = row.time_report ? row.time_report : "-";
+                                        let takeFormatted = row.take ? row.take : "-";
+                                        let closeTimeFormatted = row.close_date ? row.close_date : "-";
+                                        tr.innerHTML = `
+                        <td>${row.id}</td>
+                        <td>${row.fname} ${row.lname}</td>
+                        <td>${row.report}</td>
+                        <td>${row.depart_name}</td>
+                        <td>${row.sla}</td>
+                        <td>${row.kpi}</td>
+                        <td>${reportFormatted}</td>
+                        <td>${takeFormatted}</td>
+                        <td>${closeTimeFormatted}</td>
+                    `;
                                     }
-                                    if ($row['status'] == 4) {
-                                ?>
-                                        <tr class="text-left">
-                                            <td><?= $row['id'] ?></td>
-                                            <td>
-                                                <?php
-                                                $sql = "SELECT * FROM admin";
-                                                $stmt = $conn->prepare($sql);
-                                                $stmt->execute();
-                                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                                                foreach ($result as $row2) {
-                                                    if ($row['username'] == $row2['username']) {
-                                                        echo $row2['fname'] . ' ' . $row2['lname'];
-                                                    }
-                                                }
-                                                ?>
-                                            </td>
-                                            <td><?= $row['report'] ?></td>
-                                            <td><?= $row['depart_name'] ?></td>
-                                            <td><?= $row['sla'] ?></td>
-                                            <td><?= $row['kpi'] ?></td>
-                                            <td><?= $reportFormatted ?></td>
-                                            <td><?= $takeFormatted ?></td>
-                                            <td><?= $closeTimeFormatted ?></td>
-                                        </tr>
-                                <?php }
-                                }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                    tableBody.appendChild(tr);
+                                });
+                                table.rows.add($(tableBody).find("tr")).draw();
+                            })
+                            .catch(error => console.error("Error fetching tasks:", error));
+                    }
 
-                <div class="card rounded-4 shadow-sm p-3 mt-5 col-sm-12 col-lg-12 col-md-12">
-                    <h1>รายการความพึงพอใจ</h1>
-                    <div class="table-responsive">
-                        <table id="rating" class="table table-warning">
-                            <thead>
-                                <tr class="text-center">
-                                    <th scope="col">ช่องทางที่ใช้บริการ</th>
-                                    <th scope="col">ปัญหาได้รับการแก้ไข</th>
-                                    <th scope="col">ความรวดเร็ว</th>
-                                    <th scope="col">การแก้ปัญหา</th>
-                                    <th scope="col">การให้บริการ</th>
-                                    <th scope="col">ข้อเสนอแนะ</th>
-                                    <th scope="col">เวลาที่ให้คะแนน</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $sql = "SELECT *
-                    FROM rating
-                    ";
-                                $stmt = $conn->prepare($sql);
-                                $stmt->execute();
-                                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                foreach ($result as $row) {
-                                ?>
-                                    <tr>
+                    // Call the functions on page load
+                    fetchTasks("today", "dataAll");
+                    fetchTasks("in_progress", "inTime");
+                    fetchTasks("over_due", "dataAllNOTTAKE");
+                    fetchTasks("calm", "wait");
+                    fetchTasks("finish", "success");
+                    // fetchTasks("success", "success");
 
-                                        <td><?= $row['service_channel'] ?></td>
-                                        <td class="text-center"><?= $row['issue_resolved'] ?></td>
-                                        <td class="text-center"><?= $row['service_speed'] ?></td>
-                                        <td class="text-center"><?= $row['problem_satisfaction'] ?></td>
-                                        <td class="text-center"><?= $row['service_satisfaction'] ?></td>
-                                        <td><?= $row['suggestion'] ?></td>
-                                        <td><?= $row['timestamp'] ?></td>
-                                    </tr>
-                                <?php }
-                                ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-
+                    // Optionally, refresh data every 30 seconds without reloading the page
+                    setInterval(() => {
+                        fetchTasks("today", "dataAll");
+                        fetchTasks("in_progress", "inTime");
+                    }, 30000);
+                </script>
 
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -853,91 +562,14 @@ if (!isset($_SESSION["admin_log"])) {
                 const timeReportInputs = document.querySelectorAll('.time_report');
                 timeReportInputs.forEach(input => input.value = currentTime);
             </script>
-            <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+            <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
             <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
             <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
             <script>
                 $(document).ready(function() {
-                    $('#dataAll').DataTable({
-                        order: [
-                            [0, 'asc']
-                        ] // assuming you want to sort the first column in ascending order
-                    });
-                    $('#dataAllNOTTAKE').DataTable({
-                        order: [
-                            [0, 'asc']
-                        ] // assuming you want to sort the first column in ascending order
-                    });
-
-                    $('#dataAllTAKE').DataTable({
-                        order: [
-                            [0, 'desc']
-                        ] // adjust the column index as needed
-                    });
-
-                    $('#inTime').DataTable({
-                        order: [
-                            [0, 'desc']
-                        ] // adjust the column index as needed
-                    });
-
-                    $('#wait').DataTable({
-                        order: [
-                            [0, 'desc']
-                        ] // adjust the column index as needed
-                    });
-
-                    $('#success').DataTable({
-                        order: [
-                            [0, 'desc']
-                        ],
-                        columnDefs: [{
-                                targets: 0,
-                                width: "auto"
-                            }, // หมายเลขงาน
-                            {
-                                targets: 1,
-                                width: "170px"
-                            }, // ผู้ซ่อม
-                            {
-                                targets: 2,
-                                width: "auto"
-                            }, // อาการที่ได้รับแจ้ง
-                            {
-                                targets: 3,
-                                width: "170px"
-                            }, // หน่วยงาน
-                            {
-                                targets: 4,
-                                width: "170px"
-                            }, // SLA
-                            {
-                                targets: 5,
-                                width: "120px"
-                            }, // ตัวชี้วัด
-                            {
-                                targets: 6,
-                                width: "80px"
-                            }, // เวลาแจ้ง
-                            {
-                                targets: 7,
-                                width: "80px"
-                            }, // เวลารับงาน
-                            {
-                                targets: 8,
-                                width: "80px"
-                            }, // เวลาปิดงาน
-                        ],
-                        scrollX: true, // Allow horizontal scrolling if necessary
-                        paging: true, // Enable pagination
-                        searching: true,
-                        autoWidth: false
-                    });
-                    $('#clam').DataTable({
-                        order: [
-                            [0, 'desc']
-                        ] // adjust the column index as needed
-                    });
+                    setTimeout(function() {
+                        $('#dataAll, #inTime, #dataAllNOTTAKE, #wait, #success').DataTable();
+                    }, 1000);
                 });
             </script>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
