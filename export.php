@@ -317,11 +317,209 @@ if (isset($_POST['DataAll'])) {
     header("Expires: 0");
     echo '</head>';
 
+    // Simulated data from SQL
+    $sql = "
+    SELECT 
+    od.*, 
+    os.status,
+    wd.withdraw_name, 
+    lw.work_name, 
+    dv.device_name, 
+    dp.depart_name, 
+    of.offer_name,
+    nd.numberDevice, 
+    nd.id AS numberDevice_id, 
+    oi.id AS item_id, 
+    oi.list, 
+    dm.models_name as list_name, 
+    oi.quality, 
+    oi.amount, 
+    oi.price, 
+    oi.unit
+    FROM 
+    orderdata_new AS od
+    LEFT JOIN (
+                     SELECT order_id, status
+                     FROM order_status AS os1
+                     WHERE (os1.timestamp, os1.status) IN (
+                       SELECT MAX(os2.timestamp) AS latest_timestamp, MAX(os2.status) AS latest_status
+                       FROM order_status AS os2
+                       WHERE os2.order_id = os1.order_id
+                     )
+                   ) AS os ON os.order_id = od.id
+    INNER JOIN 
+    withdraw AS wd ON od.refWithdraw = wd.withdraw_id
+    INNER JOIN 
+    offer AS of ON od.refOffer = of.offer_id
+    INNER JOIN 
+    depart AS dp ON od.refDepart = dp.depart_id
+    INNER JOIN 
+    listwork AS lw ON od.refWork = lw.work_id
+    INNER JOIN 
+    device AS dv ON od.refDevice = dv.device_id
+    LEFT JOIN 
+    order_numberdevice AS nd ON od.id = nd.order_item
+    LEFT JOIN 
+    order_items AS oi ON od.id = oi.order_id
+    LEFT JOIN 
+    device_models AS dm ON oi.list = dm.models_id
+    WHERE 
+    (nd.is_deleted = 0 OR nd.is_deleted IS NULL)
+    AND (oi.is_deleted = 0 OR oi.is_deleted IS NULL)
+    ORDER BY od.id ASC
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute();
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Process data to merge `numberDevice`
+    $mergedData = [];
+    foreach ($data as $row) {
+        $key = $row["id"] . "|" . $row["numberWork"] . "|" . $row["list"];
+
+        if (!isset($mergedData[$key])) {
+            $mergedData[$key] = $row;
+        } else {
+            // Merge numberDevice
+            if (!str_contains($mergedData[$key]["numberDevice"], $row["numberDevice"])) {
+                $mergedData[$key]["numberDevice"] .= ", " . $row["numberDevice"];
+            }
+        }
+    }
+
     // Output the HTML for the table
     echo '<table style="border: 1px solid black;">';
     echo '<thead>';
     echo '<tr style="text-align:center;">';
-    echo '<th style="border: 1px solid black;" scope="col">หมายเลขออกงาน</th>';
+    echo '<th style="border: 1px solid black;" scope="col">หมายเลขใบเบิก</th>';
+    echo '<th style="border: 1px solid black;" scope="col">ผูกหมายเลขงาน</th>';
+    echo '<th style="border: 1px solid black;" scope="col">วันที่ออกใบเบิก</th>';
+    echo '<th style="border: 1px solid black;" scope="col">ประเภทการเบิก</th>';
+    echo '<th style="border: 1px solid black;" scope="col">ประเภทงาน</th>';
+    echo '<th style="border: 1px solid black;" scope="col">รายการอุปกรณ์</th>';
+    // echo '<th style="border: 1px solid black;" scope="col">หมายเลขครุภัณฑ์</th>';
+    echo '<th style="border: 1px solid black;" scope="col">หมายเลขครุภัณฑ์</th>';
+    echo '<th style="border: 1px solid black;" scope="col">อาการรับแจ้ง</th>';
+    echo '<th style="border: 1px solid black;" scope="col">เหตุผลและความจำเป็น</th>';
+    echo '<th style="border: 1px solid black;" scope="col">หน่วยงาน</th>';
+    echo '<th style="border: 1px solid black;" scope="col">ผู้รับเรื่อง</th>';
+    echo '<th style="border: 1px solid black;" scope="col">ร้านที่เสนอราคา</th>';
+    echo '<th style="border: 1px solid black;" scope="col">เลขที่ใบเสนอ</th>';
+    echo '<th style="border: 1px solid black;" scope="col">หมายเหตุ</th>';
+    echo '<th style="border: 1px solid black;" scope="col">สถานะ</th>';
+
+    echo '<th style="border: 1px solid black;" scope="col">รายการ</th>';
+    echo '<th style="border: 1px solid black;" scope="col">คุณสมบัติ</th>';
+    echo '<th style="border: 1px solid black;" scope="col">จำนวน</th>';
+    echo '<th style="border: 1px solid black;" scope="col">ราคา</th>';
+    echo '<th style="border: 1px solid black;" scope="col">หน่วย</th>';
+    echo '</tr>';
+    echo '</thead>';
+    echo '<tbody>';
+
+    // Print rows while skipping duplicate IDs
+    $previousId = null;
+    $previousNumberWork = null;
+    foreach ($mergedData as $row) {
+        echo '<tr>';
+
+        $statusTxt = $row['status'];
+
+        switch ($statusTxt) {
+            case 1:
+                $statusTxtSlect = "รอรับเอกสารจากหน่วยงาน";
+                break;
+            case 2:
+                $statusTxtSlect = "รอส่งเอกสารไปพัสดุ";
+                break;
+            case 3:
+                $statusTxtSlect = "รอพัสดุสั่งของ";
+                break;
+            case 4:
+                $statusTxtSlect = "รอหมายเลขครุภัณฑ์";
+                break;
+            case 5:
+                $statusTxtSlect = "ปิดงาน";
+                break;
+            case 6:
+                $statusTxtSlect = "ยกเลิก";
+                break;
+            default:
+                $statusTxtSlect = "ไม่พบสถานะ";
+                break;
+        }
+
+        // Print only the first occurrence of ID and numberWork, leave others blank
+        if ($row["id"] !== $previousId || $row["numberWork"] !== $previousNumberWork) {
+            echo '<td style="border: 1px solid black;" scope="row">' . "'" .  $row["numberWork"] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $row['id_ref'] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $row['dateWithdraw'] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $row['withdraw_name'] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $row['work_name'] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $row['device_name'] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $row["numberDevice"] . '</td>';
+            // echo '<td style="border: 1px solid black;" scope="row">' . $row['numberDevice1'] . ', ' . $row['numberDevice2'] . ', ' . $row['numberDevice3'] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $row['report'] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $row['reason'] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $row['depart_name'] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $row['refUsername'] . '</td>';
+            // echo '<td style="border: 1px solid black;" scope="row">' . $row['fname'] . ' ' . $row['lname'] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $row['offer_name'] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $row['quotation'] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $row['note'] . '</td>';
+            echo '<td style="border: 1px solid black;" scope="row">' . $statusTxtSlect . '</td>';
+        } else {
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+            echo '<td style="border: 1px solid black;" scope="row"></td>';
+        }
+
+        echo '<td style="border: 1px solid black;" scope="row">' . $row["list_name"] . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $row["quality"] . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $row["amount"] . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $row["price"] . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $row["unit"] . '</td>';
+
+        echo '</tr>';
+
+        $previousId = $row["id"];
+        $previousNumberWork = $row["numberWork"];
+    }
+
+    echo '</tbody>';
+    echo '</table>';
+}
+
+if (isset($_POST['DataAlls'])) {
+    echo '<head>';
+    echo '<meta charset="UTF-8">';
+
+    // Set headers for Excel file download
+    header("Content-Type: application/xls");
+    header("Content-Disposition: attachment; filename=บันทึกข้อมูลใบเบิก.xls");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    echo '</head>';
+
+    // Output the HTML for the table
+    echo '<table style="border: 1px solid black;">';
+    echo '<thead>';
+    echo '<tr style="text-align:center;">';
+    echo '<th style="border: 1px solid black;" scope="col">หมายเลขใบเบิก</th>';
+    echo '<th style="border: 1px solid black;" scope="col">ผูกหมายเลขงาน</th>';
     echo '<th style="border: 1px solid black;" scope="col">วันที่ออกใบเบิก</th>';
     echo '<th style="border: 1px solid black;" scope="col">ประเภทการเบิก</th>';
     echo '<th style="border: 1px solid black;" scope="col">ประเภทงาน</th>';
@@ -335,13 +533,11 @@ if (isset($_POST['DataAll'])) {
     echo '<th style="border: 1px solid black;" scope="col">เลขที่ใบเสนอ</th>';
     echo '<th style="border: 1px solid black;" scope="col">หมายเหตุ</th>';
     echo '<th style="border: 1px solid black;" scope="col">สถานะ</th>';
-    for ($i = 1; $i <= 15; $i++) {
-        echo '<th style="border: 1px solid black;" scope="col">รายการลำดับที่ ' . $i . '</th>';
-        echo '<th style="border: 1px solid black;" scope="col">คุณสมบัติลำดับที่ ' . $i . '</th>';
-        echo '<th style="border: 1px solid black;" scope="col">จำนวนลำดับที่ ' . $i . '</th>';
-        echo '<th style="border: 1px solid black;" scope="col">ราคาลำดับที่ ' . $i . '</th>';
-        echo '<th style="border: 1px solid black;" scope="col">หน่วยลำดับที่ ' . $i . '</th>';
-    }
+    echo '<th style="border: 1px solid black;" scope="col">รายการ</th>';
+    echo '<th style="border: 1px solid black;" scope="col">คุณสมบัติ</th>';
+    echo '<th style="border: 1px solid black;" scope="col">จำนวน</th>';
+    echo '<th style="border: 1px solid black;" scope="col">ราคา</th>';
+    echo '<th style="border: 1px solid black;" scope="col">หน่วย</th>';
     // ... (other table headers)
     echo '</tr>';
     echo '</thead>';
@@ -380,14 +576,12 @@ if (isset($_POST['DataAll'])) {
     LEFT JOIN 
     order_items AS oi ON od.id = oi.order_id
     WHERE 
-    (od.numberWork = :numberWork) AND
     (nd.is_deleted = 0 OR nd.is_deleted IS NULL)
     AND (oi.is_deleted = 0 OR oi.is_deleted IS NULL)
     ORDER BY nd.id, oi.id
     ";
 
     $stmt = $conn->prepare($sql);
-    $stmt->bindParam(":numberWork", $numberWork);
     $stmt->execute();
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -475,6 +669,7 @@ if (isset($_POST['DataAll'])) {
 
         echo '<tr style="text-align: center;"';
         echo '<td style="border: 1px solid black;" scope="row">' . "'" . $row['numberWork'] . '</td>';
+        echo '<td style="border: 1px solid black;" scope="row">' . $row['id_ref'] . '</td>';
         echo '<td style="border: 1px solid black;" scope="row">' . $row['dateWithdraw'] . '</td>';
         echo '<td style="border: 1px solid black;" scope="row">' . $row['withdraw_name'] . '</td>';
         echo '<td style="border: 1px solid black;" scope="row">' . $row['work_name'] . '</td>';
@@ -489,13 +684,13 @@ if (isset($_POST['DataAll'])) {
         echo '<td style="border: 1px solid black;" scope="row">' . $row['note'] . '</td>';
         echo '<td style="border: 1px solid black;" scope="row">' . $statusTxt . '</td>';
 
-        for ($i = 1; $i <= 15; $i++) {
-            echo '<td style="border: 1px solid black;" scope="col">' . $row["list{$i}"] . '</td>';
-            echo '<td style="border: 1px solid black;" scope="col">' . $row["quality{$i}"] . '</td>';
-            echo '<td style="border: 1px solid black;" scope="col">' . $row["amount{$i}"] . '</td>';
-            echo '<td style="border: 1px solid black;" scope="col">' . $row["price{$i}"] . '</td>';
-            echo '<td style="border: 1px solid black;" scope="col">' . $row["unit{$i}"] . '</td>';
-        }
+        // for ($i = 1; $i <= 15; $i++) {
+        //     echo '<td style="border: 1px solid black;" scope="col">' . $row["list{$i}"] . '</td>';
+        //     echo '<td style="border: 1px solid black;" scope="col">' . $row["quality{$i}"] . '</td>';
+        //     echo '<td style="border: 1px solid black;" scope="col">' . $row["amount{$i}"] . '</td>';
+        //     echo '<td style="border: 1px solid black;" scope="col">' . $row["price{$i}"] . '</td>';
+        //     echo '<td style="border: 1px solid black;" scope="col">' . $row["unit{$i}"] . '</td>';
+        // }
 
         echo '</tr>';
     }

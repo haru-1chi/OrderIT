@@ -1,5 +1,5 @@
 <?php
-session_start();
+// session_start(); รวมกับใบอื่นแล้ว
 require_once 'config/db.php';
 require_once 'template/navbar.php';
 

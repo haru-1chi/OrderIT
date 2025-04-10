@@ -45,6 +45,8 @@ if ($type === 'today') {
                     WHERE dp.status = 4
                     ";
 
+} elseif ($type === 'cards') {
+    $sql = "SELECT status, COUNT(*) as count FROM data_report GROUP BY status";
 } else {
     echo json_encode(["error" => "Invalid request type"]);
     exit;

@@ -749,7 +749,8 @@ ORDER BY os.status;
               <a href="พิมพ์ใบครุภัณฑ์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบกำหนดคุณสมบัติ</a>
               <a href="เอกสารคณะกรรมการ.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">เอกสารคณะกรรมการ</a>
               <a href="พิมพ์สติ๊กเกอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">สติ๊กเกอร์งาน</a>
-
+              <a href="ใบเบิกครุภัณฑ์ในแผน.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ครุภัณฑ์ในแผน</a>
+              <a href="รวมใบเบิก.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">รวมใบเบิก</a>
               <div class="d-flex justify-content-end align-items-center my-2">
                 <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-main" class="fs-4 fw-bold text-primary">0</span> บาท</p>
               </div>

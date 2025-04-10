@@ -76,7 +76,7 @@ function navbar($report_count = null)
                         <button class="btn dropdown-toggle" type="button" id="dropdownMenu2" data-bs-toggle="dropdown" aria-expanded="false" style="color: #fff; margin-top: 1px">
                             Dashboard
                             <?php if ($report_count > 0): ?>
-                                <span class="badge bg-danger"><?= $report_count ?></span>
+                                <span id="report-badge" class="badge bg-danger"><?= $report_count ?></span>
                             <?php endif; ?>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
@@ -132,6 +132,24 @@ function navbar($report_count = null)
         </div>
     </nav>
 
+    <script>
+    function fetchReportCount() {
+        fetch('badge_navbar.php')
+            .then(response => response.json())
+            .then(data => {
+                const badge = document.getElementById('report-badge');
+                if (badge) {
+                    badge.textContent = data.report_count;
+                    badge.style.display = data.report_count > 0 ? 'inline-block' : 'none';
+                }
+            })
+            .catch(error => console.error('Error fetching report count:', error));
+    }
+
+    // Fetch initially and set interval to update every 30 seconds
+    fetchReportCount();
+    setInterval(fetchReportCount, 30000);
+</script>
 <?php }
 function bs5()
 { ?>

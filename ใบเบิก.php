@@ -1,5 +1,5 @@
 <?php
-session_start();
+// session_start(); รวมกับใบอื่นแล้ว
 require_once 'config/db.php';
 require_once 'template/navbar.php';
 
@@ -216,25 +216,25 @@ $id = $_GET['workid'];
             $numberDeviceList = array_column($devices, 'numberDevice');
             $numberDeviceString = implode(', ', $numberDeviceList);
 
-            function toMonthThai($m)
-            {
-                $monthNamesThai = array(
-                    "",
-                    "มกราคม",
-                    "กุมภาพันธ์",
-                    "มีนาคม",
-                    "เมษายน",
-                    "พฤษภาคม",
-                    "มิถุนายน",
-                    "กรกฎาคม",
-                    "สิงหาคม",
-                    "กันยายน",
-                    "ตุลาคม",
-                    "พฤศจิกายน",
-                    "ธันวาคม"
-                );
-                return $monthNamesThai[$m];
-            }
+            // function toMonthThai($m) รวมกับใบอื่นแล้ว
+            // {
+            //     $monthNamesThai = array(
+            //         "",
+            //         "มกราคม",
+            //         "กุมภาพันธ์",
+            //         "มีนาคม",
+            //         "เมษายน",
+            //         "พฤษภาคม",
+            //         "มิถุนายน",
+            //         "กรกฎาคม",
+            //         "สิงหาคม",
+            //         "กันยายน",
+            //         "ตุลาคม",
+            //         "พฤศจิกายน",
+            //         "ธันวาคม"
+            //     );
+            //     return $monthNamesThai[$m];
+            // }
             $dateWithdrawFromDB = $order['dateWithdraw']; // เปลี่ยนตามฐานข้อมูลของคุณ
 
             // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp
@@ -252,65 +252,6 @@ $id = $_GET['workid'];
             $items = [];
         }
 
-
-        // $sql = "SELECT od.*, dp.depart_name ,lw.work_name,dv.device_name,ad.fname,ad.lname,dw.withdraw_name
-        // FROM orderdata AS od
-        // INNER JOIN depart AS dp ON od.refDepart = dp.depart_id
-        // INNER JOIN listwork AS lw ON od.refWork = lw.work_id
-        // INNER JOIN device AS dv ON od.refDevice = dv.device_id
-        // INNER JOIN withdraw AS dw ON od.refWithdraw = dw.withdraw_id
-        // INNER JOIN admin AS ad ON od.refUsername = ad.username
-        //  WHERE od.id = :id";
-        // $stmt = $conn->prepare($sql);
-        // $stmt->bindParam(":id", $id);
-        // $stmt->execute();
-        // $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // $Device2 = "";
-        // $Device3 = "";
-
-        // if ($data['numberDevice2'] == "") {
-        //     $Device2 = "";
-        // } else {
-        //     $Device2 = ', ' . $data["numberDevice2"];
-        // }
-        // if ($data['numberDevice3'] == "") {
-        //     $Device3 = "";
-        // } else {
-        //     $Device3 = ', ' . $data["numberDevice3"];
-        // }
-
-        // function toMonthThai($m)
-        // {
-        //     $monthNamesThai = array(
-        //         "",
-        //         "มกราคม",
-        //         "กุมภาพันธ์",
-        //         "มีนาคม",
-        //         "เมษายน",
-        //         "พฤษภาคม",
-        //         "มิถุนายน",
-        //         "กรกฎาคม",
-        //         "สิงหาคม",
-        //         "กันยายน",
-        //         "ตุลาคม",
-        //         "พฤศจิกายน",
-        //         "ธันวาคม"
-        //     );
-        //     return $monthNamesThai[$m];
-        // }
-        // $dateWithdrawFromDB = $data['dateWithdraw']; // เปลี่ยนตามฐานข้อมูลของคุณ
-
-        // // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp
-        // $timestamp = strtotime($dateWithdrawFromDB);
-
-        // // ดึงเดือน
-        // $monthNumber = date('n', $timestamp);
-
-        // // แปลงเดือนเป็นภาษาไทย
-        // $monthThai = toMonthThai($monthNumber);
-
-        // แสดงผล
         ?>
         <div class="d-flex justify-content-between">
             <img width="70pt" height="80pt" style="text-align:left; margin-top: -10pt" src="image/ตราครุฑ 3cm.png" alt="">
@@ -332,60 +273,6 @@ $id = $_GET['workid'];
         <p style="line-height:10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; กลุ่มงาน <?= $order['depart_name'] ?> มีความประสงค์ขออนุมัติเบิก</p>
         <div style="margin-top: -20pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ........................................................................................................................................................................................................................................................</div>
         <?php
-        // $columns = [];
-
-        // for ($i = 1; $i <= 15; $i++) {
-        //     $columns[] = "`list$i`, `quality$i`, `amount$i`, `price$i` , `unit$i`";
-        // }
-        // $columnString = implode(", ", $columns);
-        // $sql = "SELECT `list1`, `list2`, `list3`, `list4`, `list5`, `list6`, `list7`, `list8`, `list9`, `list10`, `list11`, `list12`, `list13`, `list14` FROM `orderdata` WHERE id = :id";
-        // $stmt = $conn->prepare($sql);
-        // $stmt->bindParam(":id", $id);
-        // $stmt->execute();
-        // $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // $filteredResult = array_filter($result, function ($value) {
-        //     return $value !== null && $value !== '';
-        // });
-
-        // $columnCount = count($filteredResult);
-
-        // $sql = "SELECT $columnString FROM `orderdata` WHERE id = :id";
-        // $stmt = $conn->prepare($sql);
-        // $stmt->bindParam(":id", $id);
-        // $stmt->execute();
-        // $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // $sum = 0;
-        // for ($i = 1; $i <= 15; $i++) {
-
-        //     $list = $result["list$i"];
-        //     $quality = $result["quality$i"];
-        //     $amount = $result["amount$i"];
-        //     $price = $result["price$i"];
-        //     $unit = $result["unit$i"];
-
-        //     $amount = intval($amount);
-        //     $price = intval($price);
-
-
-        //     // คำนวณ $sum
-        //     $currentSum = $amount * $price;
-
-        //     $sum += intval($currentSum);
-
-        //     // ตรวจสอบว่า $currentSum เป็น 0 หรือไม่
-        //     if ($currentSum == 0) {
-        //         $currentSum = ""; // กำหนดให้ $currentSum เป็นค่าว่าง
-        //     }
-        //     if ($result["list$i"] == "" || $result["quality$i"] == "" || $result["amount$i"] == "" || $result["price$i"] == "" || $result["unit$i"] == "") {
-        //         $list = "";
-        //         $quality = "";
-        //         $amount = "";
-        //         $price = "";
-        //         $unit = "";
-        //     }
-        // }
 
         function numberToThaiWords($number)
         {
@@ -468,46 +355,8 @@ $id = $_GET['workid'];
                 </thead>
                 <tbody class="text-center">
                     <?php
-
-                    // $sum = 0;
-
-                    // for ($i = 1; $i <= 15; $i++) {
-
-                    //     $list = $result["list$i"];
-                    //     $quality = $result["quality$i"];
-                    //     $amount = $result["amount$i"];
-                    //     $price = $result["price$i"];
-                    //     $unit = $result["unit$i"];
-
-                    //     // คำนวณ $sum
-                    //     $amount = intval($amount);
-                    //     $price = intval($price);
-                    //     $currentSum = $amount * $price;
-
-                    //     $sum += intval($currentSum);
-
-                    //     // ตรวจสอบว่า $currentSum เป็น 0 หรือไม่
-                    //     if ($currentSum == 0) {
-                    //         $currentSum = ""; // กำหนดให้ $currentSum เป็นค่าว่าง
-                    //     }
-                    //     if ($result["list$i"] == "" || $result["quality$i"] == "" || $result["amount$i"] == "" || $result["price$i"] == "") {
-                    //         $list = "";
-                    //         $quality = "";
-                    //         $amount = "";
-                    //         $price = "";
-                    //         $unit = "";
-                    //     }
-                    //     $deviceModelName = "";
-                    //     if (!empty($list)) {
-                    //         $sqlDeviceModel = "SELECT models_name FROM device_models WHERE models_id = :models_id";
-                    //         $stmtDeviceModel = $conn->prepare($sqlDeviceModel);
-                    //         $stmtDeviceModel->bindParam(":models_id", $list);
-                    //         $stmtDeviceModel->execute();
-                    //         $deviceModelResult = $stmtDeviceModel->fetch(PDO::FETCH_ASSOC);
-                    //         $deviceModelName = $deviceModelResult['models_name'];
-                    //     }
                     $rowCount = count($items);
-                    $emptyRows = 15 - $rowCount;
+                    $emptyRows = 10 - $rowCount;
                     $index = 0;
                     foreach ($items as $item): ?>
                         <tr class="empty-row">
@@ -557,26 +406,28 @@ $id = $_GET['workid'];
         <div class="d-flex justify-content-end">
             <div>
                 <p style="text-align:right;line-height:8pt">(ลงชื่อ)____________________________________เจ้าหน้าที่</p>
-                <p style="text-align:left;line-height:8pt">( __________________________________ )</p>
+                <p style="text-align:left;line-height:8pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( __________________________________ )</p>
                 <p style="text-align:left;line-height:8pt">ตำแหน่ง_______________________________
                 </p>
             </div>
         </div>
-        <div style="margin-top: 20pt;" class="d-flex justify-content-end">
-
+        <div style="margin-top: 30pt;" class="d-flex justify-content-end">
             <div>
                 <p style="text-align:right;line-height:8pt">(ลงชื่อ)_______________________________หัวหน้ากลุ่มงาน</p>
-                <p style="text-align:left;line-height:8pt">( __________________________________ )</p>
+                <p style="text-align:left;line-height:8pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( __________________________________ )</p>
                 <p style="text-align:left;line-height:8pt">ตำแหน่ง_______________________________
                 </p>
             </div>
         </div>
-        <!-- <footer>
-            <p style="float:right;font-size:10pt;">
-                พัฒนาโดย นายอานุภาพ ศรเทียน, ปรินทร ปัญโยน้อย นักเรียนวิทยาลัยเทคนิคแม่สอด
-            </p>
-        </footer> -->
-
+        <div style="margin-top: 30pt; margin-right: 65px;" class="d-flex justify-content-end">
+            <div>
+                <p style="text-align:center;line-height:8pt; margin-bottom: 45px;">อนุมัติ</p>
+                <p style="text-align:center;line-height:8pt">_____________________________</p>
+                <p style="text-align:center;line-height:8pt">( __________________________________ )</p>
+                <p style="text-align:center;line-height:8pt">หัวหน้ากลุ่มภารกิจ
+                </p>
+            </div>
+        </div>
     </div>
 
 

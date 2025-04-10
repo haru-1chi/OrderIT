@@ -92,16 +92,9 @@ if (!isset($_SESSION["admin_log"])) {
 
 <body>
     <?php
-    //แสดง Badge จำนวนงาน
-    $sql = "SELECT COUNT(*) as count FROM data_report WHERE `status` = 0";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute();
-    $row = $stmt->fetch(PDO::FETCH_ASSOC); // Fetch only one row
-
-    $_SESSION['report_count'] = $row['count'] ?? 0; // Get the count value
+    $report_count = $_SESSION['report_count'] ?? 0;
+    navbar($report_count)
     ?>
-
-    <?php navbar($_SESSION['report_count']) ?>
 
     <div class="container">
         <?php if (isset($_SESSION['error'])) { ?>
@@ -133,8 +126,9 @@ if (!isset($_SESSION["admin_log"])) {
         <div class="row">
             <div class="col-sm-12 col-lg-12 col-md-12">
                 <h1 class="text-center my-4">สรุปยอดจำนวนงาน</h1>
+                <div class="row d-flex justify-content-center"></div>
                 <div class="d-flex">
-                    <div class="card p-3 mt-0 m-4" style="width: 1850px; height: 400px;">
+                    <div class="card p-3 mt-4 rounded-4" style="width: 1850px; height: 400px;">
                         <input type="hidden" id="filter-date" class="form-control mb-3" />
                         <select id="timelineFilter" class="form-control">
                             <option value="problem" selected>Activity Report</option>
@@ -145,69 +139,12 @@ if (!isset($_SESSION["admin_log"])) {
                         <canvas id="gantt-summary" width="800" height="200"></canvas>
                     </div>
                 </div>
-                <div class="row d-flex justify-content-center">
-                    <?php
-                    $sql = "SELECT status, COUNT(*) as count FROM data_report GROUP BY status";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->execute();
-                    $statusCounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                    $statusOptions = array(
-                        0 => array(
-                            'text' => "งานที่ยังไม่ได้รับ",
-                            'color' => "#FF7575"
-                        ),
-                        2 => array(
-                            'text' => "กำลังดำเนินงาน",
-                            'color' => "#F8BF24"
-                        ),
-                        3 => array(
-                            'text' => "รออะไหล่",
-                            'color' => "#659BFF"
-                        ),
-                        4 => array(
-                            'text' => "เสร็จงาน",
-                            'color' => "#6CC668"
-                        ),
-                        5 => array(
-                            'text' => "ส่งซ่อม",
-                            'color' => "#D673D3"
-                        ),
-                        6 => array(
-                            'text' => "รอกรอกรายละเอียด",
-                            'color' => "#6CC668"
-                        ),
-
-                    );
-                    foreach ($statusCounts as $statusCount) {
-                        $status = $statusCount['status'];
-                        $count = $statusCount['count'];
-
-                        $textS = isset($statusOptions[$status]['text']) ? $statusOptions[$status]['text'] : "ไม่ระบุสถานะ";
-                        $color = isset($statusOptions[$status]['color']) ? $statusOptions[$status]['color'] : sprintf('#%06X', rand(0, 0xFFFFFF));
-
-                    ?>
-                        <div class="col-sm-2">
-                            <div class="rounded-3 text-white ps-3 pb-2" style="max-width: 18rem; background-color: <?= $color ?>">
-                                <div class="card-header">
-                                    <ion-icon name="people-outline"></ion-icon>
-                                    <div class="d-flex align-items-end">
-                                        <p style="font-size: 45px; margin: 0px;"><?= $count ?></p>
-                                        <p class="ms-2" style="font-size: 32px; margin: 0px; margin-bottom:.4rem;">งาน</p>
-                                    </div>
-                                    <p style="font-size: 20px; margin: 0px;"><?= $textS ?> </p>
-
-                                </div>
-                            </div>
-                        </div>
-                    <?php } ?>
-                    <!-- </div> -->
-                </div>
 
                 <!-- ------------------- notification -------------------- -->
                 <!-- <button type="button" class="btn btn-primary" id="liveToastBtn">Show live toast</button> -->
 
                 <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+                <audio id="notificationSound" src="audio/0313.MP3"></audio>
 
                 <script>
                     let lastReportId = 0; // Track the highest ID we've seen
@@ -252,6 +189,8 @@ if (!isset($_SESSION["admin_log"])) {
                         const toast = new bootstrap.Toast(toastElement);
                         toast.show();
 
+                        document.getElementById('notificationSound').play();
+
                         // Optional: Auto-remove toast from DOM after hidden
                         toastElement.addEventListener('hidden.bs.toast', () => {
                             toastElement.remove();
@@ -294,13 +233,13 @@ if (!isset($_SESSION["admin_log"])) {
                         <table id="inTime" class="table table-warning">
                             <thead>
                                 <tr>
-                                    <th scope="col">หมายเลข</th>
+                                    <th scope="col" style="width: 80px;">หมายเลข</th>
                                     <th scope="col">ผู้ซ่อม</th>
                                     <th scope="col">อุปกรณ์</th>
                                     <th scope="col">อาการที่ได้รับแจ้ง</th>
                                     <th scope="col">หน่วยงาน</th>
-                                    <th scope="col">เวลาแจ้ง</th>
-                                    <th scope="col">เวลารับงาน</th>
+                                    <th scope="col" style="width: 80px;">เวลาแจ้ง</th>
+                                    <th scope="col" style="width: 80px;">เวลารับงาน</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -339,13 +278,13 @@ if (!isset($_SESSION["admin_log"])) {
                         <table id="wait" class="table table-primary">
                             <thead>
                                 <tr>
-                                    <th scope="col">หมายเลขงาน</th>
+                                    <th scope="col" style="width: 80px;">หมายเลข</th>
                                     <th scope="col">ผู้ซ่อม</th>
                                     <th scope="col">อุปกรณ์</th>
                                     <th scope="col">อาการที่ได้รับแจ้ง</th>
                                     <th scope="col">หน่วยงาน</th>
-                                    <th scope="col">เวลาแจ้ง</th>
-                                    <th scope="col">เวลารับงาน</th>
+                                    <th scope="col" style="width: 80px;">เวลาแจ้ง</th>
+                                    <th scope="col" style="width: 80px;">เวลารับงาน</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -364,15 +303,15 @@ if (!isset($_SESSION["admin_log"])) {
                         <table id="success" class="table table-success">
                             <thead>
                                 <tr>
-                                    <th style="text-align: left;">หมายเลขงาน</th>
-                                    <th style="text-align: left; width: 170px;">ผู้ซ่อม</th>
-                                    <th style="text-align: left;">อาการที่ได้รับแจ้ง</th>
-                                    <th style="text-align: left; width: 170px;">หน่วยงาน</th>
-                                    <th style="text-align: left; width: 170px;">SLA</th>
-                                    <th style="text-align: left; width: 120px;">ตัวชี้วัด</th>
-                                    <th style="text-align: left; width: 80px;">เวลาแจ้ง</th>
-                                    <th style="text-align: left; width: 80px;">เวลารับงาน</th>
-                                    <th style="text-align: left; width: 80px;">เวลาปิดงาน</th>
+                                    <th scope="col" style="text-align: left; width: 80px;">หมายเลข</th>
+                                    <th scope="col" style="text-align: left; width: 170px;">ผู้ซ่อม</th>
+                                    <th scope="col" style="text-align: left;">อาการที่ได้รับแจ้ง</th>
+                                    <th scope="col" style="text-align: left; width: 170px;">หน่วยงาน</th>
+                                    <th scope="col" style="text-align: left; width: 170px;">SLA</th>
+                                    <th scope="col" style="text-align: left; width: 120px;">ตัวชี้วัด</th>
+                                    <th scope="col" style="text-align: left; width: 80px;">เวลาแจ้ง</th>
+                                    <th scope="col" style="text-align: left; width: 80px;">เวลารับงาน</th>
+                                    <th scope="col" style="text-align: left; width: 80px;">เวลาปิดงาน</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -382,6 +321,68 @@ if (!isset($_SESSION["admin_log"])) {
                 </div>
 
                 <script>
+function fetchCards(type) {
+                        fetch(`dashboard_get_tasks.php?type=${type}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                const statusOptions = {
+                                    0: {
+                                        text: "งานที่ยังไม่ได้รับ",
+                                        color: "#FF7575"
+                                    },
+                                    2: {
+                                        text: "กำลังดำเนินงาน",
+                                        color: "#F8BF24"
+                                    },
+                                    3: {
+                                        text: "รออะไหล่",
+                                        color: "#659BFF"
+                                    },
+                                    4: {
+                                        text: "เสร็จงาน",
+                                        color: "#6CC668"
+                                    },
+                                    5: {
+                                        text: "ส่งซ่อม",
+                                        color: "#D673D3"
+                                    },
+                                    6: {
+                                        text: "รอกรอกรายละเอียด",
+                                        color: "#6CC668"
+                                    },
+                                };
+
+                                const container = document.querySelector('.row.d-flex.justify-content-center');
+                                container.innerHTML = ''; // Clear existing content
+
+                                data.forEach(({
+                                    status,
+                                    count
+                                }) => {
+                                    const textS = statusOptions[status]?.text || "ไม่ระบุสถานะ";
+                                    const color = statusOptions[status]?.color || `#${Math.floor(Math.random()*16777215).toString(16)}`;
+
+                                    const card = `
+                        <div class="col-sm-2">
+                            <div class="rounded-3 text-white ps-3 pb-2" style="max-width: 18rem; background-color: ${color}">
+                                <div class="card-header">
+                                    <ion-icon name="people-outline"></ion-icon>
+                                    <div class="d-flex align-items-end">
+                                        <p style="font-size: 45px; margin: 0px;">${count}</p>
+                                        <p class="ms-2" style="font-size: 32px; margin: 0px; margin-bottom:.4rem;">งาน</p>
+                                    </div>
+                                    <p style="font-size: 20px; margin: 0px;">${textS}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                                    container.innerHTML += card;
+                                });
+                            })
+                            .catch(error => console.error('Error fetching data:', error));
+                    }
+
                     function fetchTasks(type, tableId) {
                         fetch(`dashboard_get_tasks.php?type=${type}`)
                             .then(response => response.json())
@@ -474,12 +475,15 @@ if (!isset($_SESSION["admin_log"])) {
                     fetchTasks("over_due", "dataAllNOTTAKE");
                     fetchTasks("calm", "wait");
                     fetchTasks("finish", "success");
+
+                    fetchCards('cards');
                     // fetchTasks("success", "success");
 
                     // Optionally, refresh data every 30 seconds without reloading the page
                     setInterval(() => {
                         fetchTasks("today", "dataAll");
                         fetchTasks("in_progress", "inTime");
+                        fetchCards('cards');
                     }, 30000);
                 </script>
 

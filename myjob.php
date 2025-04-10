@@ -1627,86 +1627,6 @@ if (!isset($_SESSION["admin_log"])) {
 
     <div class="container-fluid">
         <?php
-        if (isset($_POST['checkDate_status_6'])) {
-            // Get values from form
-            $dateStartB = $_POST['dateStart_unfilled'];
-            $dateEndB = $_POST['dateEnd_unfilled'];
-
-            // Convert to Buddhist Year
-            $yearStartB = date("Y", strtotime($dateStartB)) + 543;
-            $yearEndB = date("Y", strtotime($dateEndB)) + 543;
-
-            $dateStart_buddhistB = $yearStartB . "-" . date("m-d", strtotime($dateStartB));
-            $dateEnd_buddhistB = $yearEndB . "-" . date("m-d", strtotime($dateEndB));
-
-            $sql = "
-SELECT * 
-FROM (
-    SELECT dp.*, dt.depart_name, 
-        SEC_TO_TIME(
-            CASE
-                WHEN sla LIKE 'คอมพิวเตอร์ ใช้งานไม่ได้%' THEN 30 * 60
-                WHEN sla LIKE 'เครื่องพิมพ์ ใช้งานไม่ได้ - 30 นาที%' THEN 30 * 60
-                WHEN sla LIKE 'PMK ใช้งานไม่ได้%' THEN 15 * 60
-                WHEN sla LIKE 'Internet ใช้งานไม่ได้%' THEN 20 * 60
-                ELSE 0
-            END
-        ) AS use_time, 
-        SEC_TO_TIME(ABS(TIME_TO_SEC(TIMEDIFF(close_date, take)))) AS time_range, 
-        SEC_TO_TIME(
-            GREATEST(
-                ABS(TIME_TO_SEC(TIMEDIFF(close_date, take))) - 
-                CASE
-                    WHEN sla LIKE 'คอมพิวเตอร์ ใช้งานไม่ได้%' THEN 30 * 60
-                    WHEN sla LIKE 'เครื่องพิมพ์ ใช้งานไม่ได้ - 30 นาที%' THEN 30 * 60
-                    WHEN sla LIKE 'PMK ใช้งานไม่ได้%' THEN 15 * 60
-                    WHEN sla LIKE 'Internet ใช้งานไม่ได้%' THEN 20 * 60
-                    ELSE 0
-                END, 
-                0
-            )
-        ) AS over_time 
-    FROM data_report AS dp
-    LEFT JOIN depart AS dt ON dp.department = dt.depart_id
-    WHERE dp.username = :username 
-      AND sla IS NOT NULL
-      AND sla != ''
-      AND sla != 'ไม่ใช่'
-      AND note = ''
-      AND dp.date_report BETWEEN :dateStart AND :dateEnd
-        AND GREATEST(
-ABS(TIME_TO_SEC(TIMEDIFF(close_date, take))) - 
-CASE
-    WHEN sla LIKE 'คอมพิวเตอร์ ใช้งานไม่ได้%' THEN 30 * 60
-    WHEN sla LIKE 'เครื่องพิมพ์ ใช้งานไม่ได้ - 30 นาที%' THEN 30 * 60
-    WHEN sla LIKE 'PMK ใช้งานไม่ได้%' THEN 15 * 60
-    WHEN sla LIKE 'Internet ใช้งานไม่ได้%' THEN 20 * 60
-    ELSE 0
-END, 
-0
-) > 0
-
-    UNION 
-
-    SELECT dp.*, dt.depart_name, 
-        NULL AS use_time, 
-        NULL AS time_range, 
-        NULL AS over_time 
-    FROM data_report AS dp
-    LEFT JOIN depart AS dt ON dp.department = dt.depart_id
-    WHERE dp.username = :username 
-      AND dp.status = 6 
-      AND dp.date_report BETWEEN :dateStart AND :dateEnd
-) AS combined_result
-GROUP BY id
-ORDER BY id DESC;
-";
-
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(":username", $admin);
-            $stmt->bindParam(":dateStart", $dateStart_buddhistB);
-            $stmt->bindParam(":dateEnd", $dateEnd_buddhistB);
-        } else {
             $sql = "
 SELECT * 
 FROM (
@@ -1762,16 +1682,13 @@ END,
     FROM data_report AS dp
     LEFT JOIN depart AS dt ON dp.department = dt.depart_id
     WHERE dp.username = :username 
-      AND dp.status = 6 
+      AND (dp.status = 6 OR dp.status = 3)
 ) AS combined_result
 GROUP BY id
 ORDER BY id DESC;
 ";
-
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(":username", $admin);
-        }
-
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -1800,18 +1717,6 @@ ORDER BY id DESC;
                             <button name="actUncomplete" class="btn btn-primary" type="submit">Export->Excel</button>
                         </form>
                     </div>
-
-                    <form action="" method="post">
-                        <div class="d-flex gap-4">
-                            <!-- ห้ามลบ แต่เป็นค่าว่างน่าจะได้ -->
-
-                            <input type="date" value="<?= isset($dateStartB) ? $dateStartB : ''; ?>" name="dateStart_unfilled"
-                                class="form-control" style="width: 250px;">
-                            <input type="date" value="<?= isset($dateEndB) ? $dateEndB : ''; ?>" name="dateEnd_unfilled"
-                                class="form-control" style="width: 250px;">
-                            <button type="submit" name="checkDate_status_6" class="btn btn-primary">ยืนยัน</button>
-                        </div>
-                    </form>
                 </div>
 
                 <hr>

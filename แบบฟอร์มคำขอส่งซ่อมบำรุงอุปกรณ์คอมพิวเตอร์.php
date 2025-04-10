@@ -1,5 +1,5 @@
 <?php
-session_start();
+// session_start(); รวมกับใบอื่นแล้ว
 require_once 'config/db.php';
 require_once 'template/navbar.php';
 
@@ -347,7 +347,7 @@ ORDER BY nd.id, oi.id
                 <tbody class="text-center text-start">
                     <?php
                     $rowCount = count($items); // Get the current number of items
-                    $emptyRows = 15 - $rowCount; // Calculate how many empty rows to add
+                    $emptyRows = 10 - $rowCount; // Calculate how many empty rows to add
                     $index = 0; // Initialize index to start from 1
 
                     // Loop through the existing items
