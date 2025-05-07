@@ -680,12 +680,15 @@ if (isset($_POST['submit_with_work'])) {
     $sla = $_POST['sla'] ?? null;
     $kpi = $_POST['kpi'] ?? null;
     $close_date = $_POST['close_date'] ?? null;
+    $close_time = null;
     $statusTask = 3;
     if (!empty($close_date) && strtotime($close_date)) {
         if (empty($device) || empty($problem) || empty($sla) || empty($kpi)) {
             $statusTask = 6; // Incomplete
+            $close_time = date('Y-m-d');
         } else {
             $statusTask = 4; // Complete
+            $close_time = date('Y-m-d');
         }
     }
 
@@ -822,7 +825,7 @@ if (isset($_POST['submit_with_work'])) {
                 $updateSql = "UPDATE data_report 
                               SET date_report = :date_report, time_report = :time_report, take = :take, problem = :problem, description = :description, note = :note, withdraw = :withdraw,
                                   number_device = :number_device, device = :device, deviceName = :deviceName, sla = :sla, 
-                                  kpi = :kpi, repair_count = :repair_count, close_date = :close_date, department = :department";
+                                  kpi = :kpi, repair_count = :repair_count, close_time = :close_time, close_date = :close_date, department = :department";
 
                 // if (!empty($close_date) && strtotime($close_date)) {
                 $updateSql .= ", status = :status";
@@ -844,6 +847,7 @@ if (isset($_POST['submit_with_work'])) {
                 $updateStmt->bindParam(":kpi", $kpi);
                 $updateStmt->bindParam(":repair_count", $repair_count);
                 $updateStmt->bindParam(":close_date", $close_date);
+                $updateStmt->bindParam(":close_time", $close_time);
                 $updateStmt->bindParam(":department", $department);
                 $updateStmt->bindParam(":id_ref", $id_ref);
                 // if (!empty($close_date) && strtotime($close_date)) {
@@ -915,12 +919,15 @@ if (isset($_POST['save_with_work'])) {
     $sla = $_POST['sla'] ?? null;
     $kpi = $_POST['kpi'] ?? null;
     $close_date = $_POST['close_date'] ?? null;
+    $close_time = null;
     $statusTask = 3;
     if (!empty($close_date) && strtotime($close_date)) {
         if (empty($device) || empty($problem) || empty($sla) || empty($kpi)) {
             $statusTask = 6; // Incomplete
+            $close_time = date('Y-m-d');
         } else {
             $statusTask = 4; // Complete
+            $close_time = date('Y-m-d');
         }
     }
 
@@ -1136,7 +1143,7 @@ if (isset($_POST['save_with_work'])) {
                 $updateSql = "UPDATE data_report 
                               SET date_report = :date_report, time_report = :time_report, take = :take,problem = :problem, description = :description, note = :note, withdraw = :withdraw,
                                   number_device = :number_device, device = :device, deviceName = :deviceName, sla = :sla, 
-                                  kpi = :kpi, repair_count = :repair_count, close_date = :close_date, department = :department";
+                                  kpi = :kpi, repair_count = :repair_count, close_time = :close_time,close_date = :close_date, department = :department";
 
                 // if (!empty($close_date) && strtotime($close_date)) {
                 $updateSql .= ", status = :status";
@@ -1158,6 +1165,7 @@ if (isset($_POST['save_with_work'])) {
                 $updateStmt->bindParam(":kpi", $kpi);
                 $updateStmt->bindParam(":repair_count", $repair_count);
                 $updateStmt->bindParam(":close_date", $close_date);
+                $updateStmt->bindParam(":close_time", $close_time);
                 $updateStmt->bindParam(":department", $department);
                 $updateStmt->bindParam(":id_ref", $id_ref);
                 // if (!empty($close_date) && strtotime($close_date)) {
@@ -1539,7 +1547,7 @@ if (isset($_POST['CheckAll'])) {
     // var_dump([
     //     '$_POST[update_status]' => $_POST['update_status'],
     //     '$update_status' => $update_status,
-        
+
     //     'numberWork' => $numberWork,
     //     'dateWithdraw' => $dateWithdraw,
     //     'refUsername' => $refUsername,
@@ -1605,13 +1613,16 @@ if (isset($_POST['CheckAll'])) {
                 $itemStmt->execute();
             }
 
-            $statusSql = "INSERT INTO order_status (order_id, status, timestamp) 
-                VALUES (:order_id, :status, :timestamp)";
-            $statusStmt = $conn->prepare($statusSql);
-            $statusStmt->bindParam(':order_id', $orderId);
-            $statusStmt->bindParam(':status', $status);
-            $statusStmt->bindParam(':timestamp', $timestamp);
-            $statusStmt->execute();
+            $previousStatuses = range(1, $status); // [1, 2, 3]
+            foreach ($previousStatuses as $s) {
+                $statusSql = "INSERT INTO order_status (order_id, status, timestamp) 
+                              VALUES (:order_id, :status, :timestamp)";
+                $statusStmt = $conn->prepare($statusSql);
+                $statusStmt->bindParam(':order_id', $orderId);
+                $statusStmt->bindParam(':status', $s);
+                $statusStmt->bindParam(':timestamp', $timestamp);
+                $statusStmt->execute();
+            }
             //-------------------------------
             if ($_POST['update_status']) {
                 $update_status_Sql = "INSERT INTO order_status (order_id, status, timestamp) VALUES (:order_id, :status, :timestamp)";
@@ -1820,6 +1831,7 @@ if (isset($_POST['CloseSubmit'])) {
         // Otherwise, use the provided 'close_date'
         $close_date = $_POST['close_date'];
     }
+    $close_time = date('Y-m-d');
 
     if (empty($device) || empty($problem) || empty($sla) || empty($kpi)) {
         $status = 6;
@@ -1838,6 +1850,7 @@ if (isset($_POST['CloseSubmit'])) {
                     number_device = :number_device,
                     repair_count = :repair_count,
                     close_date = :close_date, 
+                    close_time = :close_time, 
                     note = :note, 
                     status = :status, 
                     department = :department 
@@ -1856,6 +1869,7 @@ if (isset($_POST['CloseSubmit'])) {
         $stmt->bindParam(":repair_count", $repair_count);
         $stmt->bindParam(":kpi", $kpi);
         $stmt->bindParam(":close_date", $close_date);
+        $stmt->bindParam(":close_time", $close_time);
         $stmt->bindParam(":note", $note);
         $stmt->bindParam(":department", $department);
         $stmt->bindParam(":id", $id);
@@ -1933,8 +1947,10 @@ if (isset($_POST['Bantext'])) {
     if (!empty($close_date) && strtotime($close_date)) {
         if (empty($device) || empty($problem) || empty($sla) || empty($kpi)) {
             $status = 6; // Incomplete
+            $close_time = date('Y-m-d');
         } else {
             $status = 4; // Complete
+            $close_time = date('Y-m-d');
         }
     }
 
@@ -1965,6 +1981,7 @@ if (isset($_POST['Bantext'])) {
                     kpi = :kpi, 
                     repair_count = :repair_count,
                     close_date = :close_date, 
+                    close_time = :close_time, 
                     department = :department";
 
         // Append status update only if close_date is provided
@@ -1990,6 +2007,7 @@ if (isset($_POST['Bantext'])) {
         $stmt->bindParam(":sla", $sla);
         $stmt->bindParam(":kpi", $kpi);
         $stmt->bindParam(":close_date", $close_date);
+        $stmt->bindParam(":close_time", $close_time);
         $stmt->bindParam(":department", $department);
         $stmt->bindParam(":id", $id);
 
@@ -2091,12 +2109,13 @@ if (isset($_POST['saveWorkSuccess'])) {
     $description = $_POST['description'];
     $withdraw = $_POST['withdraw'];
     $close_date = $_POST['close_date'];
+    $close_time = date('Y-m-d');
     $username = $_POST['username'];
     $status = 4;
 
     try {
-        $sql = "INSERT INTO data_report(time_report, date_report, device, number_device, ip_address, report, reporter, department, tel, take, problem, description, withdraw, close_date, status,username,deviceName) 
-                VALUES (:time_report, :date_report, :device, :number_device, :ip_address, :report, :reporter, :department, :tel, :take, :problem, :description, :withdraw, :close_date, :status,:username,:deviceName)";
+        $sql = "INSERT INTO data_report(time_report, date_report, device, number_device, ip_address, report, reporter, department, tel, take, problem, description, withdraw, close_time,close_date, status,username,deviceName) 
+                VALUES (:time_report, :date_report, :device, :number_device, :ip_address, :report, :reporter, :department, :tel, :take, :problem, :description, :withdraw, :close_time,:close_date, :status,:username,:deviceName)";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":time_report", $time_report);
@@ -2113,6 +2132,7 @@ if (isset($_POST['saveWorkSuccess'])) {
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":withdraw", $withdraw);
         $stmt->bindParam(":close_date", $close_date);
+        $stmt->bindParam(":close_time", $close_time);
         $stmt->bindParam(":status", $status);
         $stmt->bindParam(":username", $username);
         $stmt->bindParam(":deviceName", $deviceName);

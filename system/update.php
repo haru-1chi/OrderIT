@@ -404,8 +404,39 @@ if (isset($_POST['updateData'])) {
                 $stmt->execute();
             }
         }
-    }
 
+        $sqlOld = "SELECT * FROM orderdata_new WHERE id = :id";
+        $stmtOld = $conn->prepare($sqlOld);
+        $stmtOld->bindParam(":id", $id);
+        $stmtOld->execute();
+        $oldData = $stmtOld->fetch(PDO::FETCH_ASSOC);
+
+        // Step 2: Loop over all fields in oldData
+        foreach ($oldData as $field => $oldValue) {
+            // Skip the primary key field (e.g., "id")
+            if ($field === "id") continue;
+
+            // Check if a new value was submitted for this field
+            if (isset($_POST[$field])) {
+                $newValue = $_POST[$field];
+
+                // Only insert into history if the value actually changed
+                if ($oldValue != $newValue) {
+                    $stmtHistory = $conn->prepare("
+                        INSERT INTO order_history (order_id, field_name, old_value, new_value, edited_by)
+                        VALUES (:order_id, :field_name, :old_value, :new_value, :edited_by)
+                    ");
+                    $stmtHistory->execute([
+                        ':order_id'   => $id,
+                        ':field_name' => $field,
+                        ':old_value'  => $oldValue,
+                        ':new_value'  => $newValue,
+                        ':edited_by'  => $editedBy // Define $editedBy earlier (e.g., from session)
+                    ]);
+                }
+            }
+        }
+    }
     $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
     $_SESSION["warning"] = "กรุณาตรวจสอบสถานะของใบงานอีกครั้ง";
     header("location: ../check.php?numberWork=$numberWork");

@@ -19,18 +19,265 @@ if (isset($_SESSION['admin_log'])) {
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-// Set the file encoding to UTF-8
-header('Content-Type: text/html; charset=utf-8');
+if (isset($_POST['activity_username'])) {
+    $filter = $_POST['filter'] ?? 'problem';
+    $selectedUser = $_POST['username'] ?? 'all';
+    $dateFilterType = $_POST['date_filter_type'] ?? 'period';
+    $filterCondition = "1"; // default if nothing set
+    $start = null;
+    $end = null;
+    if ($dateFilterType === 'period') {
+        $period = $_POST['period'] ?? 'week';
+        switch ($period) {
+            case 'week':
+                $filterCondition = "WEEK(DATE_SUB(date_report, INTERVAL 543 YEAR)) = WEEK(CURDATE())";
+                break;
+            case 'month':
+                $filterCondition = "MONTH(DATE_SUB(date_report, INTERVAL 543 YEAR)) = MONTH(CURDATE())";
+                break;
+            case 'year':
+                $filterCondition = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) = YEAR(CURDATE())";
+                break;
+        }
+    } elseif ($dateFilterType === 'custom') {
+        $startDate = $_POST['start_date'] ?? null;
+        $endDate = $_POST['end_date'] ?? null;
+        if ($startDate && $endDate) {
+            // convert Buddhist year to Gregorian
+            $startTimestamp = strtotime($startDate);
+            $endTimestamp = strtotime($endDate);
 
-require_once 'config/db.php';
+            $start = (date("Y", $startTimestamp) + 543) . date("-m-d", $startTimestamp);
+            $end   = (date("Y", $endTimestamp) + 543) . date("-m-d", $endTimestamp);
 
-// Start the session if not already started
-session_start();
+            $filterCondition = "date_report BETWEEN :dateStart AND :dateEnd";
+        }
+    }
 
-// Check if the user is logged in
-if (isset($_SESSION['admin_log'])) {
-    $admin = $_SESSION['admin_log'];
+    $sql = "
+        SELECT 
+            CONCAT(a.fname, ' ', a.lname) AS name,
+            DATE(date_report) AS real_date,
+            TIME(take) AS take_time,
+            TIME(close_date) AS close_time,
+            $filter AS info
+        FROM 
+            data_report d
+		JOIN 
+            admin a
+        ON 
+            d.username = a.username
+        WHERE 
+            status = 4 AND
+        $filterCondition
+    ";
+
+    if ($selectedUser !== 'all') {
+        $sql .= " AND d.username = :username";
+    }
+
+    $sql .= " ORDER BY real_date ASC";
+
+    $stmt = $conn->prepare($sql);
+    if ($selectedUser !== 'all') {
+        $stmt->bindParam(':username', $selectedUser, PDO::PARAM_STR);
+    }
+    if ($dateFilterType === 'custom' && isset($start) && isset($end)) {
+        $stmt->bindParam(":dateStart", $start);
+        $stmt->bindParam(":dateEnd", $end);
+    }
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    //ไม่พบรายการ
+    if (empty($result)) {
+        if ($selectedUser === 'all') {
+            $selectedUserText = 'ทุกคน';
+        } else {
+            $selectedUserText = $selectedUser;
+        }
+
+        if ($dateFilterType === 'period') {
+            switch ($period) {
+                case 'week':
+                    $_SESSION['export_error'] = "ไม่พบรายการใดๆใน สัปดาห์นี้ ของ $selectedUserText";
+                    break;
+                case 'month':
+                    $_SESSION['export_error'] = "ไม่พบรายการใดๆใน เดือนนี้ ของ $selectedUserText";
+                    break;
+                case 'year':
+                    $_SESSION['export_error'] = "ไม่พบรายการใดๆใน ปีนี้ ของ $selectedUserText";
+                    break;
+            }
+        } elseif ($dateFilterType === 'custom' && isset($startDate) && isset($endDate)) {
+            $_SESSION['export_error'] = "ไม่พบรายการใดๆในช่วง $startDate - $endDate ของ $selectedUserText";
+        } else {
+            $_SESSION['export_error'] = "ไม่พบรายการใดๆ ของ $selectedUserText";
+        }
+
+        header("Location: summary.php");
+        exit();
+    }
+
+    $timeSlots = [];
+    for ($hour = 8; $hour < 16; $hour++) {
+        $start = sprintf('%02d:30', $hour);
+        $end = sprintf('%02d:30', $hour + 1);
+        $label = "$start-$end";
+        $timeSlots[] = $label;
+    }
+
+    // Organize by [username][date][slot] = info
+    $grouped = [];
+    foreach ($result as $row) {
+        $name = $row['name'];
+        $date = (new DateTime($row['real_date']))->format('d/m/y');
+        $start = new DateTime("2023-01-01 " . $row['take_time']);
+        $end = new DateTime("2023-01-01 " . $row['close_time']);
+        $info = $row['info'];
+
+        foreach ($timeSlots as $slot) {
+            list($slotStartStr, $slotEndStr) = explode('-', $slot);
+            $slotStart = new DateTime("2023-01-01 $slotStartStr");
+            $slotEnd = new DateTime("2023-01-01 $slotEndStr");
+
+            if ($end > $slotStart && $start < $slotEnd) {
+                $grouped[$name][$date][$slot] = $info;
+            }
+        }
+    }
+
+    if ($selectedUser === 'all') {
+        $name = 'ทุกคน';
+    }
+
+    echo '<head><meta charset="UTF-8">';
+    header("Content-Type: application/vnd.ms-excel");
+    header("Content-Disposition: attachment; filename=Activity_Report_$name.xls");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    echo '</head>';
+
+    // Output
+    foreach ($grouped as $name => $days) {
+        echo "<table border='1' style='margin-bottom: 20px;'>";
+        echo "<tr><th colspan='" . (count($timeSlots) + 1) . "'>Activity Report ของ $name</th></tr>";
+        echo "<tr><th>วันที่</th>";
+        foreach ($timeSlots as $slot) {
+            echo "<th>$slot</th>";
+        }
+        echo "</tr>";
+
+        foreach ($days as $date => $slots) {
+            echo "<tr><td>$date</td>";
+            foreach ($timeSlots as $slot) {
+                echo "<td>" . ($slots[$slot] ?? '') . "</td>";
+            }
+            echo "</tr>";
+        }
+        echo "</table>";
+    }
 }
+
+
+if (isset($_POST['activity'])) {
+    // Fetch data
+    $date = $_POST['date'] ?? date('Y-m-d');
+    $filter = $_POST['filter'] ?? 'problem';
+    $validFilters = ['device', 'problem', 'report', 'sla'];
+    $filterColumn = in_array($filter, $validFilters) ? $filter : 'problem';
+
+    $sql = "
+        SELECT 
+            CONCAT(a.fname, ' ', a.lname) AS name,
+            date_report,
+            TIME(take) AS take_time,
+            TIME(close_date) AS close_time,
+            $filterColumn AS problem
+        FROM 
+            data_report d
+		JOIN 
+            admin a
+        ON 
+            d.username = a.username
+        WHERE 
+            status = 4 
+            AND DATE(DATE_SUB(date_report, INTERVAL 543 YEAR)) = :selected_date
+    ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bindParam(':selected_date', $date, PDO::PARAM_STR);
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    //ไม่พบรายการ
+    if (empty($result)) {
+        $_SESSION['export_error'] = "ไม่พบรายการใดๆใน $date";
+        header("Location: summary.php");
+        exit();
+    }
+
+    // Time ranges: 08:30 - 09:30 to 15:30 - 16:30
+    $timeSlots = [];
+    for ($hour = 8; $hour < 16; $hour++) {
+        $start = sprintf('%02d:30', $hour);
+        $end = sprintf('%02d:30', $hour + 1);
+        $label = "$start-$end";
+        $timeSlots[] = $label;
+    }
+
+    // Summarize data
+    $summary = []; // ['name' => ['08:30-09:30' => 'Problem Name', ...]]
+
+    foreach ($result as $row) {
+        $name = $row['name'];
+        $date = (new DateTime($row['date_report']))->format('d/m/y');
+        $start = new DateTime("2023-01-01 " . $row['take_time']);
+        $end = new DateTime("2023-01-01 " . $row['close_time']);
+        $problem = $row['problem'];
+
+        foreach ($timeSlots as $slot) {
+            list($slotStartStr, $slotEndStr) = explode('-', $slot);
+            $slotStart = new DateTime("2023-01-01 $slotStartStr");
+            $slotEnd = new DateTime("2023-01-01 $slotEndStr");
+
+            // If there's overlap, record the task
+            if ($end > $slotStart && $start < $slotEnd) {
+                if (!isset($summary[$name][$slot]) || !isset($summary[$name])) {
+                    $summary[$name][$slot] = $problem;
+                }
+            }
+        }
+    }
+
+    echo '<head><meta charset="UTF-8">';
+    header("Content-Type: application/vnd.ms-excel");
+    header("Content-Disposition: attachment; filename=Activity_Report_$date.xls");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    echo '</head>';
+
+    // Output the table
+    echo '<table border="1">';
+    echo "<tr><th colspan='9'>Activity Report ประจำวันที่ $date </th></tr>";
+    echo '<thead><tr><th>ชื่อ</th>';
+    foreach ($timeSlots as $slot) {
+        echo "<th>$slot</th>";
+    }
+    echo '</tr></thead>';
+    echo '<tbody>';
+
+    foreach ($summary as $name => $slots) {
+        echo "<tr><td>$name</td>";
+        foreach ($timeSlots as $slot) {
+            echo '<td>' . ($slots[$slot] ?? '') . '</td>';
+        }
+        echo '</tr>';
+    }
+
+    echo '</tbody></table>';
+}
+
 
 // Check if the export action is triggered
 if (isset($_POST['actAll'])) {

@@ -665,7 +665,7 @@ ORDER BY os.status;
               <?php
               $order_id = $order['id'];
               $sql = "
-    SELECT status, timestamp 
+    SELECT id,status, timestamp 
     FROM order_status 
     WHERE order_id = :order_id 
     ORDER BY status";
@@ -675,7 +675,7 @@ ORDER BY os.status;
 
               // Check if the order is canceled (status = 6 exists)
               $isCanceled = in_array(6, array_column($statuses, 'status'));
-
+              $isCloseJob = in_array(5, array_column($statuses, 'status'));
               // Define status names
               $statusNames = [
                 1 => "รอรับเอกสารจากหน่วยงาน",
@@ -687,7 +687,15 @@ ORDER BY os.status;
               ];
 
               // Current status from records
-              $currentStatus = !empty($statuses) ? max(array_column($statuses, 'status')) : 0;
+              if (str_contains($numberWork, 'S')) {
+                // It's special
+                $currentStatus = !empty($statuses) ? max(array_column($statuses, 'status')) : 2;
+            } else {
+                // It's normal
+                $currentStatus = !empty($statuses) ? max(array_column($statuses, 'status')) : 0;
+            }
+
+              
               ?>
               <h4 class="mt-3">สถานะ</h4>
               <table id="pdf" style="width: 100%;" class="table">
@@ -703,34 +711,71 @@ ORDER BY os.status;
                   foreach ($statusNames as $key => $name) {
                     $record = array_filter($statuses, fn($row) => $row['status'] == $key);
                     $timestamp = $record ? reset($record)['timestamp'] : null;
+                    $id = $record ? reset($record)['id'] : null;
+
 
                     echo "<tr>";
                     echo "<td>{$name}</td>";
                     echo "<td>" . ($timestamp
                       ? date('d/m/Y', strtotime($timestamp))
-                      : (($key == $currentStatus + 1 || $key == 6) && !$isCanceled ? date('d/m/Y') : '-')) . "</td>";
+                      : (($key == $currentStatus + 1 || $key == 6 || $key == 5) && !$isCanceled ? date('d/m/Y') : '-')) . "</td>";
                     echo "<td>";
 
                     if ($isCanceled) {
                       if ($key == 6) {
-                        echo "<p class='text-danger'>ยกเลิกใบเบิกแล้ว</p>";
+                        echo "<div class='d-flex justify-content-center align-items-center gap-2'><p class='text-danger'>ยกเลิกใบเบิกแล้ว</p>";
+                        echo "
+                        <button type='button' class='btn mb-3 btn-warning undo-btn' data-id='{$id}''>
+                            <svg fill='#000000' height='16px' width='16px' viewBox='0 0 423.642 423.642' xmlns='http://www.w3.org/2000/svg'>
+                                <path d='M342.369,37.498h43.755v-30H272.128v113.995h30V46.501c78.268,44.711,113.054,141.985,77.673,227.401
+                                c-28.973,69.949-96.829,112.248-168.216,112.242c-23.142-0.002-46.667-4.45-69.343-13.842c-44.869-18.586-79.815-53.532-98.4-98.401
+                                c-18.585-44.869-18.585-94.29,0-139.159l-27.717-11.48c-44.696,107.907,6.729,232.059,114.636,276.756
+                                c26.424,10.945,53.818,16.126,80.784,16.125c83.158-0.001,162.221-49.278,195.972-130.762
+                                C444.692,195.637,415.368,94.662,342.369,37.498z'/>
+                            </svg>
+                        </button></div>
+                        ";
                       } else {
                         if ($timestamp) {
-                          echo "<p>ยืนยันแล้ว</p>";
+                          echo "<div class='d-flex justify-content-center align-items-center gap-2'><p>ยืนยันแล้ว</p>";
+                          echo "
+                        <button type='button' class='btn mb-3 btn-warning undo-btn' data-id='{$id}''>
+                            <svg fill='#000000' height='16px' width='16px' viewBox='0 0 423.642 423.642' xmlns='http://www.w3.org/2000/svg'>
+                                <path d='M342.369,37.498h43.755v-30H272.128v113.995h30V46.501c78.268,44.711,113.054,141.985,77.673,227.401
+                                c-28.973,69.949-96.829,112.248-168.216,112.242c-23.142-0.002-46.667-4.45-69.343-13.842c-44.869-18.586-79.815-53.532-98.4-98.401
+                                c-18.585-44.869-18.585-94.29,0-139.159l-27.717-11.48c-44.696,107.907,6.729,232.059,114.636,276.756
+                                c26.424,10.945,53.818,16.126,80.784,16.125c83.158-0.001,162.221-49.278,195.972-130.762
+                                C444.692,195.637,415.368,94.662,342.369,37.498z'/>
+                            </svg>
+                        </button></div>
+                        ";
                         } else {
                           echo "<p >-</p>";
                         }
                       }
                     } else {
                       if ($timestamp) {
-                        echo "<p>ยืนยันแล้ว</p>";
-                      } elseif ($key == $currentStatus + 1 && $key <= 5) {
-                        echo "<button type='button' class='btn mb-3 btn-success confirm-btn' data-status='{$key}' data-order-id='{$order_id}'>รอการยืนยัน</button>";
-                      } elseif ($key > $currentStatus + 1 && $key <= 5) {
+                        echo "<div class='d-flex justify-content-center align-items-center gap-2'><p>ยืนยันแล้ว</p>";
+                        echo "
+                        <button type='button' class='btn mb-3 btn-warning undo-btn' data-id='{$id}''>
+                            <svg fill='#000000' height='16px' width='16px' viewBox='0 0 423.642 423.642' xmlns='http://www.w3.org/2000/svg'>
+                                <path d='M342.369,37.498h43.755v-30H272.128v113.995h30V46.501c78.268,44.711,113.054,141.985,77.673,227.401
+                                c-28.973,69.949-96.829,112.248-168.216,112.242c-23.142-0.002-46.667-4.45-69.343-13.842c-44.869-18.586-79.815-53.532-98.4-98.401
+                                c-18.585-44.869-18.585-94.29,0-139.159l-27.717-11.48c-44.696,107.907,6.729,232.059,114.636,276.756
+                                c26.424,10.945,53.818,16.126,80.784,16.125c83.158-0.001,162.221-49.278,195.972-130.762
+                                C444.692,195.637,415.368,94.662,342.369,37.498z'/>
+                            </svg>
+                        </button></div>
+                        ";
+                      } elseif ($key == $currentStatus + 1 && $key <= 4) {
+                        echo "<button type='button' class='btn mb-3 btn-warning confirm-btn' data-status='{$key}' data-order-id='{$order_id}'>รอการยืนยัน</button>";
+                      } elseif ($key > $currentStatus + 1 && $key <= 4) {
                         echo "<button type='button' class='btn mb-3 btn-secondary' disabled>รอดำเนินการก่อนหน้า</button>";
                       }
                     }
-
+                    if ($key == 5 && !$isCloseJob && !$isCanceled) {
+                      echo "<button type='button' class='btn mb-3 btn-success cancel-btn' data-status='5' data-order-id='{$order_id}'>ปิดงาน</button>";
+                    }
                     if ($key == 6 && !$isCanceled) {
                       echo "<button type='button' class='btn mb-3 btn-danger cancel-btn' data-status='6' data-order-id='{$order_id}'>ยกเลิกใบเบิก</button>";
                     }
@@ -743,14 +788,12 @@ ORDER BY os.status;
               </table>
 
               <h4 class="m-0">รายการเบิก</h4>
-
               <a href="แบบฟอร์มคำขอส่งซ่อมบำรุงอุปกรณ์คอมพิวเตอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบซ่อม</a>
-              <a href="ใบเบิก.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบเบิกครุภัณฑ์</a>
-              <a href="พิมพ์ใบครุภัณฑ์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบกำหนดคุณสมบัติ</a>
-              <a href="เอกสารคณะกรรมการ.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">เอกสารคณะกรรมการ</a>
+              <a href="ใบเบิกวัสดุอะไหล่.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบเบิกวัสดุอะไหล่</a>
+              <a href="ใบเบิกครุภัณฑ์ในแผน_รวม.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบเบิกคุรภัณฑ์ในแผน</a>
+              <a href="ใบเบิกปรับแผน_รวม.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบเบิกคุรภัณฑ์นอกแผน</a>
               <a href="พิมพ์สติ๊กเกอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">สติ๊กเกอร์งาน</a>
-              <a href="ใบเบิกครุภัณฑ์ในแผน.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ครุภัณฑ์ในแผน</a>
-              <a href="รวมใบเบิก.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">รวมใบเบิก</a>
+
               <div class="d-flex justify-content-end align-items-center my-2">
                 <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-main" class="fs-4 fw-bold text-primary">0</span> บาท</p>
               </div>
@@ -2231,22 +2274,66 @@ ORDER BY os.status;
       button.addEventListener('click', function() {
         const status = this.dataset.status;
         const orderId = this.dataset.orderId;
+        const statusName = this.closest('tr').querySelector('td').textContent.trim();
 
-        fetch('update_status.php', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
-              status,
-              order_id: orderId
-            })
-          })
-          .then(response => response.text())
-          .then(data => {
-            alert(data);
-            location.reload();
-          });
+        Swal.fire({
+          title: 'คุณแน่ใจหรือไม่?',
+          text: `คุณต้องการอัพเดตสถานะ "${statusName}" ใช่หรือไม่`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'ใช่',
+          cancelButtonText: 'ไม่'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            fetch('update_status.php', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                  status,
+                  order_id: orderId
+                })
+              })
+              .then(response => response.text())
+              .then(data => {
+                Swal.fire('สำเร็จ', data, 'success').then(() => {
+                  location.reload();
+                });
+              });
+          }
+        });
+      });
+    });
+
+    document.querySelectorAll('.undo-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        const id = this.dataset.id;
+
+        Swal.fire({
+          title: 'ยืนยันการย้อนสถานะ',
+          text: 'คุณต้องการย้อนสถานะ ใช่หรือไม่',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'ยืนยัน',
+          cancelButtonText: 'ยกเลิก'
+        }).then(result => {
+          if (result.isConfirmed) {
+            fetch('update_status.php', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                  id
+                })
+              })
+              .then(response => response.text())
+              .then(data => {
+                Swal.fire('สำเร็จ', data, 'success').then(() => location.reload());
+              });
+          }
+        });
       });
     });
   </script>

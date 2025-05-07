@@ -238,7 +238,8 @@ if (!isset($_SESSION["admin_log"])) {
                             <th scope="col">ผู้แจ้ง</th>
                             <th scope="col">หน่วยงาน</th>
                             <th scope="col">เบอร์โทร</th>
-                            <th scope="col">ปิดงาน</th>
+                            <th scope="col">วันปิดงาน</th>
+                            <th scope="col">เวลาปิดงาน</th>
                             <th scope="col">สถานะ</th>
                         </tr>
                     </thead>
@@ -249,6 +250,12 @@ if (!isset($_SESSION["admin_log"])) {
                             $timestamp = strtotime($dateString);
                             $dateFormatted = date('d/m/Y', $timestamp);
 
+                            if (empty($row['close_time']) || $row['close_time'] === '00:00:00.000000') {
+                                $closeDateFormatted = '-';
+                            } else {
+                                $closeDateFormatted = date('d/m/Y', strtotime($row['close_time']));
+                            }
+                            
                             $timeString = $row['time_report'];
                             $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
 
@@ -269,6 +276,7 @@ if (!isset($_SESSION["admin_log"])) {
                                 <td class="text-start"><?= $row['reporter'] ?></td>
                                 <td class="text-start"><?= $row['depart_name'] ?></td>
                                 <td class="text-start"><?= $row['tel'] ?></td>
+                                <td class="text-start"><?= $closeDateFormatted ?></td>
                                 <td class="text-start"><?= $closeTimeFormatted ?></td>
                                 <?php
                                 if ($row['status'] == 1) {
@@ -1734,7 +1742,8 @@ ORDER BY id DESC;
                             <th scope="col">ผู้แจ้ง</th>
                             <th scope="col">หน่วยงาน</th>
                             <th scope="col">เบอร์โทร</th>
-                            <th scope="col">ปิดงาน</th>
+                            <th scope="col">วันปิดงาน</th>
+                            <th scope="col">เวลาปิดงาน</th>
                             <th scope="col">สถานะ</th>
                         </tr>
                     </thead>
@@ -1750,6 +1759,12 @@ ORDER BY id DESC;
                             $timestamp = strtotime($dateString);
                             $dateFormatted = date('d/m/Y', $timestamp);
 
+                            if (empty($row['close_time']) || $row['close_time'] === '00:00:00.000000') {
+                                $closeDateFormatted = '-';
+                            } else {
+                                $closeDateFormatted = date('d/m/Y', strtotime($row['close_time']));
+                            }
+                            
                             // Format time_report (e.g., 14:22:00.000000 to 14:22)
                             $timeString = $row['time_report'];
                             $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
@@ -1772,6 +1787,7 @@ ORDER BY id DESC;
                                 <td class="text-start"><?= $row['reporter'] ?></td>
                                 <td class="text-start"><?= $row['depart_name'] ?></td>
                                 <td class="text-start"><?= $row['tel'] ?></td>
+                                <td class="text-start"><?= $closeDateFormatted ?></td>
                                 <td class="text-start"><?= $closeTimeFormatted ?></td>
                                 <?php
 

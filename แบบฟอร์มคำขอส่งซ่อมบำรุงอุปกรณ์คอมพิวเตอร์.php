@@ -3,10 +3,10 @@
 require_once 'config/db.php';
 require_once 'template/navbar.php';
 
-if (!isset($_SESSION["admin_log"])) {
-    $_SESSION["warning"] = "กรุณาเข้าสู่ระบบ";
-    header("location: login.php");
-}
+// if (!isset($_SESSION["admin_log"])) {
+//     $_SESSION["warning"] = "กรุณาเข้าสู่ระบบ";
+//     header("location: login.php");
+// }
 $id = $_GET['workid'];
 
 ?>
@@ -38,9 +38,6 @@ $id = $_GET['workid'];
             padding-top: 100px;
             margin-top: -80px;
             line-height: 1.5;
-
-
-
         }
 
         tr {
@@ -123,9 +120,6 @@ $id = $_GET['workid'];
             return thaiResult.join('');
         }
     </script>
-
-
-
 
 <body onload="window.print()">
     <div class="breakhere">

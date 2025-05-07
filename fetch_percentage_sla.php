@@ -16,6 +16,7 @@ switch ($filter) {
         $filterCondition = "MONTH(DATE_SUB(date_report, INTERVAL 543 YEAR)) = MONTH(CURDATE())";
         break;
     case 'year':
+        $filterCondition = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) = YEAR(CURDATE())";
     default:
         $filterCondition = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) = YEAR(CURDATE())";
         break;

@@ -29,11 +29,7 @@ $id = $_GET['workid'];
 <body onload="window.print()">
 
     <div class="breakhere">
-        <?php include('แบบฟอร์มคำขอส่งซ่อมบำรุงอุปกรณ์คอมพิวเตอร์.php'); ?>
-    </div>
-
-    <div class="breakhere">
-        <?php include('ใบเบิกครุภัณฑ์ในแผน_รวม.php'); ?>
+        <?php include('ใบเบิกปรับแผน.php'); ?>
     </div>
 
     <div class="breakhere">

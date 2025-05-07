@@ -3,10 +3,10 @@
 require_once 'config/db.php';
 require_once 'template/navbar.php';
 
-if (!isset($_SESSION["admin_log"])) {
-    $_SESSION["warning"] = "กรุณาเข้าสู่ระบบ";
-    header("location: login.php");
-}
+// if (!isset($_SESSION["admin_log"])) {
+//     $_SESSION["warning"] = "กรุณาเข้าสู่ระบบ";
+//     header("location: login.php");
+// }
 $id = $_GET['workid'];
 
 ?>
@@ -216,25 +216,25 @@ $id = $_GET['workid'];
             $numberDeviceList = array_column($devices, 'numberDevice');
             $numberDeviceString = implode(', ', $numberDeviceList);
 
-            // function toMonthThai($m) รวมกับใบอื่นแล้ว
-            // {
-            //     $monthNamesThai = array(
-            //         "",
-            //         "มกราคม",
-            //         "กุมภาพันธ์",
-            //         "มีนาคม",
-            //         "เมษายน",
-            //         "พฤษภาคม",
-            //         "มิถุนายน",
-            //         "กรกฎาคม",
-            //         "สิงหาคม",
-            //         "กันยายน",
-            //         "ตุลาคม",
-            //         "พฤศจิกายน",
-            //         "ธันวาคม"
-            //     );
-            //     return $monthNamesThai[$m];
-            // }
+            function toMonthThai($m)
+            {
+                $monthNamesThai = array(
+                    "",
+                    "มกราคม",
+                    "กุมภาพันธ์",
+                    "มีนาคม",
+                    "เมษายน",
+                    "พฤษภาคม",
+                    "มิถุนายน",
+                    "กรกฎาคม",
+                    "สิงหาคม",
+                    "กันยายน",
+                    "ตุลาคม",
+                    "พฤศจิกายน",
+                    "ธันวาคม"
+                );
+                return $monthNamesThai[$m];
+            }
             $dateWithdrawFromDB = $order['dateWithdraw']; // เปลี่ยนตามฐานข้อมูลของคุณ
 
             // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp

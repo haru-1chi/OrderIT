@@ -161,6 +161,14 @@ if (!isset($_SESSION["admin_log"])) {
                                         }
                                     });
                                 }
+
+                                if (data.reports_set_up && data.reports_set_up.length > 0) {
+                                    data.reports_set_up.forEach(report => {
+                                        showNotification(report);
+                                    });
+                                }
+                                
+                                console.log("reports:", data.reports);
                             })
                             .catch(error => console.error('Error:', error));
                     }
@@ -321,7 +329,7 @@ if (!isset($_SESSION["admin_log"])) {
                 </div>
 
                 <script>
-function fetchCards(type) {
+                    function fetchCards(type) {
                         fetch(`dashboard_get_tasks.php?type=${type}`)
                             .then(response => response.json())
                             .then(data => {

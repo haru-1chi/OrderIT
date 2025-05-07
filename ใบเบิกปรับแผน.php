@@ -312,34 +312,30 @@ $id = $_GET['workid'];
 
         // แสดงผล
         ?>
-        <div class="d-flex justify-content-between">
-            <img width="70pt" height="80pt" style="text-align:left; margin-top: -10pt" src="image/ตราครุฑ 3cm.png" alt="">
-            <div style="font-weight: bold; font-size:28pt;line-height:54pt">บันทึกข้อความ
-            </div>
-            <p style="text-align:right;"><b>(ใบขอเบิกวัสดุ ในแผน)</b></p>
+        <div class="d-flex justify-content-end">
+            <b style="text-align:right; font-size:16pt;"><b style="font-size:22pt">(ใบปรับแผน</b> กรณีไม่ได้จัดทำแผน<b style="font-size:22pt">)</b></b>
         </div>
-
+            <img width="70pt" height="80pt" style="text-align:left; margin-top: -35pt" src="image/ตราครุฑ 3cm.png" alt="">
+        <div class="d-flex justify-content-center" style="font-weight: bold; font-size:32pt;margin-top: -35pt;">บันทึกข้อความ</div>
         <p style="line-height:10pt"><b style="font-size:22pt">ส่วนราชการ</b> โรงพยาบาลแม่สอด กลุ่มงาน เทคโนโลยีสารสนเทศ โทร 2056</p>
         <div style="margin-top: -20pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;......................................................................................................................................................................................................................................................</div>
 
         <div class="d-flex justify-content-between">
-            <p style="line-height:10pt"><b style="font-size:20pt">ที่</b>&nbsp;&nbsp;&nbsp;ตก 0033. /</p>
+            <p style="line-height:10pt"><b style="font-size:20pt">ที่</b>&nbsp;&nbsp;&nbsp;ตก 0033. 201/พิเศษ</p>
             <p style="line-height:10pt"><b style="font-size:20pt">วันที่</b>&nbsp;&nbsp;&nbsp;<?= date('d', $timestamp) . ' ' . $monthThai . ' ' . (date('Y', $timestamp) + 543); ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
         </div>
-        <div style="margin-top: -20pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...........................................................................................................................&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;..................................................................................................................................</div>
-        <p style="line-height:10pt"><b style="font-size:20pt">เรื่อง</b> ขอเบิกครุภัณฑ์</p>
+        <div style="margin-top: -21pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ..............................................................................................................................&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;..................................................................................................................................</div>
+        <p style="line-height:10pt"><b style="font-size:20pt">เรื่อง</b> ขอเบิกวัสดุ/ครุภัณฑ์/</p>
         <div style="margin-top: -20pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp .............................................................................................................................................................................................................................................................................</div>
-        <div style="height: 10pt">
-
-        </div>
-
+        <p style="line-height:10pt; margin-top: 7pt;">เรียน&ensp;ผู้อำนวยการโรงพยาบาลแม่สอด</p>
+       
         <p style="line-height:10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?= $order['depart_name'] ?></p>
         <div style="margin-top: -20pt;">
             <p style="line-height:10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ด้วยกลุ่มงาน/งาน ....................................................................................... มีความประสงค์ขอเบิก </p>
         </div>
 
-        <p style="line-height:10pt;">ครุภัณฑ์ ดังนี้</p>
-        <div style="margin-top: -24pt;">
+        <p style="line-height:10pt;">วัสดุ/ครุภัณฑ์ ดังนี้</p>
+        <div>
             <?php
             $rowCount = count($items); // Get the current number of items
             $emptyRows = 5 - $rowCount;
@@ -348,7 +344,7 @@ $id = $_GET['workid'];
                 <p style="line-height:9pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?= $item['list'] ?></p>
                 <p style="line-height:9pt; margin-top: -20pt; margin-left: 450pt;"> <?= $item['price'] ?></p>
                 <div style="margin-top: -20pt;">
-                    <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= $index + 1 ?>........................................................................................................... ราคา.................................. บาท</p>
+                    <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= $index + 1 ?> .......................................................................................................... ราคา.................................. บาท</p>
                 </div>
             <?php
                 $index++;
@@ -356,7 +352,7 @@ $id = $_GET['workid'];
             for ($i = 0; $i < $emptyRows; $i++):
             ?>
                 <div>
-                    <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= $index + 1 ?>........................................................................................................... ราคา.................................. บาท</p>
+                    <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?= $index + 1 ?> .......................................................................................................... ราคา.................................. บาท</p>
                 </div>
             <?php
                 $index++; // Increment index for each empty row
@@ -369,15 +365,16 @@ $id = $_GET['workid'];
         <div style="margin-top: -20pt;">
             <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;รวมเป็นเงิน ................................... บาท (...............................................................................................)</p>
         </div>
-        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ในการขอเบิกครุภัณฑ์ครั้งนี้ ได้แนบแผนที่ได้รับอนุมัติงบมาด้วยแล้ว และใช้เงิน ดังนี้</p>
-        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( &nbsp; ) เงินนอกงบประมาณ-เงินบำรุง ปีงบประมาณ 2568</p>
-        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( &nbsp; ) เงินงบประมาณ</p>
-        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( &nbsp; ) เงินงบค่าเสื่อม</p>
-        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( &nbsp; ) เงินบริจาค</p>
-        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( &nbsp; ) เงินอื่นๆ</p>
-        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( &nbsp; ) ทดแทนของเดิมชำรุด ต้องแนบใบชำรุดของช่าง/ศูนย์เครื่องมือแพทย์</p>
-        <p style="line-height:10pt;">มอบให้กลุ่มงานพัสดุ ดำเนินการจัดซื้อตามพระราชบัญญัติการจัดซื้อจัดจ้างและการบริหารพัสดุภาครัฐ</p>
-        <p style="line-height:10pt;">พ.ศ. 2560 ต่อไป</p>
+        
+        <p style="line-height:10pt">&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<?= $order['reason']?></p>
+        <div style="margin-top: -20pt;">
+            <p style="line-height:10pt;">เหตุผลและความจำเป็น......................................................................................................................................................</p>
+        </div>
+        
+        <p style="line-height:10pt;">............................................................................................................................................................................................</p>
+        <p style="line-height:10pt;">............................................................................................................................................................................................</p>
+        <p style="line-height:10pt;">............................................................................................................................................................................................</p>
+        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;จึงเรียนมาเพื่อโปรดพิจารณาอนุมัติ</p>
 
 
         <div style="margin-top: 20pt;" class="d-flex justify-content-end">
@@ -397,7 +394,7 @@ $id = $_GET['workid'];
             </div>
         </div>
 
-        <div style="margin-top: 30pt; margin-right: 116px;" class="d-flex justify-content-end">
+        <!-- <div style="margin-top: 30pt; margin-right: 116px;" class="d-flex justify-content-end">
             <div>
                 <p style="text-align:center;line-height:8pt; margin-bottom: 45px;">อนุมัติ</p>
                 <p style="text-align:center;line-height:8pt">................................................</p>
@@ -405,7 +402,7 @@ $id = $_GET['workid'];
                 <p style="text-align:center;line-height:8pt">หัวหน้ากลุ่มภารกิจ
                 </p>
             </div>
-        </div>
+        </div> -->
 
     </div>
 

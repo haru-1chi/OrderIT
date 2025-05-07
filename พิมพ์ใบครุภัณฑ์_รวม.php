@@ -217,25 +217,25 @@ $id = $_GET['workid'];
             $numberDeviceList = array_column($devices, 'numberDevice');
             $numberDeviceString = implode(', ', $numberDeviceList);
 
-            function toMonthThai($m)
-            {
-                $monthNamesThai = array(
-                    "",
-                    "มกราคม",
-                    "กุมภาพันธ์",
-                    "มีนาคม",
-                    "เมษายน",
-                    "พฤษภาคม",
-                    "มิถุนายน",
-                    "กรกฎาคม",
-                    "สิงหาคม",
-                    "กันยายน",
-                    "ตุลาคม",
-                    "พฤศจิกายน",
-                    "ธันวาคม"
-                );
-                return $monthNamesThai[$m];
-            }
+            // function toMonthThai($m) รวมกับใบอื่นแล้ว
+            // {
+            //     $monthNamesThai = array(
+            //         "",
+            //         "มกราคม",
+            //         "กุมภาพันธ์",
+            //         "มีนาคม",
+            //         "เมษายน",
+            //         "พฤษภาคม",
+            //         "มิถุนายน",
+            //         "กรกฎาคม",
+            //         "สิงหาคม",
+            //         "กันยายน",
+            //         "ตุลาคม",
+            //         "พฤศจิกายน",
+            //         "ธันวาคม"
+            //     );
+            //     return $monthNamesThai[$m];
+            // }
             $dateWithdrawFromDB = $order['dateWithdraw']; // เปลี่ยนตามฐานข้อมูลของคุณ
 
             // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp
@@ -372,66 +372,66 @@ $id = $_GET['workid'];
         //     }
         // }
 
-        function numberToThaiWords($number)
-        {
-            // อารบิก
-            $digits = array(
-                '',
-                'หนึ่ง',
-                'สอง',
-                'สาม',
-                'สี่',
-                'ห้า',
-                'หก',
-                'เจ็ด',
-                'แปด',
-                'เก้า'
-            );
+        // function numberToThaiWords($number) รวมกับใบอื่นแล้ว
+        // {
+        //     // อารบิก
+        //     $digits = array(
+        //         '',
+        //         'หนึ่ง',
+        //         'สอง',
+        //         'สาม',
+        //         'สี่',
+        //         'ห้า',
+        //         'หก',
+        //         'เจ็ด',
+        //         'แปด',
+        //         'เก้า'
+        //     );
 
-            // ชื่อหลัก
-            $units = array(
-                '',
-                'สิบ',
-                'ร้อย',
-                'พัน',
-                'หมื่น',
-                'แสน',
-                'ล้าน'
-            );
+        //     // ชื่อหลัก
+        //     $units = array(
+        //         '',
+        //         'สิบ',
+        //         'ร้อย',
+        //         'พัน',
+        //         'หมื่น',
+        //         'แสน',
+        //         'ล้าน'
+        //     );
 
-            // แยกระหว่างจำนวนเต็มและทศนิยม
-            list($integer) = explode('.', $number);
+        //     // แยกระหว่างจำนวนเต็มและทศนิยม
+        //     list($integer) = explode('.', $number);
 
-            // แปลงจำนวนเต็ม
-            $integerThai = '';
-            $numLength = strlen($integer);
-            for ($i = 0; $i < $numLength; $i++) {
-                $digit = (int)$integer[$i];
-                if ($digit !== 0) {
-                    $integerThai .= $digits[$digit] . $units[$numLength - $i - 1];
-                }
-            }
+        //     // แปลงจำนวนเต็ม
+        //     $integerThai = '';
+        //     $numLength = strlen($integer);
+        //     for ($i = 0; $i < $numLength; $i++) {
+        //         $digit = (int)$integer[$i];
+        //         if ($digit !== 0) {
+        //             $integerThai .= $digits[$digit] . $units[$numLength - $i - 1];
+        //         }
+        //     }
 
-            // แปลงทศนิยม
-            $decimalThai = '';
-            if (!empty($decimal)) {
-                $decimalLength = strlen($decimal);
-                for ($i = 0; $i < $decimalLength; $i++) {
-                    $digit = (int)$decimal[$i];
-                    if ($digit !== 0) {
-                        $decimalThai .= $digits[$digit] . $units[- ($i + 1)];
-                    }
-                }
-            }
+        //     // แปลงทศนิยม
+        //     $decimalThai = '';
+        //     if (!empty($decimal)) {
+        //         $decimalLength = strlen($decimal);
+        //         for ($i = 0; $i < $decimalLength; $i++) {
+        //             $digit = (int)$decimal[$i];
+        //             if ($digit !== 0) {
+        //                 $decimalThai .= $digits[$digit] . $units[- ($i + 1)];
+        //             }
+        //         }
+        //     }
 
-            // รวมทั้งหมด
-            $result = $integerThai . 'บาท';
-            if (!empty($decimalThai)) {
-                $result .= $decimalThai . 'สตางค์';
-            }
+        //     // รวมทั้งหมด
+        //     $result = $integerThai . 'บาท';
+        //     if (!empty($decimalThai)) {
+        //         $result .= $decimalThai . 'สตางค์';
+        //     }
 
-            return $result;
-        }
+        //     return $result;
+        // }
 
         // ตัวอย่างการใช้งาน
         $number = $sum;

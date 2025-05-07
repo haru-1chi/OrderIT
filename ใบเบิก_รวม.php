@@ -16,7 +16,7 @@ $id = $_GET['workid'];
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-    <title>พิมพ์ใบครุภัณฑ์</title>
+    <title>แบบฟอร์มใบเบิก</title>
 
     <!-- Behavioral Meta Data -->
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -57,7 +57,6 @@ $id = $_GET['workid'];
         .breakhere {
             page-break-after: always;
         }
-
 
 
         table,
@@ -217,25 +216,25 @@ $id = $_GET['workid'];
             $numberDeviceList = array_column($devices, 'numberDevice');
             $numberDeviceString = implode(', ', $numberDeviceList);
 
-            function toMonthThai($m)
-            {
-                $monthNamesThai = array(
-                    "",
-                    "มกราคม",
-                    "กุมภาพันธ์",
-                    "มีนาคม",
-                    "เมษายน",
-                    "พฤษภาคม",
-                    "มิถุนายน",
-                    "กรกฎาคม",
-                    "สิงหาคม",
-                    "กันยายน",
-                    "ตุลาคม",
-                    "พฤศจิกายน",
-                    "ธันวาคม"
-                );
-                return $monthNamesThai[$m];
-            }
+            // function toMonthThai($m) รวมกับใบอื่นแล้ว
+            // {
+            //     $monthNamesThai = array(
+            //         "",
+            //         "มกราคม",
+            //         "กุมภาพันธ์",
+            //         "มีนาคม",
+            //         "เมษายน",
+            //         "พฤษภาคม",
+            //         "มิถุนายน",
+            //         "กรกฎาคม",
+            //         "สิงหาคม",
+            //         "กันยายน",
+            //         "ตุลาคม",
+            //         "พฤศจิกายน",
+            //         "ธันวาคม"
+            //     );
+            //     return $monthNamesThai[$m];
+            // }
             $dateWithdrawFromDB = $order['dateWithdraw']; // เปลี่ยนตามฐานข้อมูลของคุณ
 
             // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp
@@ -253,124 +252,27 @@ $id = $_GET['workid'];
             $items = [];
         }
 
-        // $sql = "SELECT od.*, dp.depart_name ,lw.work_name,dv.device_name,ad.fname,ad.lname,dw.withdraw_name
-        // FROM orderdata AS od
-        // INNER JOIN depart AS dp ON od.refDepart = dp.depart_id
-        // INNER JOIN listwork AS lw ON od.refWork = lw.work_id
-        // INNER JOIN device AS dv ON od.refDevice = dv.device_id
-        // INNER JOIN withdraw AS dw ON od.refWithdraw = dw.withdraw_id
-        // INNER JOIN admin AS ad ON od.refUsername = ad.username
-        //  WHERE od.id = :id";
-        // $stmt = $conn->prepare($sql);
-        // $stmt->bindParam(":id", $id);
-        // $stmt->execute();
-        // $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // $Device2 = "";
-        // $Device3 = "";
-
-        // if ($data['numberDevice2'] == "") {
-        //     $Device2 = "";
-        // } else {
-        //     $Device2 = ', ' . $data["numberDevice2"];
-        // }
-        // if ($data['numberDevice3'] == "") {
-        //     $Device3 = "";
-        // } else {
-        //     $Device3 = ', ' . $data["numberDevice3"];
-        // }
-
-        // function toMonthThai($m)
-        // {
-        //     $monthNamesThai = array(
-        //         "",
-        //         "มกราคม",
-        //         "กุมภาพันธ์",
-        //         "มีนาคม",
-        //         "เมษายน",
-        //         "พฤษภาคม",
-        //         "มิถุนายน",
-        //         "กรกฎาคม",
-        //         "สิงหาคม",
-        //         "กันยายน",
-        //         "ตุลาคม",
-        //         "พฤศจิกายน",
-        //         "ธันวาคม"
-        //     );
-        //     return $monthNamesThai[$m];
-        // }
-        // $dateWithdrawFromDB = $data['dateWithdraw']; // เปลี่ยนตามฐานข้อมูลของคุณ
-
-        // // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp
-        // $timestamp = strtotime($dateWithdrawFromDB);
-
-        // // ดึงเดือน
-        // $monthNumber = date('n', $timestamp);
-
-        // // แปลงเดือนเป็นภาษาไทย
-        // $monthThai = toMonthThai($monthNumber);
-
-        // แสดงผล
         ?>
-        <div style="font-weight: bold; font-size:24pt; text-align:center;">รายละเอียดคุณลักษณะเฉพาะของวัสดุ ครุภัณฑ์ และงานจ้าง
+        <div class="d-flex justify-content-between">
+            <img width="70pt" height="80pt" style="text-align:left; margin-top: -10pt" src="image/ตราครุฑ 3cm.png" alt="">
+            <div style="font-weight: bold; font-size:28pt;line-height:54pt">บันทึกข้อความ
+            </div>
+            <p style="text-align:right;"><b>(ใบขอเบิกวัสดุ/<?= $order['withdraw_name'] ?>)</b></p>
         </div>
-        <br>
-        <br>
+        <p style="line-height:10pt"><b style="font-size:22pt">ส่วนราชการ</b> โรงพยาบาลแม่สอด กลุ่มงาน <?= $order['depart_name'] ?> งาน ศูนย์คอมพิวเตอร์ รหัสหน่วยงาน 67 โทร 1554</p>
+        <div class="d-flex justify-content-between">
+            <p style="line-height:10pt"><b style="font-size:20pt">ที่</b>&nbsp;&nbsp;&nbsp;ตก 0033. /พิเศษ</p>
+            <p style="line-height:10pt"><b style="font-size:20pt">วันที่</b>&nbsp;&nbsp;&nbsp;<?= date('d', $timestamp) . ' ' . $monthThai . ' ' . (date('Y', $timestamp) + 543); ?>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+        </div>
+        <div style="margin-top: -20pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...........................................................................................................................&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;..................................................................................................................................</div>
+        <p style="line-height:10pt"><b style="font-size:20pt">เรื่อง</b> ขอเบิกวัสดุ / <?= $order['withdraw_name'] ?> หมวด</p>
+        <div style="margin-top: -20pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp .............................................................................................................................................................................................................................................................................</div>
+        <div style="height: 10pt">
+
+        </div>
+        <p style="line-height:10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; กลุ่มงาน <?= $order['depart_name'] ?> มีความประสงค์ขออนุมัติเบิก</p>
+        <div style="margin-top: -20pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ........................................................................................................................................................................................................................................................</div>
         <?php
-        // $columns = [];
-
-        // for ($i = 1; $i <= 15; $i++) {
-        //     $columns[] = "`list$i`, `quality$i`, `amount$i`, `price$i` , `unit$i`";
-        // }
-        // $columnString = implode(", ", $columns);
-        // $sql = "SELECT `list1`, `list2`, `list3`, `list4`, `list5`, `list6`, `list7`, `list8`, `list9`, `list10`, `list11`, `list12`, `list13`, `list14` FROM `orderdata` WHERE id = :id";
-        // $stmt = $conn->prepare($sql);
-        // $stmt->bindParam(":id", $id);
-        // $stmt->execute();
-        // $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // $filteredResult = array_filter($result, function ($value) {
-        //     return $value !== null && $value !== '';
-        // });
-
-        // $columnCount = count($filteredResult);
-
-        // $sql = "SELECT $columnString FROM `orderdata` WHERE id = :id";
-        // $stmt = $conn->prepare($sql);
-        // $stmt->bindParam(":id", $id);
-        // $stmt->execute();
-        // $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // $sum = 0;
-        // for ($i = 1; $i <= 15; $i++) {
-
-        //     $list = $result["list$i"];
-        //     $quality = $result["quality$i"];
-        //     $amount = $result["amount$i"];
-        //     $price = $result["price$i"];
-        //     $unit = $result["unit$i"];
-
-        //     $amount = intval($amount);
-        //     $price = intval($price);
-
-
-        //     // คำนวณ $sum
-        //     $currentSum = $amount * $price;
-
-        //     $sum += intval($currentSum);
-
-        //     // ตรวจสอบว่า $currentSum เป็น 0 หรือไม่
-        //     if ($currentSum == 0) {
-        //         $currentSum = ""; // กำหนดให้ $currentSum เป็นค่าว่าง
-        //     }
-        //     if ($result["list$i"] == "" || $result["quality$i"] == "" || $result["amount$i"] == "" || $result["price$i"] == "" || $result["unit$i"] == "") {
-        //         $list = "";
-        //         $quality = "";
-        //         $amount = "";
-        //         $price = "";
-        //         $unit = "";
-        //     }
-        // }
 
         function numberToThaiWords($number)
         {
@@ -443,62 +345,24 @@ $id = $_GET['workid'];
                 <thead>
                     <tr>
                         <th style="text-align:center;width: 50px;">ลำดับ</th>
+                        <th style="text-align:center;width: 90px;">รหัส EID</th>
                         <th style="text-align:center;width: 260px">รายการ</th>
-                        <th style="text-align:center;width: 260px">คุณลักษณะ</th>
-                        <th style="text-align:center;width: 60px">หน่วย</th>
+                        <th style="text-align:center;width: 60px">หน่วยนับ</th>
                         <th style="text-align:center;width: 60px">จำนวน</th>
-                        <th style="text-align:center; width: 100px;">ราคา</th>
-                        <th style="text-align:center; width: 80px;">ราคารวม</th>
+                        <th style="text-align:center; width: 100px;">ราคาต่อหน่วย</th>
+                        <th style="text-align:center; width: 80px;">รวม</th>
                     </tr>
                 </thead>
                 <tbody class="text-center">
                     <?php
-                    // $sum = 0;
-
-                    // for ($i = 1; $i <= 15; $i++) {
-
-                    //     $list = $result["list$i"];
-                    //     $quality = $result["quality$i"];
-                    //     $amount = $result["amount$i"];
-                    //     $price = $result["price$i"];
-                    //     $unit = $result["unit$i"];
-
-                    //     // คำนวณ $sum
-                    //     $amount = intval($amount);
-                    //     $price = intval($price);
-                    //     $currentSum = $amount * $price;
-
-                    //     $sum += intval($currentSum);
-
-                    //     // ตรวจสอบว่า $currentSum เป็น 0 หรือไม่
-                    //     if ($currentSum == 0) {
-                    //         $currentSum = ""; // กำหนดให้ $currentSum เป็นค่าว่าง
-                    //     }
-                    //     if ($result["list$i"] == "" || $result["quality$i"] == "" || $result["amount$i"] == "" || $result["price$i"] == "") {
-                    //         $list = "";
-                    //         $quality = "";
-                    //         $amount = "";
-                    //         $price = "";
-                    //         $unit = "";
-                    //     }
-                    //     $deviceModelName = "";
-                    //     if (!empty($list)) {
-                    //         $sqlDeviceModel = "SELECT models_name FROM device_models WHERE models_id = :models_id";
-                    //         $stmtDeviceModel = $conn->prepare($sqlDeviceModel);
-                    //         $stmtDeviceModel->bindParam(":models_id", $list);
-                    //         $stmtDeviceModel->execute();
-                    //         $deviceModelResult = $stmtDeviceModel->fetch(PDO::FETCH_ASSOC);
-                    //         $deviceModelName = $deviceModelResult['models_name'];
-                    //     }
                     $rowCount = count($items);
                     $emptyRows = 10 - $rowCount;
                     $index = 0;
-                    foreach ($items as $item):
-                    ?>
+                    foreach ($items as $item): ?>
                         <tr class="empty-row">
                             <th style="font-weight: normal;" class="arabicNumber" scope="row"><?= $index + 1 ?></th>
-                            <td style="font-weight: normal;text-align:left;"><?= $item['list'] ?></td>
-                            <td style="font-weight: normal;text-align:left;"><?= nl2br($item['quality']) ?></td>
+                            <th style="font-weight: normal;" class="arabicNumber" scope="row"></th>
+                            <td style="font-weight: normal; text-align:left;"><?= $item['list'] ?></td>
                             <td style="font-weight: normal;"><?= $item['unit'] ?></td>
                             <td style="font-weight: normal;" class="arabicNumber"><?= $item['amount'] ?></td>
                             <td style="font-weight: normal;" class="arabicNumber"><?= $item['price'] ?></td>
@@ -507,8 +371,7 @@ $id = $_GET['workid'];
                     <?php
                         $index++;
                     endforeach;
-                    for ($i = 0; $i < $emptyRows; $i++):
-                    ?>
+                    for ($i = 0; $i < $emptyRows; $i++): ?>
                         <tr class="empty-row">
                             <th style="font-weight: normal;" class="arabicNumber" scope="row"><?= $index + 1 ?></th>
                             <td style="font-weight: normal; text-align:left;"></td>
@@ -522,29 +385,49 @@ $id = $_GET['workid'];
                         $index++; // Increment index for each empty row
                     endfor;
                     ?>
-                    <td colspan="6" style="font-weight: normal; text-align: left;" class="arabicNumber">ราคาทั้งสิ้น...............<?= number_format($sum) ?>...............บาท (...............<?= $thaiWords ?>...............)</td>
-
                 </tbody>
             </table>
+
+
         </div>
+        <p style="line-height:10pt;margin-top: 10pt">ราคาทั้งสิ้น...............<?= number_format($sum) ?>...............บาท (...............<?= $thaiWords ?>...............)</p>
+        <p style="line-height:10pt;">เหตุผลและความจำเป็น <?= $order['reason'] ?></p>
+        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ในการเบิกครั้งนี้</p>
+        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( ) ได้รับอนุมัติจัดซื้อด้วยเงินนอกงบประมาณ-เงินบำรุง ปีงบประมาณ ................ แล้ว</p>
+        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;จำนวน ......................... บาท</p>
+        <p style="line-height:10pt;">
+            รายละเอียดปรากฏตามแผนเงินนอกงบประมาณ-เงินบำรุงที่แนบ</p>
+        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( ) ทดแทนของเดิมที่ชำรุด ต้องแนบใบชำรุดของช่าง / ศูนย์เครื่องมือแพทย์</p>
+        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( ) นอกงบ ไม่ได้ตั้งแผนนอกงบประมาณ-เงินบำรุง เข้าคณะกรรมการ CEO</p>
+        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;เมื่อวันที่ .............................................</p>
+        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;มอบให้กลุ่มงานพัสดุดำเนินการจัดซื้อตามพระราชบัญญัติการจัดซื้อจัดจ้างและการบริหารพัสดุภาครัฐ</p>
+        <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;พ.ศ.2560 ต่อไป</p>
         <br>
-        <p style="line-height:20pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ข้าพเจ้าขอรับรองว่า คุณลักษณะเฉพาะของพัสดุที่จะจัดซื้อจัดจ้างในครั้งนี้เป็นไปตาม <b>พระราชบัญญัติการจัดซื้อจัดจ้างและการบริหารพัสดุภาครัฐ พ.ศ. 2560 มาตรา 9 </b> ซึ่งกำหนดไว้ว่า "การกำหนดคุณลักษณะเฉพาะของพัสดุที่จทำการจัดซื้อจัดจ้าง ให้หน่วยงานของรัฐคำนึงถึงคุณภาพ เทคนิคและวัตถุประสงค์ของการจัดซื้อจัดจ้างพัสดุนั้น และห้ามมิให้กำหนดคุณลักษณะเฉพาะของพัสดุให้ใกล้เคียงกับยี่ห้อใดยี่ห้อหนึ่ง หรือของผู้ขายรายใดรายหนึ่งโดยเฉพาะ เว้นแต่พัสดุที่จะทำการจัดซื้อจัดจ้างตามวัตถุประสงค์ นั้นมียี่ห้อเดียวหรือจะต้องใช้อะไหล่ของยี่ห้อใด ก็ให้ระบุยี่ห้อนั้น "</p>
-        <br>
-        <br>
-        <br>
-        <br>
-
-
         <div class="d-flex justify-content-end">
             <div>
-                <p style="text-align:left;line-height:20pt">(ลงชื่อ) ___________________________</p>
-                <p style="text-align:left;line-height:20pt">( ________________________________ )
+                <p style="text-align:right;line-height:8pt">(ลงชื่อ)____________________________________เจ้าหน้าที่</p>
+                <p style="text-align:left;line-height:8pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( __________________________________ )</p>
+                <p style="text-align:left;line-height:8pt">ตำแหน่ง_______________________________
                 </p>
-                <p style="text-align:left;line-height:20pt">ตำแหน่ง __________________________</p>
             </div>
         </div>
-
-
+        <div style="margin-top: 30pt;" class="d-flex justify-content-end">
+            <div>
+                <p style="text-align:right;line-height:8pt">(ลงชื่อ)_______________________________หัวหน้ากลุ่มงาน</p>
+                <p style="text-align:left;line-height:8pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( __________________________________ )</p>
+                <p style="text-align:left;line-height:8pt">ตำแหน่ง_______________________________
+                </p>
+            </div>
+        </div>
+        <div style="margin-top: 30pt; margin-right: 65px;" class="d-flex justify-content-end">
+            <div>
+                <p style="text-align:center;line-height:8pt; margin-bottom: 45px;">อนุมัติ</p>
+                <p style="text-align:center;line-height:8pt">_____________________________</p>
+                <p style="text-align:center;line-height:8pt">( __________________________________ )</p>
+                <p style="text-align:center;line-height:8pt">หัวหน้ากลุ่มภารกิจ
+                </p>
+            </div>
+        </div>
     </div>
 
 
