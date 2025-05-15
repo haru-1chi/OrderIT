@@ -244,9 +244,10 @@ if (isset($_POST['updateData'])) {
     $report = $_POST['report'];
     $reason = $_POST['reason'];
     $note = $_POST['note'];
-    $refWork = $_POST["ref_work"];
-    $refWithdraw = $_POST["ref_withdraw"];
-    $refOffer = $_POST["ref_offer"];
+    $refWork = $_POST["refWork"];
+    $refWithdraw = $_POST["refWithdraw"];
+    $refOffer = $_POST["refOffer"];
+    $refDevice = $_POST["refDevice"];
     $quotation = $_POST["quotation"];
     $id_ref = $_POST["id_ref"];
 
@@ -268,6 +269,7 @@ if (isset($_POST['updateData'])) {
 
     $deleted_items = $_POST['deleted_items'];
 
+    $editedBy = $_SESSION['admin_log'] ?? 'unknown';
     // echo '<pre>';
     // var_dump([
     //     'numberWork' => $numberWork,
@@ -296,11 +298,51 @@ if (isset($_POST['updateData'])) {
     // echo '</pre>';
     // exit();
     // สร้าง SQL UPDATE statement
+
+    $sqlOld = "SELECT * FROM orderdata_new WHERE id = :id";
+    $stmtOld = $conn->prepare($sqlOld);
+    $stmtOld->bindParam(":id", $id);
+    $stmtOld->execute();
+    $oldData = $stmtOld->fetch(PDO::FETCH_ASSOC);
+
+    // Step 2: Loop over all fields in oldData
+    foreach ($oldData as $field => $oldValue) {
+        // Skip the primary key field (e.g., "id")
+        if ($field === "id") continue;
+
+        // Check if a new value was submitted for this field
+        if (isset($_POST[$field])) {
+            $newValue = $_POST[$field];
+
+            // Only insert into history if the value actually changed
+            if ($oldValue != $newValue) {
+                $stmtHistory = $conn->prepare("
+                    INSERT INTO order_history (
+                        table_name, table_id, order_id, field_name, old_value, new_value, action, edited_by
+                    ) VALUES (
+                        :table_name, :table_id, :order_id, :field_name, :old_value, :new_value, :action, :edited_by
+                    )
+                ");
+                $stmtHistory->execute([
+                    ':table_name' => 'orderdata_new',
+                    ':table_id' => $id,
+                    ':order_id'   => $id,
+                    ':field_name' => $field,
+                    ':old_value'  => $oldValue,
+                    ':new_value'  => $newValue,
+                    ':action' => 'update',
+                    ':edited_by'  => $editedBy // Define $editedBy earlier (e.g., from session)
+                ]);
+            }
+        }
+    }
+
     $sql = "UPDATE orderdata_new SET
             report = :report,
             reason = :reason,
             note = :note,
             refWork = :refWork,
+            refDevice = :refDevice,
             refWithdraw = :refWithdraw,
             refOffer = :refOffer,
             quotation = :quotation,
@@ -314,6 +356,7 @@ if (isset($_POST['updateData'])) {
     $stmt->bindParam(":reason", $reason);
     $stmt->bindParam(":note", $note);
     $stmt->bindParam(":refWork", $refWork);
+    $stmt->bindParam(":refDevice", $refDevice);
     $stmt->bindParam(":refWithdraw", $refWithdraw);
     $stmt->bindParam(":refOffer", $refOffer);
     $stmt->bindParam(":quotation", $quotation);
@@ -334,28 +377,111 @@ if (isset($_POST['updateData'])) {
                 $stmt->bindParam(':unit', $_POST['unit'][$index], PDO::PARAM_STR);
 
                 $stmt->execute();
+
+                $itemId = $conn->lastInsertId();
+
+                // Insert history log
+                $stmtHistory = $conn->prepare("
+            INSERT INTO order_history (
+                table_name, table_id, order_id, field_name, old_value, new_value, action, edited_by, edited_at
+            ) VALUES (
+                :table_name, :table_id, :order_id, :field_name, :old_value, :new_value, :action, :edited_by, NOW()
+            )
+        ");
+                $stmtHistory->execute([
+                    ':table_name' => 'order_items',
+                    ':table_id'   => $itemId,
+                    ':order_id'   => $id,
+                    ':field_name' => '',
+                    ':old_value'  => '',
+                    ':new_value'  => '',
+                    ':action'     => 'insert',
+                    ':edited_by'  => $_SESSION['admin_log'] ?? 'unknown'
+                ]);
             }
         }
+
+        // if (!empty($_POST['update_list'])) {
+        //     foreach ($_POST['update_list'] as $modalId => $updateLists) {
+        //         foreach ($updateLists as $recordId => $list) {
+        //             $sql = "UPDATE order_items 
+        //                     SET list = :list, quality = :quality, amount = :amount, price = :price, unit = :unit 
+        //                     WHERE id = :id";
+        //             $stmt = $conn->prepare($sql);
+
+        //             $stmt->bindParam(':list', $list, PDO::PARAM_STR);
+        //             $stmt->bindParam(':quality', $_POST['update_quality'][$modalId][$recordId], PDO::PARAM_STR);
+        //             $stmt->bindParam(':amount', $_POST['update_amount'][$modalId][$recordId], PDO::PARAM_INT);
+        //             $stmt->bindParam(':price', $_POST['update_price'][$modalId][$recordId], PDO::PARAM_STR);
+        //             $stmt->bindParam(':unit', $_POST['update_unit'][$modalId][$recordId], PDO::PARAM_STR);
+        //             $stmt->bindParam(':id', $recordId, PDO::PARAM_INT);
+
+        //             $stmt->execute();
+        //         }
+        //     }
+        // }
 
         if (!empty($_POST['update_list'])) {
             foreach ($_POST['update_list'] as $modalId => $updateLists) {
                 foreach ($updateLists as $recordId => $list) {
+
+                    // Step 1: Get old data
+                    $sqlOld = "SELECT * FROM order_items WHERE id = :id";
+                    $stmtOld = $conn->prepare($sqlOld);
+                    $stmtOld->bindParam(":id", $recordId, PDO::PARAM_INT);
+                    $stmtOld->execute();
+                    $oldData = $stmtOld->fetch(PDO::FETCH_ASSOC);
+
+                    // Step 2: Prepare new values
+                    $newData = [
+                        'list'    => $list,
+                        'quality' => $_POST['update_quality'][$modalId][$recordId],
+                        'amount'  => $_POST['update_amount'][$modalId][$recordId],
+                        'price'   => $_POST['update_price'][$modalId][$recordId],
+                        'unit'    => $_POST['update_unit'][$modalId][$recordId],
+                    ];
+
+                    // Step 3: Compare and insert history
+                    foreach ($newData as $field => $newValue) {
+                        $oldValue = $oldData[$field];
+
+                        if ($oldValue != $newValue) {
+                            $stmtHistory = $conn->prepare("
+                                INSERT INTO order_history (
+                                    table_name, table_id, order_id, field_name, old_value, new_value, action, edited_by
+                                ) VALUES (
+                                    :table_name, :table_id, :order_id, :field_name, :old_value, :new_value, :action, :edited_by
+                                )
+                            ");
+                            $stmtHistory->execute([
+                                ':table_name' => 'order_items',
+                                ':table_id'   => $recordId,
+                                ':order_id'   => $modalId,
+                                ':field_name' => $field,
+                                ':old_value'  => $oldValue,
+                                ':new_value'  => $newValue,
+                                ':action'     => 'update',
+                                ':edited_by'  => $editedBy
+                            ]);
+                        }
+                    }
+
+                    // Step 4: Update the record
                     $sql = "UPDATE order_items 
                             SET list = :list, quality = :quality, amount = :amount, price = :price, unit = :unit 
                             WHERE id = :id";
                     $stmt = $conn->prepare($sql);
-
-                    $stmt->bindParam(':list', $list, PDO::PARAM_STR);
-                    $stmt->bindParam(':quality', $_POST['update_quality'][$modalId][$recordId], PDO::PARAM_STR);
-                    $stmt->bindParam(':amount', $_POST['update_amount'][$modalId][$recordId], PDO::PARAM_INT);
-                    $stmt->bindParam(':price', $_POST['update_price'][$modalId][$recordId], PDO::PARAM_STR);
-                    $stmt->bindParam(':unit', $_POST['update_unit'][$modalId][$recordId], PDO::PARAM_STR);
+                    $stmt->bindParam(':list', $newData['list'], PDO::PARAM_STR);
+                    $stmt->bindParam(':quality', $newData['quality'], PDO::PARAM_STR);
+                    $stmt->bindParam(':amount', $newData['amount'], PDO::PARAM_INT);
+                    $stmt->bindParam(':price', $newData['price'], PDO::PARAM_STR);
+                    $stmt->bindParam(':unit', $newData['unit'], PDO::PARAM_STR);
                     $stmt->bindParam(':id', $recordId, PDO::PARAM_INT);
-
                     $stmt->execute();
                 }
             }
         }
+
 
         if (!empty($_POST['deleted_items'])) {
             foreach ($_POST['deleted_items'] as $modalId => $items) {
@@ -364,6 +490,29 @@ if (isset($_POST['updateData'])) {
                     $stmt = $conn->prepare($sql);
                     $stmt->bindParam(':id', $recordId, PDO::PARAM_INT);
                     $stmt->execute();
+
+                    $stmtOld = $conn->prepare("SELECT * FROM order_items WHERE id = :id");
+                    $stmtOld->bindParam(':id', $recordId, PDO::PARAM_INT);
+                    $stmtOld->execute();
+                    $oldData = $stmtOld->fetch(PDO::FETCH_ASSOC);
+
+                    $stmtHistory = $conn->prepare("
+            INSERT INTO order_history (
+                table_name, table_id, order_id, field_name, old_value, new_value, action, edited_by, edited_at
+            ) VALUES (
+                :table_name, :table_id, :order_id, :field_name, :old_value, :new_value, :action, :edited_by, NOW()
+            )
+        ");
+                    $stmtHistory->execute([
+                        ':table_name' => 'order_items',
+                        ':table_id'   => $recordId,
+                        ':order_id'   => $oldData['order_id'], // get from old data
+                        ':field_name' => 'is_deleted',
+                        ':old_value'  => $oldData['is_deleted'] ?? '0',
+                        ':new_value'  => '1',
+                        ':action'     => 'delete',
+                        ':edited_by'  => $_SESSION['admin_log'] ?? 'unknown'
+                    ]);
                 }
             }
         }
@@ -371,6 +520,33 @@ if (isset($_POST['updateData'])) {
         if (!empty($_POST['update_number_device'])) {
             foreach ($_POST['update_number_device'] as $orderItem => $devices) {
                 foreach ($devices as $deviceId => $numberDevice) {
+                    $sqlOld = "SELECT numberDevice FROM order_numberdevice WHERE id = :id";
+                    $stmtOld = $conn->prepare($sqlOld);
+                    $stmtOld->bindParam(':id', $deviceId, PDO::PARAM_INT);
+                    $stmtOld->execute();
+                    $oldRow = $stmtOld->fetch(PDO::FETCH_ASSOC);
+                    $oldNumberDevice = $oldRow['numberDevice'];
+
+                    // Step 2: Compare and insert into history if changed
+                    if ($oldNumberDevice != $numberDevice) {
+                        $stmtHistory = $conn->prepare("
+                    INSERT INTO order_history (
+                        table_name, table_id, order_id, field_name, old_value, new_value, action, edited_by
+                    ) VALUES (
+                        :table_name, :table_id, :order_id, :field_name, :old_value, :new_value, :action, :edited_by
+                    )
+                ");
+                        $stmtHistory->execute([
+                            ':table_name' => 'order_numberdevice',
+                            ':table_id'   => $deviceId,
+                            ':order_id'   => $orderItem,
+                            ':field_name' => 'numberDevice',
+                            ':old_value'  => $oldNumberDevice,
+                            ':new_value'  => $numberDevice,
+                            ':action'     => 'update',
+                            ':edited_by'  => $editedBy // Make sure $editedBy is set
+                        ]);
+                    }
                     $sql = "UPDATE order_numberdevice SET numberDevice = :numberDevice WHERE id = :id";
                     $stmt = $conn->prepare($sql);
                     $stmt->bindParam(':numberDevice', $numberDevice);
@@ -387,6 +563,29 @@ if (isset($_POST['updateData'])) {
                     $stmt = $conn->prepare($sql);
                     $stmt->bindParam(':id', $deviceId, PDO::PARAM_INT);
                     $stmt->execute();
+
+                    $stmtOld = $conn->prepare("SELECT * FROM order_numberdevice WHERE id = :id");
+                    $stmtOld->bindParam(':id', $deviceId, PDO::PARAM_INT);
+                    $stmtOld->execute();
+                    $oldData = $stmtOld->fetch(PDO::FETCH_ASSOC);
+
+                    $stmtHistory = $conn->prepare("
+            INSERT INTO order_history (
+                table_name, table_id, order_id, field_name, old_value, new_value, action, edited_by, edited_at
+            ) VALUES (
+                :table_name, :table_id, :order_id, :field_name, :old_value, :new_value, :action, :edited_by, NOW()
+            )
+        ");
+                    $stmtHistory->execute([
+                        ':table_name' => 'order_numberdevice',
+                        ':table_id'   => $deviceId,
+                        ':order_id'   => $oldData['order_item'], // get from old data
+                        ':field_name' => 'is_deleted',
+                        ':old_value'  => $oldData['is_deleted'] ?? '0',
+                        ':new_value'  => '1',
+                        ':action'     => 'delete',
+                        ':edited_by'  => $_SESSION['admin_log'] ?? 'unknown'
+                    ]);
                 }
             }
         }
@@ -402,38 +601,27 @@ if (isset($_POST['updateData'])) {
                 $stmt->bindParam(':order_item', $id, PDO::PARAM_INT); // Use $id as the order item ID
                 $stmt->bindParam(':numberDevice', $numberDevice, PDO::PARAM_STR);
                 $stmt->execute();
-            }
-        }
 
-        $sqlOld = "SELECT * FROM orderdata_new WHERE id = :id";
-        $stmtOld = $conn->prepare($sqlOld);
-        $stmtOld->bindParam(":id", $id);
-        $stmtOld->execute();
-        $oldData = $stmtOld->fetch(PDO::FETCH_ASSOC);
+                $itemId = $conn->lastInsertId();
 
-        // Step 2: Loop over all fields in oldData
-        foreach ($oldData as $field => $oldValue) {
-            // Skip the primary key field (e.g., "id")
-            if ($field === "id") continue;
-
-            // Check if a new value was submitted for this field
-            if (isset($_POST[$field])) {
-                $newValue = $_POST[$field];
-
-                // Only insert into history if the value actually changed
-                if ($oldValue != $newValue) {
-                    $stmtHistory = $conn->prepare("
-                        INSERT INTO order_history (order_id, field_name, old_value, new_value, edited_by)
-                        VALUES (:order_id, :field_name, :old_value, :new_value, :edited_by)
-                    ");
-                    $stmtHistory->execute([
-                        ':order_id'   => $id,
-                        ':field_name' => $field,
-                        ':old_value'  => $oldValue,
-                        ':new_value'  => $newValue,
-                        ':edited_by'  => $editedBy // Define $editedBy earlier (e.g., from session)
-                    ]);
-                }
+                // Insert history log
+                $stmtHistory = $conn->prepare("
+            INSERT INTO order_history (
+                table_name, table_id, order_id, field_name, old_value, new_value, action, edited_by, edited_at
+            ) VALUES (
+                :table_name, :table_id, :order_id, :field_name, :old_value, :new_value, :action, :edited_by, NOW()
+            )
+        ");
+                $stmtHistory->execute([
+                    ':table_name' => 'order_numberdevice',
+                    ':table_id'   => $itemId,
+                    ':order_id'   => $id,
+                    ':field_name' => '',
+                    ':old_value'  => '',
+                    ':new_value'  => '',
+                    ':action'     => 'insert',
+                    ':edited_by'  => $_SESSION['admin_log'] ?? 'unknown'
+                ]);
             }
         }
     }

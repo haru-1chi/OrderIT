@@ -58,7 +58,7 @@ if (isset($_GET['withdraw'])) {
                         <div class="col-sm-4">
                             <div class="mb-3">
                                 <label for="inputGroupSelect01">ประเภทการเบิก</label>
-                                <select required class="form-select" name="ref_withdraw" id="inputGroupSelect01">
+                                <select required class="form-select" name="refWithdraw" id="inputGroupSelect01">
                                     <?php
                                     $sql = 'SELECT * FROM withdraw';
                                     $stmt = $conn->prepare($sql);
@@ -78,7 +78,7 @@ if (isset($_GET['withdraw'])) {
                         <div class="col-sm-4">
                             <div class="mb-3">
                                 <label for="inputGroupSelect01">ประเภทงาน</label>
-                                <select required class="form-select" name="ref_work" id="inputGroupSelect01">
+                                <select required class="form-select" name="refWork" id="inputGroupSelect01">
                                     <?php
                                     $sql = 'SELECT * FROM listwork';
                                     $stmt = $conn->prepare($sql);
@@ -269,7 +269,7 @@ if (isset($_GET['withdraw'])) {
                             <div class="mb-3">
                                 <label for="inputGroupSelect01">ร้านที่เสนอราคา
                                 </label>
-                                <select required class="form-select" name="ref_offer" id="inputGroupSelect01">
+                                <select required class="form-select" name="refOffer" id="inputGroupSelect01">
                                     <?php
                                     $sql = 'SELECT * FROM offer';
                                     $stmt = $conn->prepare($sql);

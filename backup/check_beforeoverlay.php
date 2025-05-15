@@ -507,7 +507,7 @@ ORDER BY os.status;
               <div class="row">
                 <div class="col-4">
                   <label for="inputGroupSelect01">ประเภทการเบิก</label>
-                  <select disabled class="form-select" name="ref_withdraw" id="inputGroupSelect01">
+                  <select disabled class="form-select" name="refWithdraw" id="inputGroupSelect01">
                     <?php
                     $sql = 'SELECT * FROM withdraw';
                     $stmt = $conn->prepare($sql);
@@ -523,7 +523,7 @@ ORDER BY os.status;
 
                 <div class="col-4">
                   <label for="inputGroupSelect01">ประเภทงาน</label>
-                  <select disabled class="form-select" name="ref_work" id="inputGroupSelect01">
+                  <select disabled class="form-select" name="refWork" id="inputGroupSelect01">
                     <?php
                     $sql = 'SELECT * FROM listwork';
                     $stmt = $conn->prepare($sql);
@@ -601,7 +601,7 @@ ORDER BY os.status;
               <div class="row">
                 <div class="col-6">
                   <label for="inputGroupSelect01">ร้านที่เสนอราคา</label>
-                  <select disabled class="form-select" name="ref_offer" id="inputGroupSelect01">
+                  <select disabled class="form-select" name="refOffer" id="inputGroupSelect01">
                     <?php
                     $sql = 'SELECT * FROM offer';
                     $stmt = $conn->prepare($sql);
@@ -884,7 +884,7 @@ ORDER BY os.status;
               <div class="col-sm-6">
                 <div class="mb-3">
                   <label for="inputGroupSelect01">ประเภทการเบิก</label>
-                  <select required class="form-select" name="ref_withdraw" id="inputGroupSelect01">
+                  <select required class="form-select" name="refWithdraw" id="inputGroupSelect01">
                     <?php
                     $sql = 'SELECT * FROM withdraw';
                     $stmt = $conn->prepare($sql);
@@ -904,7 +904,7 @@ ORDER BY os.status;
               <div class="col-sm-6">
                 <div class="mb-3">
                   <label for="inputGroupSelect01">ประเภทงาน</label>
-                  <select required class="form-select" name="ref_work" id="inputGroupSelect01">
+                  <select required class="form-select" name="refWork" id="inputGroupSelect01">
                     <?php
                     $sql = 'SELECT * FROM listwork';
                     $stmt = $conn->prepare($sql);
@@ -1102,7 +1102,7 @@ ORDER BY os.status;
                 <div class="mb-3">
                   <label for="inputGroupSelect01">ร้านที่เสนอราคา
                   </label>
-                  <select required class="form-select" name="ref_offer" id="inputGroupSelect01">
+                  <select required class="form-select" name="refOffer" id="inputGroupSelect01">
                     <?php
                     $sql = 'SELECT * FROM offer';
                     $stmt = $conn->prepare($sql);
@@ -1253,7 +1253,7 @@ ORDER BY os.status;
                 <div class="col-sm-6">
                   <div class="mb-3">
                     <label for="inputGroupSelect01">ประเภทการเบิก</label>
-                    <select required class="form-select" name="ref_withdraw" id="inputGroupSelect01">
+                    <select required class="form-select" name="refWithdraw" id="inputGroupSelect01">
                       <?php
                       $sql = 'SELECT * FROM withdraw';
                       $stmt = $conn->prepare($sql);
@@ -1271,7 +1271,7 @@ ORDER BY os.status;
                 <div class="col-sm-6">
                   <div class="mb-3">
                     <label for="inputGroupSelect01">ประเภทงาน</label>
-                    <select required class="form-select" name="ref_work" id="inputGroupSelect01">
+                    <select required class="form-select" name="refWork" id="inputGroupSelect01">
                       <?php
                       $sql = 'SELECT * FROM listwork';
                       $stmt = $conn->prepare($sql);
@@ -1496,7 +1496,7 @@ ORDER BY os.status;
                 <div class="col-sm-4">
                   <div class="mb-3">
                     <label for="inputGroupSelect01">ร้านที่เสนอราคา</label>
-                    <select required class="form-select" name="ref_offer" id="inputGroupSelect01">
+                    <select required class="form-select" name="refOffer" id="inputGroupSelect01">
                       <?php
                       $sql = 'SELECT * FROM offer';
                       $stmt = $conn->prepare($sql);
@@ -1698,7 +1698,7 @@ ORDER BY os.status;
         manageColumnHeader.style.display = isDisabled ? "table-cell" : "none"; //ปุ่มเพิ่ม column list table //x เอาออกจาก function นี้
 
         //field อื่นๆ
-        ["report", "reason", "note", "ref_withdraw", "ref_work", "ref_offer", "quotation", "id_ref"].forEach(function(name) {
+        ["report", "reason", "note", "refWithdraw", "refWork", "refOffer", "quotation", "id_ref"].forEach(function(name) {
           const input = document.querySelector(`[name='${name}']`);
           if (input) {
             input.disabled = !input.disabled;

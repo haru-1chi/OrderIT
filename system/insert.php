@@ -371,14 +371,14 @@ if (isset($_POST['submitWithdraw'])) {
     // รับข้อมูลจากฟอร์ม
     $numberWork = generateNumberWork($conn);
     $dateWithdraw = $_POST["dateWithdraw"];
-    $refWithdraw = $_POST["ref_withdraw"];
-    $refWork = $_POST["ref_work"];
+    $refWithdraw = $_POST["refWithdraw"];
+    $refWork = $_POST["refWork"];
     $refDevice = $_POST["ref_device"];
     $reason = $_POST["reason"];
     $report = $_POST["report"];
     $refDepart = $_POST["depart_id"];
     $refUsername = $_POST["ref_username"];
-    $refOffer = $_POST["ref_offer"];
+    $refOffer = $_POST["refOffer"];
     $quotation = $_POST["quotation"];
     $id_ref = $_POST["id_ref"];
     $note = $_POST["note"];
@@ -510,14 +510,14 @@ if (isset($_POST['copied_submit'])) {
     // รับข้อมูลจากฟอร์ม
     $numberWork = generateNumberWork($conn);
     $dateWithdraw = $_POST["copied_dateWithdraw"];
-    $refWithdraw = $_POST["copied_ref_withdraw"];
-    $refWork = $_POST["copied_ref_work"];
+    $refWithdraw = $_POST["copied_refWithdraw"];
+    $refWork = $_POST["copied_refWork"];
     $refDevice = $_POST["copied_ref_device"];
     $reason = $_POST["copied_reason"];
     $report = $_POST["copied_report"];
     $refDepart = $_POST["copied_depart_id"];
     $refUsername = $_POST["copied_ref_username"];
-    $refOffer = $_POST["copied_ref_offer"];
+    $refOffer = $_POST["copied_refOffer"];
     $quotation = $_POST["copied_quotation"];
     $note = $_POST["copied_note"];
     $status = $_POST["copied_status"];
@@ -646,14 +646,14 @@ if (isset($_POST['copied_submit'])) {
 if (isset($_POST['submit_with_work'])) {
     $numberWork = generateNumberWork($conn);
     $dateWithdraw = $_POST["dateWithdraw"];
-    $refWithdraw = $_POST["ref_withdraw"];
-    $refWork = $_POST["ref_work"];
+    $refWithdraw = $_POST["refWithdraw"];
+    $refWork = $_POST["refWork"];
     $refDevice = $_POST["ref_device"];
     $reason = $_POST["reason"];
     $report = $_POST["report"];
     $refDepart = $_POST["depart_id"];
     $refUsername = $_POST["ref_username"];
-    $refOffer = $_POST["ref_offer"];
+    $refOffer = $_POST["refOffer"];
     $quotation = $_POST["quotation"];
     $note = $_POST["note"];
     $status = 1;
@@ -873,14 +873,14 @@ if (isset($_POST['save_with_work'])) {
     $numberWork = $_POST["numberWork"];
     $withdraw_id = $_POST["withdraw_id"];
     $dateWithdraw = $_POST["dateWithdraw"];
-    $refWithdraw = $_POST["ref_withdraw"];
-    $refWork = $_POST["ref_work"];
+    $refWithdraw = $_POST["refWithdraw"];
+    $refWork = $_POST["refWork"];
     $refDevice = $_POST["ref_device"];
     $reason = $_POST["reason"];
     $report = $_POST["report"];
     $refDepart = $_POST["depart_id"];
     $refUsername = $_POST["ref_username"];
-    $refOffer = $_POST["ref_offer"];
+    $refOffer = $_POST["refOffer"];
     $quotation = $_POST["quotation"];
     $note = $_POST["note"];
     $status = $_POST["status"];
@@ -1191,14 +1191,14 @@ if (isset($_POST['save_with_work'])) {
 //     // รับข้อมูลจากฟอร์ม
 //     $numberWork = generateNumberWork($conn);
 //     $dateWithdraw = $_POST["dateWithdraw"];
-//     $refWithdraw = $_POST["ref_withdraw"];
-//     $refWork = $_POST["ref_work"];
+//     $refWithdraw = $_POST["refWithdraw"];
+//     $refWork = $_POST["refWork"];
 //     $refDevice = $_POST["ref_device"];
 //     $reason = $_POST["reason"];
 //     $report = $_POST["report"];
 //     $refDepart = $_POST["depart_id"];
 //     $refUsername = $_POST["ref_username"];
-//     $refOffer = $_POST["ref_offer"];
+//     $refOffer = $_POST["refOffer"];
 //     $quotation = $_POST["quotation"];
 //     $note = $_POST["note"];
 //     $status = $_POST["status"];
@@ -1293,8 +1293,8 @@ if (isset($_POST['save_with_work'])) {
 
 //     $numberWork = generateNumberWork($conn);
 //     $dateWithdraw = $_POST["dateWithdraw"];
-//     $refWithdraw = $_POST["ref_withdraw"];
-//     $refWork = $_POST["ref_work"];
+//     $refWithdraw = $_POST["refWithdraw"];
+//     $refWork = $_POST["refWork"];
 //     $refDevice = $_POST["ref_device"];
 //     $numberDevice1 = $_POST["number_device_1"];
 //     $numberDevice2 = $_POST["number_device_2"];
@@ -1303,7 +1303,7 @@ if (isset($_POST['save_with_work'])) {
 //     $report = $_POST["report"];
 //     $refDepart = $_POST["depart_id"];
 //     $refUsername = $_POST["ref_username"];
-//     $refOffer = $_POST["ref_offer"];
+//     $refOffer = $_POST["refOffer"];
 //     $quotation = $_POST["quotation"];
 //     // $receiptDate = $_POST["receipt_date"];
 //     // $deliveryDate = $_POST["delivery_date"];
@@ -1406,8 +1406,8 @@ if (isset($_POST['submitW'])) {
     // รับข้อมูลจากฟอร์ม
     $numberWork = $_POST["numberWork"];
     $dateWithdraw = $_POST["dateWithdraw"];
-    $refWithdraw = $_POST["ref_withdraw"];
-    $refWork = $_POST["ref_work"];
+    $refWithdraw = $_POST["refWithdraw"];
+    $refWork = $_POST["refWork"];
     $refDevice = $_POST["ref_device"];
     $numberDevice1 = $_POST["number_device_1"];
     $numberDevice2 = $_POST["number_device_2"];
@@ -1416,7 +1416,7 @@ if (isset($_POST['submitW'])) {
     $report = $_POST["report"];
     $refDepart = $_POST["depart_id"];
     $refUsername = $_POST["ref_username"];
-    $refOffer = $_POST["ref_offer"];
+    $refOffer = $_POST["refOffer"];
     $quotation = $_POST["quotation"];
     $note = $_POST["note"];
     $status = $_POST["status"];

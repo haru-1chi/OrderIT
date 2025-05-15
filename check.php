@@ -128,6 +128,7 @@ od.*,
 wd.withdraw_name, 
 lw.work_name, 
 dv.device_name, 
+dv.device_id, 
 dp.depart_name, 
 of.offer_name,
 nd.numberDevice, 
@@ -497,6 +498,77 @@ ORDER BY os.status;
 
             <?php
             }
+            $orderId = $order['id'];
+            $sqlHistory = "SELECT * FROM order_history WHERE order_id = :order_id ORDER BY edited_at DESC";
+            $stmtHistory = $conn->prepare($sqlHistory);
+            $stmtHistory->bindParam(":order_id", $orderId);
+            $stmtHistory->execute();
+            $orderHistories = $stmtHistory->fetchAll(PDO::FETCH_ASSOC);
+
+            // Group history by field_name for easier lookup
+            $historyByField = [];
+            foreach ($orderHistories as $history) {
+              $field = $history['field_name'];
+              $historyByField[$field][] = $history;
+            }
+
+            function renderEditHistory($fieldName, $historyByField)
+            {
+              if (!empty($historyByField[$fieldName])) {
+                $log = $historyByField[$fieldName][0];
+                echo '<div class="small text-danger text-end">*' . htmlspecialchars($log['edited_by']) . '</div>';
+              }
+            }
+
+            $orderId = $order['id'];
+            $sqlHistory = "SELECT * FROM order_history WHERE order_id = :order_id AND table_name = 'order_items' ORDER BY edited_at DESC";
+            $stmtHistory = $conn->prepare($sqlHistory);
+            $stmtHistory->bindParam(":order_id", $orderId);
+            $stmtHistory->execute();
+            $orderItemHistories = $stmtHistory->fetchAll(PDO::FETCH_ASSOC);
+
+            // Group by item_id (table_id)
+            $itemHistoryByItemId = [];
+            foreach ($orderItemHistories as $history) {
+              $itemId = $history['table_id'];
+              if (!isset($itemHistoryByItemId[$itemId])) {
+                $itemHistoryByItemId[$itemId] = $history; // Only keep latest edit
+              }
+            }
+
+            function renderItemEditorInfo($itemId, $itemHistoryByItemId)
+            {
+              if (!empty($itemHistoryByItemId[$itemId])) {
+                $action = htmlspecialchars($itemHistoryByItemId[$itemId]['action']);
+                $editor = htmlspecialchars($itemHistoryByItemId[$itemId]['edited_by']);
+                echo '<div class="small text-danger text-end">*' . $action . ': ' . $editor . '</div>';
+              }
+            }
+
+            $orderId = $order['id'];
+            $sqlHistory = "SELECT * FROM order_history WHERE order_id = :order_id AND table_name = 'order_numberdevice' ORDER BY edited_at DESC";
+            $stmtHistory = $conn->prepare($sqlHistory);
+            $stmtHistory->bindParam(":order_id", $orderId);
+            $stmtHistory->execute();
+            $orderItemHistories = $stmtHistory->fetchAll(PDO::FETCH_ASSOC);
+
+            // Group by item_id (table_id)
+            $itemHistoryByItemId = [];
+            foreach ($orderItemHistories as $history) {
+              $itemId = $history['table_id'];
+              if (!isset($itemHistoryByItemId[$itemId])) {
+                $itemHistoryByItemId[$itemId] = $history; // Only keep latest edit
+              }
+            }
+
+            function renderNumberEditorInfo($itemId, $itemHistoryByItemId)
+            {
+              if (!empty($itemHistoryByItemId[$itemId])) {
+                $action = htmlspecialchars($itemHistoryByItemId[$itemId]['action']);
+                $editor = htmlspecialchars($itemHistoryByItemId[$itemId]['edited_by']);
+                echo '<div class="small text-danger text-end">*' . $action . ': ' . $editor . '</div>';
+              }
+            }
             ?>
           </div>
         </div>
@@ -504,7 +576,6 @@ ORDER BY os.status;
         <div class="card col-sm-12 col-md-12 col-lg-6">
           <?php
           if (!empty($order)) {
-
           ?>
             <form action="system/update.php" method="POST">
               <div class="d-flex justify-content-between align-items-center my-3">
@@ -524,7 +595,10 @@ ORDER BY os.status;
 
               <div class="row">
                 <div class="col-6">
-                  <label>ผูกหมายเลขงาน(ถ้ามี)</label>
+                  <div class="d-flex justify-content-between">
+                    <label>ผูกหมายเลขงาน(ถ้ามี)</label>
+                    <?php renderEditHistory('id_ref', $historyByField); ?>
+                  </div>
                   <input type="text" class="form-control" name="id_ref"
                     value="<?= $order['id_ref'] ?? '' ?>" disabled>
                 </div>
@@ -539,8 +613,11 @@ ORDER BY os.status;
 
               <div class="row">
                 <div class="col-4">
-                  <label for="inputGroupSelect01">ประเภทการเบิก</label>
-                  <select disabled class="form-select" name="ref_withdraw" id="inputGroupSelect01">
+                  <div class="d-flex justify-content-between">
+                    <label for="inputGroupSelect01">ประเภทการเบิก</label>
+                    <?php renderEditHistory('refWithdraw', $historyByField); ?>
+                  </div>
+                  <select disabled class="form-select" name="refWithdraw" id="inputGroupSelect01">
                     <?php
                     $sql = 'SELECT * FROM withdraw';
                     $stmt = $conn->prepare($sql);
@@ -552,11 +629,16 @@ ORDER BY os.status;
                       <option value="<?= $withdraw['withdraw_id'] ?>" <?= $selected ?>><?= $withdraw['withdraw_name'] ?></option>
                     <?php } ?>
                   </select>
+
+
                 </div>
 
                 <div class="col-4">
-                  <label for="inputGroupSelect01">ประเภทงาน</label>
-                  <select disabled class="form-select" name="ref_work" id="inputGroupSelect01">
+                  <div class="d-flex justify-content-between">
+                    <label for="inputGroupSelect01">ประเภทงาน</label>
+                    <?php renderEditHistory('refWork', $historyByField); ?>
+                  </div>
+                  <select disabled class="form-select" name="refWork" id="inputGroupSelect01">
                     <?php
                     $sql = 'SELECT * FROM listwork';
                     $stmt = $conn->prepare($sql);
@@ -570,6 +652,7 @@ ORDER BY os.status;
                     <?php }
                     ?>
                   </select>
+
                 </div>
                 <div class="col-4">
                   <label>ผู้รับเรื่อง</label>
@@ -580,9 +663,25 @@ ORDER BY os.status;
 
               <div class="row">
                 <div class="col-6">
-                  <label>ส่งซ่อมอุปกรณ์ คอมพิวเตอร์</label>
-                  <input type="text" class="form-control"
-                    value="<?= $order['device_name'] ?? '' ?>" disabled>
+                  <div class="d-flex justify-content-between">
+                    <label>ส่งซ่อมอุปกรณ์ คอมพิวเตอร์</label>
+                    <?php renderEditHistory('refDevice', $historyByField); ?>
+                  </div>
+                  <select disabled required class="form-select" name="refDevice" id="inputGroupSelect01">
+                    <?php
+                    $sql = 'SELECT * FROM device';
+                    $stmt = $conn->prepare($sql);
+                    $stmt->execute();
+                    $deviceLists = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                    foreach ($deviceLists as $device) {
+                      $isSelected = ($device['device_id'] === $order['device_id']) ? 'selected' : '';
+                    ?>
+                      <option value="<?= $device['device_id'] ?>" <?= $isSelected ?>>
+                        <?= $device['device_name'] ?>
+                      </option>
+                    <?php } ?>
+                  </select>
                 </div>
                 <div class="col-6">
                   <label>หมายเลขพัสดุ / ครุภัณฑ์</label>
@@ -596,6 +695,7 @@ ORDER BY os.status;
                             data-row-id="<?= $order['id'] ?>"
                             style="visibility: <?= $index === 0 ? 'hidden' : 'visible' ?>;">ลบ</button>
                         </div>
+                        <?php renderNumberEditorInfo($device['numberDevice_id'], $itemHistoryByItemId); ?>
                       <?php endforeach; ?>
                     <?php  } else { ?>
                       <div class="d-flex device-number-row">
@@ -612,17 +712,25 @@ ORDER BY os.status;
 
               <div class="row">
                 <div class="col-12">
-                  <label>อาการที่รับแจ้ง</label>
+                  <div class="d-flex justify-content-between">
+                    <label>อาการที่รับแจ้ง</label>
+                    <?php renderEditHistory('report', $historyByField); ?>
+                  </div>
                   <input type="text" class="form-control" name="report"
                     value="<?= $order['report'] ?>" disabled>
+
                 </div>
               </div>
 
               <div class="row">
                 <div class="col-6">
-                  <label>รายละเอียด</label>
+                  <div class="d-flex justify-content-between">
+                    <label>รายละเอียด</label>
+                    <?php renderEditHistory('reason', $historyByField); ?>
+                  </div>
                   <input type="text" class="form-control" name="reason"
                     value="<?= $order['reason'] ?>" disabled>
+
                 </div>
                 <div class="col-6">
                   <label>หน่วยงานที่แจ้ง</label>
@@ -633,8 +741,11 @@ ORDER BY os.status;
 
               <div class="row">
                 <div class="col-6">
-                  <label for="inputGroupSelect01">ร้านที่เสนอราคา</label>
-                  <select disabled class="form-select" name="ref_offer" id="inputGroupSelect01">
+                  <div class="d-flex justify-content-between">
+                    <label for="inputGroupSelect01">ร้านที่เสนอราคา</label>
+                    <?php renderEditHistory('refOffer', $historyByField); ?>
+                  </div>
+                  <select disabled class="form-select" name="refOffer" id="inputGroupSelect01">
                     <?php
                     $sql = 'SELECT * FROM offer';
                     $stmt = $conn->prepare($sql);
@@ -647,17 +758,26 @@ ORDER BY os.status;
                     <?php }
                     ?>
                   </select>
+
                 </div>
 
                 <div class="col-6">
-                  <label>เลขที่ใบเสนอราคา</label>
+                  <div class="d-flex justify-content-between">
+                    <label>เลขที่ใบเสนอราคา</label>
+                    <?php renderEditHistory('quotation', $historyByField); ?>
+                  </div>
+
                   <input disabled type="text" name="quotation" class="form-control" value="<?= $order['quotation'] ?>">
+
                 </div>
               </div>
 
               <div class="row">
                 <div class="col-12">
-                  <label>หมายเหตุ</label>
+                  <div class="d-flex justify-content-between">
+                    <label>หมายเหตุ</label>
+                    <?php renderEditHistory('note', $historyByField); ?>
+                  </div>
                   <input type="text" class="form-control" name="note"
                     value="<?= $order['note'] ?>" disabled>
                 </div>
@@ -690,12 +810,12 @@ ORDER BY os.status;
               if (str_contains($numberWork, 'S')) {
                 // It's special
                 $currentStatus = !empty($statuses) ? max(array_column($statuses, 'status')) : 2;
-            } else {
+              } else {
                 // It's normal
                 $currentStatus = !empty($statuses) ? max(array_column($statuses, 'status')) : 0;
-            }
+              }
 
-              
+
               ?>
               <h4 class="mt-3">สถานะ</h4>
               <table id="pdf" style="width: 100%;" class="table">
@@ -852,6 +972,9 @@ ORDER BY os.status;
                         </td>
                         <td>
                           <input disabled name="update_unit[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['unit']) ?>" style="width: 4rem;" type="text" class="form-control">
+                          <div style="position: absolute; right: 20px;">
+                            <?php renderItemEditorInfo($item['item_id'], $itemHistoryByItemId); ?>
+                          </div>
                         </td>
                         <td>
                           <button type="button" class="btn btn-warning remove-row"
@@ -961,7 +1084,7 @@ ORDER BY os.status;
               <div class="col-sm-6">
                 <div class="mb-3">
                   <label for="inputGroupSelect01">ประเภทการเบิก</label>
-                  <select required class="form-select" name="ref_withdraw" id="inputGroupSelect01">
+                  <select required class="form-select" name="refWithdraw" id="inputGroupSelect01">
                     <?php
                     $sql = 'SELECT * FROM withdraw';
                     $stmt = $conn->prepare($sql);
@@ -981,7 +1104,7 @@ ORDER BY os.status;
               <div class="col-sm-6">
                 <div class="mb-3">
                   <label for="inputGroupSelect01">ประเภทงาน</label>
-                  <select required class="form-select" name="ref_work" id="inputGroupSelect01">
+                  <select required class="form-select" name="refWork" id="inputGroupSelect01">
                     <?php
                     $sql = 'SELECT * FROM listwork';
                     $stmt = $conn->prepare($sql);
@@ -1183,7 +1306,7 @@ ORDER BY os.status;
                 <div class="mb-3">
                   <label for="inputGroupSelect01">ร้านที่เสนอราคา
                   </label>
-                  <select required class="form-select" name="ref_offer" id="inputGroupSelect01">
+                  <select required class="form-select" name="refOffer" id="inputGroupSelect01">
                     <?php
                     $sql = 'SELECT * FROM offer';
                     $stmt = $conn->prepare($sql);
@@ -1424,7 +1547,7 @@ ORDER BY os.status;
                 <div class="col-sm-6">
                   <div class="mb-3">
                     <label for="inputGroupSelect01">ประเภทการเบิก</label>
-                    <select required class="form-select" name="ref_withdraw" id="inputGroupSelect01">
+                    <select required class="form-select" name="refWithdraw" id="inputGroupSelect01">
                       <?php
                       $sql = 'SELECT * FROM withdraw';
                       $stmt = $conn->prepare($sql);
@@ -1442,7 +1565,7 @@ ORDER BY os.status;
                 <div class="col-sm-6">
                   <div class="mb-3">
                     <label for="inputGroupSelect01">ประเภทงาน</label>
-                    <select required class="form-select" name="ref_work" id="inputGroupSelect01">
+                    <select required class="form-select" name="refWork" id="inputGroupSelect01">
                       <?php
                       $sql = 'SELECT * FROM listwork';
                       $stmt = $conn->prepare($sql);
@@ -1671,7 +1794,7 @@ ORDER BY os.status;
                 <div class="col-sm-4">
                   <div class="mb-3">
                     <label for="inputGroupSelect01">ร้านที่เสนอราคา</label>
-                    <select required class="form-select" name="ref_offer" id="inputGroupSelect01">
+                    <select required class="form-select" name="refOffer" id="inputGroupSelect01">
                       <?php
                       $sql = 'SELECT * FROM offer';
                       $stmt = $conn->prepare($sql);
@@ -1964,7 +2087,7 @@ ORDER BY os.status;
         manageColumnHeader.style.display = isDisabled ? "table-cell" : "none"; //ปุ่มเพิ่ม column list table //x เอาออกจาก function นี้
 
         //field อื่นๆ
-        ["report", "reason", "note", "ref_withdraw", "ref_work", "ref_offer", "quotation", "id_ref"].forEach(function(name) {
+        ["report", "reason", "note", "refWithdraw", "refWork", "refDevice", "refOffer", "quotation", "id_ref"].forEach(function(name) {
           const input = document.querySelector(`[name='${name}']`);
           if (input) {
             input.disabled = !input.disabled;
@@ -2181,7 +2304,7 @@ ORDER BY os.status;
   <script>
     // ฟังก์ชันสำหรับแปลงปีคริสต์ศักราชเป็นปีพุทธศักราช
     function convertToBuddhistYear(englishYear) {
-      return englishYear + 543;
+      return englishYear;
     }
 
     // ชื่อเดือนภาษาไทย

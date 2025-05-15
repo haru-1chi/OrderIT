@@ -137,8 +137,8 @@ if (!isset($_SESSION["admin_log"])) {
                     $dateEnd = $_POST['dateEnd_my_work'];
 
                     // แปลงวันที่เริ่มต้นเป็น พ.ศ.
-                    $yearStart = date("Y", strtotime($dateStart)) + 543;
-                    $yearEnd = date("Y", strtotime($dateEnd)) + 543;
+                    $yearStart = date("Y", strtotime($dateStart));
+                    $yearEnd = date("Y", strtotime($dateEnd));
 
                     $dateStart_buddhist = $yearStart . "-" . date("m-d", strtotime($dateStart));
                     $dateEnd_buddhist = $yearEnd . "-" . date("m-d", strtotime($dateEnd));
@@ -167,8 +167,8 @@ if (!isset($_SESSION["admin_log"])) {
                     $dateEnd = date('Y-m-d');
                     $dateStart = date('Y-m-d', strtotime('-3 days', strtotime($dateEnd)));
 
-                    $yearStart = date("Y", strtotime($dateStart)) + 543;
-                    $yearEnd = date("Y", strtotime($dateEnd)) + 543;
+                    $yearStart = date("Y", strtotime($dateStart));
+                    $yearEnd = date("Y", strtotime($dateEnd));
 
                     $dateStart_buddhist = $yearStart . "-" . date("m-d", strtotime($dateStart));
                     $dateEnd_buddhist = $yearEnd . "-" . date("m-d", strtotime($dateEnd));
@@ -768,7 +768,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <div class="col-sm-4">
                                                                         <div class="mb-3">
                                                                             <label for="inputGroupSelect01">ประเภทการเบิก</label>
-                                                                            <select required class="form-select" name="ref_withdraw" id="inputGroupSelect01">
+                                                                            <select required class="form-select" name="refWithdraw" id="inputGroupSelect01">
                                                                                 <?php
                                                                                 $sql = 'SELECT * FROM withdraw';
                                                                                 $stmt = $conn->prepare($sql);
@@ -786,7 +786,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <div class="col-sm-4">
                                                                         <div class="mb-3">
                                                                             <label for="inputGroupSelect01">ประเภทงาน</label>
-                                                                            <select required class="form-select" name="ref_work" id="inputGroupSelect01">
+                                                                            <select required class="form-select" name="refWork" id="inputGroupSelect01">
                                                                                 <?php
                                                                                 $sql = 'SELECT * FROM listwork';
                                                                                 $stmt = $conn->prepare($sql);
@@ -1023,7 +1023,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <div class="col-sm-4">
                                                                         <div class="mb-3">
                                                                             <label for="inputGroupSelect01">ร้านที่เสนอราคา</label>
-                                                                            <select required class="form-select" name="ref_offer" id="inputGroupSelect01">
+                                                                            <select required class="form-select" name="refOffer" id="inputGroupSelect01">
                                                                                 <?php
                                                                                 $sql = 'SELECT * FROM offer';
                                                                                 $stmt = $conn->prepare($sql);
@@ -1177,7 +1177,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="col-sm-4">
                                                                     <div class="mb-3">
                                                                         <label for="inputGroupSelect01">ประเภทการเบิก</label>
-                                                                        <select required class="form-select" name="ref_withdraw" id="inputGroupSelect01">
+                                                                        <select required class="form-select" name="refWithdraw" id="inputGroupSelect01">
                                                                             <?php
                                                                             $sql = 'SELECT * FROM withdraw';
                                                                             $stmt = $conn->prepare($sql);
@@ -1196,7 +1196,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="col-sm-4">
                                                                     <div class="mb-3">
                                                                         <label for="inputGroupSelect01">ประเภทงาน</label>
-                                                                        <select required class="form-select" name="ref_work" id="inputGroupSelect01">
+                                                                        <select required class="form-select" name="refWork" id="inputGroupSelect01">
                                                                             <?php
                                                                             $sql = 'SELECT * FROM listwork';
                                                                             $stmt = $conn->prepare($sql);
@@ -1416,7 +1416,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <div class="mb-3">
                                                                         <label for="inputGroupSelect01">ร้านที่เสนอราคา
                                                                         </label>
-                                                                        <select required class="form-select" name="ref_offer" id="inputGroupSelect01">
+                                                                        <select required class="form-select" name="refOffer" id="inputGroupSelect01">
                                                                             <?php
                                                                             $sql = 'SELECT * FROM offer';
                                                                             $stmt = $conn->prepare($sql);
@@ -2320,7 +2320,7 @@ ORDER BY id DESC;
                                                                     <div class="col-sm-4">
                                                                         <div class="mb-3">
                                                                             <label for="inputGroupSelect01">ประเภทการเบิก</label>
-                                                                            <select required class="form-select" name="ref_withdraw" id="inputGroupSelect01">
+                                                                            <select required class="form-select" name="refWithdraw" id="inputGroupSelect01">
                                                                                 <?php
                                                                                 $sql = 'SELECT * FROM withdraw';
                                                                                 $stmt = $conn->prepare($sql);
@@ -2338,7 +2338,7 @@ ORDER BY id DESC;
                                                                     <div class="col-sm-4">
                                                                         <div class="mb-3">
                                                                             <label for="inputGroupSelect01">ประเภทงาน</label>
-                                                                            <select required class="form-select" name="ref_work" id="inputGroupSelect01">
+                                                                            <select required class="form-select" name="refWork" id="inputGroupSelect01">
                                                                                 <?php
                                                                                 $sql = 'SELECT * FROM listwork';
                                                                                 $stmt = $conn->prepare($sql);
@@ -2569,7 +2569,7 @@ ORDER BY id DESC;
                                                                     <div class="col-sm-4">
                                                                         <div class="mb-3">
                                                                             <label for="inputGroupSelect01">ร้านที่เสนอราคา</label>
-                                                                            <select required class="form-select" name="ref_offer" id="inputGroupSelect01">
+                                                                            <select required class="form-select" name="refOffer" id="inputGroupSelect01">
                                                                                 <?php
                                                                                 $sql = 'SELECT * FROM offer';
                                                                                 $stmt = $conn->prepare($sql);
@@ -2723,7 +2723,7 @@ ORDER BY id DESC;
                                                                 <div class="col-sm-4">
                                                                     <div class="mb-3">
                                                                         <label for="inputGroupSelect01">ประเภทการเบิก</label>
-                                                                        <select required class="form-select" name="ref_withdraw" id="inputGroupSelect01">
+                                                                        <select required class="form-select" name="refWithdraw" id="inputGroupSelect01">
                                                                             <?php
                                                                             $sql = 'SELECT * FROM withdraw';
                                                                             $stmt = $conn->prepare($sql);
@@ -2742,7 +2742,7 @@ ORDER BY id DESC;
                                                                 <div class="col-sm-4">
                                                                     <div class="mb-3">
                                                                         <label for="inputGroupSelect01">ประเภทงาน</label>
-                                                                        <select required class="form-select" name="ref_work" id="inputGroupSelect01">
+                                                                        <select required class="form-select" name="refWork" id="inputGroupSelect01">
                                                                             <?php
                                                                             $sql = 'SELECT * FROM listwork';
                                                                             $stmt = $conn->prepare($sql);
@@ -2958,7 +2958,7 @@ ORDER BY id DESC;
                                                                     <div class="mb-3">
                                                                         <label for="inputGroupSelect01">ร้านที่เสนอราคา
                                                                         </label>
-                                                                        <select required class="form-select" name="ref_offer" id="inputGroupSelect01">
+                                                                        <select required class="form-select" name="refOffer" id="inputGroupSelect01">
                                                                             <?php
                                                                             $sql = 'SELECT * FROM offer';
                                                                             $stmt = $conn->prepare($sql);

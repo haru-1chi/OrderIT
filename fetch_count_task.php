@@ -9,48 +9,48 @@ $groupByClause = '';
 
 switch ($filter) {
     case 'day':
-        $selectClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%d') AS period";
-        $groupByClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%d'),
-        DATE_SUB(date_report, INTERVAL 543 YEAR)";
-        $range = "DATE_SUB(date_report, INTERVAL 543 YEAR) >= CURDATE() - INTERVAL 30 DAY";
-        $period = "DATE_SUB(date_report, INTERVAL 543 YEAR)";
+        $selectClause = "DATE_FORMAT(date_report, '%d') AS period";
+        $groupByClause = "DATE_FORMAT(date_report, '%d'),
+        date_report";
+        $range = "date_report >= CURDATE() - INTERVAL 30 DAY";
+        $period = "date_report";
         break;
     case 'week':
         $selectClause = "DATE_FORMAT(
         DATE_SUB(
-            DATE_SUB(date_report, INTERVAL 543 YEAR),
-            INTERVAL WEEKDAY(DATE_SUB(date_report, INTERVAL 543 YEAR)) DAY
+            date_report,
+            INTERVAL WEEKDAY(date_report) DAY
         ),
         '%Y-%m-%d'
     ) AS period";
         $groupByClause = "DATE_FORMAT(
         DATE_SUB(
-            DATE_SUB(date_report, INTERVAL 543 YEAR),
-            INTERVAL WEEKDAY(DATE_SUB(date_report, INTERVAL 543 YEAR)) DAY
+            date_report,
+            INTERVAL WEEKDAY(date_report) DAY
         ),
         '%Y-%m-%d'
     )";
-        $range = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) = YEAR(CURDATE())";
+        $range = "YEAR(date_report) = YEAR(CURDATE())";
         $period = "period ";
         break;
     case 'month':
-        $selectClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%m-%Y') AS period";
-        $groupByClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%m-%Y')";
-        $range = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) = YEAR(CURDATE())";
+        $selectClause = "DATE_FORMAT(date_report, '%m-%Y') AS period";
+        $groupByClause = "DATE_FORMAT(date_report, '%m-%Y')";
+        $range = "YEAR(date_report) = YEAR(CURDATE())";
         $period = "period ";
         break;
     case 'year':
-        $selectClause = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) AS period";
-        $groupByClause = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR))";
-        $range = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) = YEAR(CURDATE())";
+        $selectClause = "YEAR(date_report) AS period";
+        $groupByClause = "YEAR(date_report)";
+        $range = "YEAR(date_report) = YEAR(CURDATE())";
         $period = "period ";
         break;
     default:
-        $selectClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%d') AS period";
-        $groupByClause = "DATE_FORMAT(DATE_SUB(date_report, INTERVAL 543 YEAR), '%d'),
-    DATE_SUB(date_report, INTERVAL 543 YEAR)";
-        $range = "DATE_SUB(date_report, INTERVAL 543 YEAR) >= CURDATE() - INTERVAL 30 DAY";
-        $period = "DATE_SUB(date_report, INTERVAL 543 YEAR)";
+        $selectClause = "DATE_FORMAT(date_report, '%d') AS period";
+        $groupByClause = "DATE_FORMAT(date_report, '%d'),
+    date_report";
+        $range = "date_report >= CURDATE() - INTERVAL 30 DAY";
+        $period = "date_report";
         break;
 }
 

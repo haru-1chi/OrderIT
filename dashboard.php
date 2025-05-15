@@ -2,13 +2,7 @@
 session_start();
 require_once 'config/db.php';
 require_once 'template/navbar.php';
-// $dateNow = new DateTime();
-// $dateNow->modify("+543 years");
-
-// $dateThai = $dateNow->format("Y/m/d");
-
 $dateNow = new DateTime();
-$dateNow->modify("+543 years");
 $dateThai = $dateNow->format("Y-m-d");
 
 if (isset($_SESSION['admin_log'])) {

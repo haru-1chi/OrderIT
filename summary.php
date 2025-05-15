@@ -3,8 +3,6 @@ session_start();
 require_once 'config/db.php';
 require_once 'template/navbar.php';
 $dateNow = new DateTime();
-$dateNow->modify("+543 years");
-
 $dateThai = $dateNow->format("Y/m/d");
 
 //ถ้าไม่พบรายการสำหรับ export

@@ -17,13 +17,13 @@ $usernameCondition = ($username !== 'all') ? "AND username = :username" : "";
 
 $dateCondition = "";
 if ($period === 'day') {
-    $dateCondition = "AND DATE(DATE_SUB(date_report, INTERVAL 543 YEAR)) = CURDATE()";
+    $dateCondition = "AND DATE(date_report) = CURDATE()";
 } elseif ($period === 'week') {
-    $dateCondition = "AND WEEK(DATE_SUB(date_report, INTERVAL 543 YEAR)) = WEEK(CURDATE())";
+    $dateCondition = "AND WEEK(date_report) = WEEK(CURDATE())";
 } elseif ($period === 'month') {
-    $dateCondition = "AND MONTH(DATE_SUB(date_report, INTERVAL 543 YEAR)) = MONTH(CURDATE())";
+    $dateCondition = "AND MONTH(date_report) = MONTH(CURDATE())";
 } elseif ($period === 'year') {
-    $dateCondition = "AND YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) = YEAR(CURDATE())";
+    $dateCondition = "AND YEAR(date_report) = YEAR(CURDATE())";
 }
 
 try {

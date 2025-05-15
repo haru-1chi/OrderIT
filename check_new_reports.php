@@ -3,7 +3,6 @@ require_once 'config/db.php';
 
 date_default_timezone_set('Asia/Bangkok');
 $dateNow = new DateTime();
-$dateNow->modify("+543 years");
 $dateThai = $dateNow->format("Y-m-d");
 $timeThai = $dateNow->format("H:i:s");
 

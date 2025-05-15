@@ -277,7 +277,7 @@ if (!isset($_SESSION["admin_log"])) {
     <script>
         // ฟังก์ชันสำหรับแปลงปีคริสต์ศักราชเป็นปีพุทธศักราช
         function convertToBuddhistYear(englishYear) {
-            return englishYear + 543;
+            return englishYear;
         }
 
         // ดึงอินพุทธศักราชปัจจุบัน

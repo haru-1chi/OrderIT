@@ -5,14 +5,14 @@ if (isset($_POST['submit'])) {
     // รับข้อมูลจากฟอร์ม
     $numberWork = generateNumberWork($conn);
     $dateWithdraw = $_POST["dateWithdraw"];
-    $refWithdraw = $_POST["ref_withdraw"];
-    $refWork = $_POST["ref_work"];
+    $refWithdraw = $_POST["refWithdraw"];
+    $refWork = $_POST["refWork"];
     $refDevice = $_POST["ref_device"];
     $reason = $_POST["reason"];
     $report = $_POST["report"];
     $refDepart = $_POST["depart_id"];
     $refUsername = $_POST["ref_username"];
-    $refOffer = $_POST["ref_offer"];
+    $refOffer = $_POST["refOffer"];
     $quotation = $_POST["quotation"];
     $note = $_POST["note"];
     $status = $_POST["status"];

@@ -7,17 +7,17 @@ $filter = $postData['filter'] ?? 'day';
 $filterCondition = '';
 switch ($filter) {
     case 'day':
-        $filterCondition = "DATE(DATE_SUB(date_report, INTERVAL 543 YEAR)) = CURDATE()";
+        $filterCondition = "DATE(date_report) = CURDATE()";
         break;
     case 'week':
-        $filterCondition = "WEEK(DATE_SUB(date_report, INTERVAL 543 YEAR)) = WEEK(CURDATE())";
+        $filterCondition = "WEEK(date_report) = WEEK(CURDATE())";
         break;
     case 'month':
-        $filterCondition = "MONTH(DATE_SUB(date_report, INTERVAL 543 YEAR)) = MONTH(CURDATE())";
+        $filterCondition = "MONTH(date_report) = MONTH(CURDATE())";
         break;
     case 'year':
     default:
-        $filterCondition = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) = YEAR(CURDATE())";
+        $filterCondition = "YEAR(date_report) = YEAR(CURDATE())";
         break;
 }
 

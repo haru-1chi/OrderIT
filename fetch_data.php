@@ -20,7 +20,7 @@ FROM
     data_report 
 WHERE 
     status = 4 
-    AND DATE(DATE_SUB(date_report, INTERVAL 543 YEAR)) = :selected_date";
+    AND DATE(date_report) = :selected_date";
 
 $stmt = $conn->prepare($sql);
 $stmt->bindParam(':selected_date', $date, PDO::PARAM_STR);

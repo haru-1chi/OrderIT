@@ -30,13 +30,13 @@ if (isset($_POST['activity_username'])) {
         $period = $_POST['period'] ?? 'week';
         switch ($period) {
             case 'week':
-                $filterCondition = "WEEK(DATE_SUB(date_report, INTERVAL 543 YEAR)) = WEEK(CURDATE())";
+                $filterCondition = "WEEK(date_report) = WEEK(CURDATE())";
                 break;
             case 'month':
-                $filterCondition = "MONTH(DATE_SUB(date_report, INTERVAL 543 YEAR)) = MONTH(CURDATE())";
+                $filterCondition = "MONTH(date_report) = MONTH(CURDATE())";
                 break;
             case 'year':
-                $filterCondition = "YEAR(DATE_SUB(date_report, INTERVAL 543 YEAR)) = YEAR(CURDATE())";
+                $filterCondition = "YEAR(date_report) = YEAR(CURDATE())";
                 break;
         }
     } elseif ($dateFilterType === 'custom') {
@@ -47,8 +47,8 @@ if (isset($_POST['activity_username'])) {
             $startTimestamp = strtotime($startDate);
             $endTimestamp = strtotime($endDate);
 
-            $start = (date("Y", $startTimestamp) + 543) . date("-m-d", $startTimestamp);
-            $end   = (date("Y", $endTimestamp) + 543) . date("-m-d", $endTimestamp);
+            $start = (date("Y", $startTimestamp)) . date("-m-d", $startTimestamp);
+            $end   = (date("Y", $endTimestamp)) . date("-m-d", $endTimestamp);
 
             $filterCondition = "date_report BETWEEN :dateStart AND :dateEnd";
         }
@@ -202,7 +202,7 @@ if (isset($_POST['activity'])) {
             d.username = a.username
         WHERE 
             status = 4 
-            AND DATE(DATE_SUB(date_report, INTERVAL 543 YEAR)) = :selected_date
+            AND DATE(date_report) = :selected_date
     ";
 
     $stmt = $conn->prepare($sql);

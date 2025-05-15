@@ -6,7 +6,6 @@ header('Content-Type: application/json');
 // Check if the "type" parameter is set in the request
 $type = isset($_GET['type']) ? $_GET['type'] : '';
 $dateNow = new DateTime();
-$dateNow->modify("+543 years");
 $dateThai = $dateNow->format("Y-m-d");
 // Define the SQL query based on the requested type
 if ($type === 'today') {
