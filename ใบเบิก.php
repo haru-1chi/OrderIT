@@ -391,7 +391,7 @@ $id = $_GET['workid'];
 
         </div>
         <p style="line-height:10pt;margin-top: 10pt">ราคาทั้งสิ้น...............<?= number_format($sum) ?>...............บาท (...............<?= $thaiWords ?>...............)</p>
-        <p style="line-height:10pt;">เหตุผลและความจำเป็น <?= $order['reason'] ?></p>
+        <p style="line-height:1;">เหตุผลและความจำเป็น <?= $order['reason'] ?></p>
         <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ในการเบิกครั้งนี้</p>
         <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( ) ได้รับอนุมัติจัดซื้อด้วยเงินนอกงบประมาณ-เงินบำรุง ปีงบประมาณ ................ แล้ว</p>
         <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;จำนวน ......................... บาท</p>
@@ -419,7 +419,7 @@ $id = $_GET['workid'];
                 </p>
             </div>
         </div>
-        <div style="margin-top: 30pt; margin-right: 65px;" class="d-flex justify-content-end">
+        <div style="margin-top: 20pt; margin-right: 65px;" class="d-flex justify-content-end">
             <div>
                 <p style="text-align:center;line-height:8pt; margin-bottom: 45px;">อนุมัติ</p>
                 <p style="text-align:center;line-height:8pt">_____________________________</p>

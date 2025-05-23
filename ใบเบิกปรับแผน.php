@@ -315,7 +315,7 @@ $id = $_GET['workid'];
         <div class="d-flex justify-content-end">
             <b style="text-align:right; font-size:16pt;"><b style="font-size:22pt">(ใบปรับแผน</b> กรณีไม่ได้จัดทำแผน<b style="font-size:22pt">)</b></b>
         </div>
-            <img width="70pt" height="80pt" style="text-align:left; margin-top: -35pt" src="image/ตราครุฑ 3cm.png" alt="">
+        <img width="70pt" height="80pt" style="text-align:left; margin-top: -35pt" src="image/ตราครุฑ 3cm.png" alt="">
         <div class="d-flex justify-content-center" style="font-weight: bold; font-size:32pt;margin-top: -35pt;">บันทึกข้อความ</div>
         <p style="line-height:10pt"><b style="font-size:22pt">ส่วนราชการ</b> โรงพยาบาลแม่สอด กลุ่มงาน เทคโนโลยีสารสนเทศ โทร 2056</p>
         <div style="margin-top: -20pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;......................................................................................................................................................................................................................................................</div>
@@ -328,7 +328,7 @@ $id = $_GET['workid'];
         <p style="line-height:10pt"><b style="font-size:20pt">เรื่อง</b> ขอเบิกวัสดุ/ครุภัณฑ์/</p>
         <div style="margin-top: -20pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp .............................................................................................................................................................................................................................................................................</div>
         <p style="line-height:10pt; margin-top: 7pt;">เรียน&ensp;ผู้อำนวยการโรงพยาบาลแม่สอด</p>
-       
+
         <p style="line-height:10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <?= $order['depart_name'] ?></p>
         <div style="margin-top: -20pt;">
             <p style="line-height:10pt">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ด้วยกลุ่มงาน/งาน ....................................................................................... มีความประสงค์ขอเบิก </p>
@@ -365,15 +365,22 @@ $id = $_GET['workid'];
         <div style="margin-top: -20pt;">
             <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;รวมเป็นเงิน ................................... บาท (...............................................................................................)</p>
         </div>
-        
-        <p style="line-height:10pt">&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<?= $order['reason']?></p>
-        <div style="margin-top: -20pt;">
-            <p style="line-height:10pt;">เหตุผลและความจำเป็น......................................................................................................................................................</p>
-        </div>
-        
-        <p style="line-height:10pt;">............................................................................................................................................................................................</p>
-        <p style="line-height:10pt;">............................................................................................................................................................................................</p>
-        <p style="line-height:10pt;">............................................................................................................................................................................................</p>
+
+        <?php
+        $reason = $order['reason'];
+        $style1 = (mb_strlen($reason) > 88) ? 'margin-top: -55pt;' : 'margin-top: -20pt;';
+        $style2 = (mb_strlen($reason) > 88) ? 'margin-top: -15px;' : 'margin-top: -22px;';
+        $style3 = (mb_strlen($reason) > 88) ? 'line-height: 1.5;' : '';
+        ?>
+        <p style="text-align:left; <?= $style3 ?>">เหตุผลและความจำเป็น <?= htmlspecialchars($reason) ?></p>
+         <div style="<?= $style1 ?>">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ............................................................................................................................................................................................................................</div>
+        <br>
+        <div style="<?= $style2 ?>">.........................................................................................................................................................................................................................................................................................</div>
+        <br>
+        <div style="<?= $style2 ?>">.........................................................................................................................................................................................................................................................................................</div>
+        <br>
+        <div style="<?= $style2 ?>">.........................................................................................................................................................................................................................................................................................</div>
+        <br>
         <p style="line-height:10pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;จึงเรียนมาเพื่อโปรดพิจารณาอนุมัติ</p>
 
 

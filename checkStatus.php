@@ -71,9 +71,9 @@ if (!isset($_SESSION["admin_log"])) {
                     <th scope="col">รายการอุปกรณ์</th>
                     <th scope="col">วันที่ออกใบเบิก</th>
                     <th scope="col">เหตุผลและความจำเป็น</th>
-                    <th scope="col">หมายเหตุ</th>
-                    <th scope="col">วันที่ส่งเอกสาร</th>
-                    <th scope="col">สถานะปัจจุบัน</th>
+                    <!-- <th scope="col">หมายเหตุ</th> -->
+                    <!-- <th scope="col">วันที่ส่งเอกสาร</th>
+                    <th scope="col">สถานะปัจจุบัน</th> -->
                     <th scope="col">ดูข้อมูล</th>
                 </tr>
             </thead>
@@ -186,16 +186,6 @@ if (!isset($_SESSION["admin_log"])) {
                         <td>
                             <?= $row['reason'] ?>
                         </td>
-                        <td>
-                            <?= $row['note'] ?>
-                        </td>
-                        <td>
-                            <?= $timestamp ?>
-                        </td>
-                        <td>
-                            <?= $statusName ?>
-                        </td>
-
                         <td>
                             <a class="btn btn-primary" href="check.php?numberWork=<?= $row['numberWork'] ?>">ดูข้อมูล</a>
                         </td>

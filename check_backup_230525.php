@@ -595,10 +595,12 @@ ORDER BY os.status;
 
               <div class="row">
                 <div class="col-3">
-                  <label>ผูกหมายเลขงาน(ถ้ามี)</label>
+                  <div class="d-flex justify-content-between">
+                    <label>ผูกหมายเลขงาน(ถ้ามี)</label>
+                    <?php renderEditHistory('id_ref', $historyByField); ?>
+                  </div>
                   <input type="text" class="form-control" name="id_ref"
                     value="<?= $order['id_ref'] ?? '' ?>" disabled>
-                  <?php renderEditHistory('id_ref', $historyByField); ?>
                 </div>
 
                 <div class="col-3">
@@ -777,12 +779,12 @@ ORDER BY os.status;
 
               <div class="">
                 <h4 class="m-0 my-3">สถานะ</h4>
-
+             
                 <div class="accordion" id="accordionExample">
                   <div class="accordion-item">
                     <h2 class="accordion-header" id="headingOne">
                       <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                        <a href="ใบเบิกวัสดุอะไหล่.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">รอรับเอกสารจากหน่วยงาน</a>
+                           <a href="ใบเบิกวัสดุอะไหล่.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">รอรับเอกสารจากหน่วยงาน</a>
                       </button>
                     </h2>
                     <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">

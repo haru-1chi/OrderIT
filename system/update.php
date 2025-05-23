@@ -401,26 +401,6 @@ if (isset($_POST['updateData'])) {
             }
         }
 
-        // if (!empty($_POST['update_list'])) {
-        //     foreach ($_POST['update_list'] as $modalId => $updateLists) {
-        //         foreach ($updateLists as $recordId => $list) {
-        //             $sql = "UPDATE order_items 
-        //                     SET list = :list, quality = :quality, amount = :amount, price = :price, unit = :unit 
-        //                     WHERE id = :id";
-        //             $stmt = $conn->prepare($sql);
-
-        //             $stmt->bindParam(':list', $list, PDO::PARAM_STR);
-        //             $stmt->bindParam(':quality', $_POST['update_quality'][$modalId][$recordId], PDO::PARAM_STR);
-        //             $stmt->bindParam(':amount', $_POST['update_amount'][$modalId][$recordId], PDO::PARAM_INT);
-        //             $stmt->bindParam(':price', $_POST['update_price'][$modalId][$recordId], PDO::PARAM_STR);
-        //             $stmt->bindParam(':unit', $_POST['update_unit'][$modalId][$recordId], PDO::PARAM_STR);
-        //             $stmt->bindParam(':id', $recordId, PDO::PARAM_INT);
-
-        //             $stmt->execute();
-        //         }
-        //     }
-        // }
-
         if (!empty($_POST['update_list'])) {
             foreach ($_POST['update_list'] as $modalId => $updateLists) {
                 foreach ($updateLists as $recordId => $list) {
@@ -623,6 +603,16 @@ if (isset($_POST['updateData'])) {
                     ':edited_by'  => $_SESSION['admin_log'] ?? 'unknown'
                 ]);
             }
+        }
+
+        if (!empty($_POST['id_ref'])) {
+            $status = 3;
+            $sql = "UPDATE data_report SET status = :status, withdraw = :withdraw WHERE id = :id";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(":status", $status);
+            $stmt->bindParam(":withdraw", $numberWork);
+            $stmt->bindParam(":id", $id_ref);
+            $stmt->execute();
         }
     }
     $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
