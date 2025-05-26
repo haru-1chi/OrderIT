@@ -283,7 +283,7 @@ ORDER BY nd.id, oi.id
           ?>
         </div>
       <?php } ?>
-      <!-- <h1 class="text-center mt-5">ตรวจสอบใบเบิก</h1> -->
+      <h1 class="text-center mt-5">ตรวจสอบใบเบิก</h1>
       <div class="d-flex justify-content-end">
         <button type="button" class="btn btn-success mb-2" data-bs-toggle="modal" data-bs-target="#requisitionModal">+ สร้างใบเบิก</button>
       </div>
