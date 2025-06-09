@@ -116,8 +116,8 @@ if (!isset($_SESSION["admin_log"])) {
 
                     <div class="col-4 mb-3">
                         <label class="form-label" for="deviceInput">อุปกรณ์</label>
-                        <input class="form-control" type="text" id="deviceInput" name="deviceName" required>
-                        <input type="hidden" id="deviceId" name="device_id">
+                        <input class="form-control" type="text" id="deviceInput" name="deviceName" value="-" required>
+                        <input type="hidden" id="deviceId" name="device_id" value="105">
                     </div>
 
                     <div class="col-4 mb-3">
@@ -219,35 +219,35 @@ if (!isset($_SESSION["admin_log"])) {
                             }
                         });
 
-                        if (!found) {
-                            Swal.fire({
-                                title: confirmMessage,
-                                icon: "info",
-                                showCancelButton: true,
-                                confirmButtonText: "ใช่",
-                                cancelButtonText: "ไม่"
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    $.ajax({
-                                        url: addDataUrl,
-                                        method: "POST",
-                                        data: {
-                                            dataToInsert: userInput
-                                        },
-                                        success: function(response) {
-                                            console.log("Data inserted successfully!");
-                                            $(hiddenInputId).val(response); // Set inserted ID
-                                        },
-                                        error: function(xhr, status, error) {
-                                            console.error("Error inserting data:", error);
-                                        }
-                                    });
-                                } else {
-                                    $(inputId).val(""); // Clear input
-                                    $(hiddenInputId).val("");
-                                }
-                            });
-                        }
+                        // if (!found) {
+                        //     Swal.fire({
+                        //         title: confirmMessage,
+                        //         icon: "info",
+                        //         showCancelButton: true,
+                        //         confirmButtonText: "ใช่",
+                        //         cancelButtonText: "ไม่"
+                        //     }).then((result) => {
+                        //         if (result.isConfirmed) {
+                        //             $.ajax({
+                        //                 url: addDataUrl,
+                        //                 method: "POST",
+                        //                 data: {
+                        //                     dataToInsert: userInput
+                        //                 },
+                        //                 success: function(response) {
+                        //                     console.log("Data inserted successfully!");
+                        //                     $(hiddenInputId).val(response); // Set inserted ID
+                        //                 },
+                        //                 error: function(xhr, status, error) {
+                        //                     console.error("Error inserting data:", error);
+                        //                 }
+                        //             });
+                        //         } else {
+                        //             $(inputId).val(""); // Clear input
+                        //             $(hiddenInputId).val("");
+                        //         }
+                        //     });
+                        // }
                     }
                     inputChanged = false; // Reset the flag
                 });

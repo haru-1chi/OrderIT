@@ -1665,48 +1665,48 @@ ORDER BY os.status;
       //   toggleEditMode();
       // });
 
-//       function toggleEditMode() {
-//         const isDisabled = document.querySelector("#device-number-container-main input").disabled;
-//         removeFields.forEach(function(button) {
-//           button.style.display = isDisabled ? "inline-block" : "none";
-//         });
-//         addDeviceButton.style.display = isDisabled ? "inline-block" : "none";
-//         manageColumnHeader.style.display = isDisabled ? "table-cell" : "none";
-//       }
+      //       function toggleEditMode() {
+      //         const isDisabled = document.querySelector("#device-number-container-main input").disabled;
+      //         removeFields.forEach(function(button) {
+      //           button.style.display = isDisabled ? "inline-block" : "none";
+      //         });
+      //         addDeviceButton.style.display = isDisabled ? "inline-block" : "none";
+      //         manageColumnHeader.style.display = isDisabled ? "table-cell" : "none";
+      //       }
 
-//       document.addEventListener('click', function(e) {
-//         if (e.target && e.target.id.startsWith('add-device-number-')) {
-//           const modalId = e.target.id.split('-').pop();
-//           const container = document.querySelector(`#device-number-container-${modalId}`);
-//           const newRow = document.createElement('div');
-//           newRow.className = 'd-flex device-number-row';
-//           newRow.innerHTML = `
-// <input type="text" name="device_numbers[]" class="form-control mb-2" value="">
-// <button type="button" class="btn btn-warning p-2 ms-3 remove-field mb-2">ลบ</button>
-//         `;
+      //       document.addEventListener('click', function(e) {
+      //         if (e.target && e.target.id.startsWith('add-device-number-')) {
+      //           const modalId = e.target.id.split('-').pop();
+      //           const container = document.querySelector(`#device-number-container-${modalId}`);
+      //           const newRow = document.createElement('div');
+      //           newRow.className = 'd-flex device-number-row';
+      //           newRow.innerHTML = `
+      // <input type="text" name="device_numbers[]" class="form-control mb-2" value="">
+      // <button type="button" class="btn btn-warning p-2 ms-3 remove-field mb-2">ลบ</button>
+      //         `;
 
-//           container.appendChild(newRow);
-//         }
+      //           container.appendChild(newRow);
+      //         }
 
-//         if (e.target && e.target.classList.contains('remove-field')) {
-//           const row = e.target.closest('.device-number-row');
-//           const hiddenInput = row.querySelector('input[type="text"]');
+      //         if (e.target && e.target.classList.contains('remove-field')) {
+      //           const row = e.target.closest('.device-number-row');
+      //           const hiddenInput = row.querySelector('input[type="text"]');
 
-//           if (hiddenInput && hiddenInput.name.startsWith('update_number_device')) {
-//             const modalId = e.target.getAttribute('data-row-id');
-//             const deviceId = e.target.getAttribute('data-device-id');
-//             const container = document.querySelector(`#device-number-container-main`);
-//             console.log(container)
-//             const deletedInput = document.createElement('input');
-//             deletedInput.type = 'hidden';
-//             deletedInput.name = `deleted_devices[${modalId}][${deviceId}]`;
-//             deletedInput.value = hiddenInput.value;
-//             container.appendChild(deletedInput);
-//           }
+      //           if (hiddenInput && hiddenInput.name.startsWith('update_number_device')) {
+      //             const modalId = e.target.getAttribute('data-row-id');
+      //             const deviceId = e.target.getAttribute('data-device-id');
+      //             const container = document.querySelector(`#device-number-container-main`);
+      //             console.log(container)
+      //             const deletedInput = document.createElement('input');
+      //             deletedInput.type = 'hidden';
+      //             deletedInput.name = `deleted_devices[${modalId}][${deviceId}]`;
+      //             deletedInput.value = hiddenInput.value;
+      //             container.appendChild(deletedInput);
+      //           }
 
-//           row.remove();
-//         }
-//       });
+      //           row.remove();
+      //         }
+      //       });
     });
 
     document.addEventListener("DOMContentLoaded", function() {

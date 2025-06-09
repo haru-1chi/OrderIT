@@ -45,6 +45,7 @@ if (isset($_POST['addUsers'])) { // เพิ่ม Admin
         echo '' . $e->getMessage() . '';
     }
 }
+
 if (isset($_POST['addWithdraw'])) { // เพิ่ม ประเภทการเบิก
     $withdraw_name = $_POST['withdraw_name'];
     try {
@@ -73,6 +74,42 @@ if (isset($_POST['addWithdraw'])) { // เพิ่ม ประเภทกา�
         echo '' . $e->getMessage() . '';
     }
 }
+if (isset($_POST['assignKPI'])) {
+    $kpi_id = $_POST['kpi'];
+    $users = $_POST['users'] ?? [];
+
+    // 1. Get current assigned usernames for this KPI
+    $stmt = $conn->prepare("SELECT username FROM kpi_assignment WHERE kpi_id = ?");
+    $stmt->execute([$kpi_id]);
+    $currentAssigned = array_column($stmt->fetchAll(PDO::FETCH_ASSOC), 'username');
+
+    // 2. Determine usernames to insert (in $users but not in currentAssigned)
+    $toInsert = array_diff($users, $currentAssigned);
+
+    // 3. Determine usernames to delete (in currentAssigned but not in $users)
+    $toDelete = array_diff($currentAssigned, $users);
+
+    // 4. Insert new assignments
+    if (!empty($toInsert)) {
+        $stmtInsert = $conn->prepare("INSERT INTO kpi_assignment (kpi_id, username) VALUES (?, ?)");
+        foreach ($toInsert as $username) {
+            $stmtInsert->execute([$kpi_id, $username]);
+        }
+    }
+
+    // 5. Delete unassigned
+    if (!empty($toDelete)) {
+        $stmtDelete = $conn->prepare("DELETE FROM kpi_assignment WHERE kpi_id = ? AND username = ?");
+        foreach ($toDelete as $username) {
+            $stmtDelete->execute([$kpi_id, $username]);
+        }
+    }
+
+    $_SESSION["success"] = "มอบหมาย KPI สำเร็จ";
+    header("Location: ../insertData.php?kpi=" . $kpi_id);
+    exit();
+}
+
 if (isset($_POST['addListWork'])) { // เพิ่ม ประเภทงาน
     $work_name = $_POST['work_name'];
     try {

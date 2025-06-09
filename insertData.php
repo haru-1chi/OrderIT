@@ -1006,6 +1006,67 @@ if (!isset($_SESSION["admin_log"])) {
                 <hr>
             </div>
 
+            <div class="col-sm-6"> <!-- มอบหมายตัวชี้วัด -->
+                <h1>มอบหมายตัวชี้วัด</h1>
+                <hr>
+                <form action="system/insert.php" method="post">
+                    <select class="form-select" name="kpi" aria-label="Default select example">
+                        <?php
+                        $sql = "SELECT * FROM kpi";
+                        $stmt = $conn->prepare($sql);
+                        $stmt->execute();
+                        $checkD = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                        $selectedKpiId = $_GET['kpi'] ?? $_POST['kpi'] ?? null;
+
+                        foreach ($checkD as $d) {
+                            if ($d['kpi_id'] == 1) continue;
+                        ?>
+                            <option value="<?= $d['kpi_id'] ?>" <?= ($d['kpi_id'] == $selectedKpiId) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($d['kpi_name']) ?>
+                            </option>
+                        <?php
+                        }
+                        ?>
+                    </select>
+
+
+                    <div class="list-group mt-3" id="checkbox-container">
+                    </div>
+
+                    <div class="d-flex justify-content-center my-3">
+                        <button type="submit" name="assignKPI" class="btn btn-primary">มอบหมายงาน</button>
+                    </div>
+
+                    <script>
+                        function loadKpiUsers(kpiId) {
+                            fetch('fetch_kpi_users.php?kpi=' + kpiId)
+                                .then(response => response.json())
+                                .then(data => {
+                                    document.getElementById('checkbox-container').innerHTML = data.html;
+                                })
+                                .catch(err => {
+                                    console.error('Error fetching KPI data:', err);
+                                });
+                        }
+
+                        document.querySelector('select[name="kpi"]').addEventListener('change', function() {
+                            loadKpiUsers(this.value);
+                        });
+
+                        window.addEventListener('DOMContentLoaded', function() {
+                            const kpiSelect = document.querySelector('select[name="kpi"]');
+                            if (kpiSelect && kpiSelect.value) {
+                                loadKpiUsers(kpiSelect.value); // Fetch checkboxes on initial load
+                            }
+                        });
+                    </script>
+
+
+                </form>
+                <hr>
+            </div>
+
             <div class="col-sm-12">
                 <h1>เพิ่มผู้ใช้งาน</h1>
                 <hr>
@@ -1017,7 +1078,6 @@ if (!isset($_SESSION["admin_log"])) {
                         <input type="password" class="form-control" placeholder="รหัสผ่าน" name="password" aria-label="Server">
                     </div>
                     <div class="input-group mb-3">
-
                         <span class="input-group-text">ชื่อจริง</span>
                         <input type="text" class="form-control" placeholder="ชื่อจริง" name="fname" aria-label="Username">
                         <span class="input-group-text">นามสกุล</span>

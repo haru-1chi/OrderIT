@@ -255,7 +255,7 @@ if (!isset($_SESSION["admin_log"])) {
                             } else {
                                 $closeDateFormatted = date('d/m/Y', strtotime($row['close_time']));
                             }
-                            
+
                             $timeString = $row['time_report'];
                             $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
 
@@ -429,7 +429,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                 };
 
                                                                             $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                console.log("Item highlighted: ", ui.item.label);
+                                                                                // console.log("Item highlighted: ", ui.item.label);
                                                                                 return false;
                                                                             });
 
@@ -527,7 +527,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                             <div class="col-6">
                                                                 <label>หมายเลขครุภัณฑ์ (ถ้ามี)</label>
                                                                 <input value="<?= $row['number_device'] ?>" type="text"
-                                                                    class="form-control" name="number_devices">
+                                                                    class="form-control" name="number_devices" id="numberDeviceSource<?= $row['id'] ?>">
                                                             </div>
                                                             <div class="col-6">
                                                                 <label>หมายเลข IP addrees</label>
@@ -587,7 +587,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                         <div class="row">
                                                             <div class="col-12">
                                                                 <label>รายละเอียด<span style="color: red;">*</span></label>
-                                                                <textarea class="form-control " name="description" rows="2"><?= $row['description'] ?></textarea>
+                                                                <textarea class="form-control " name="description" rows="2" id="descriptionSource<?= $row['id'] ?>"><?= $row['description'] ?></textarea>
                                                             </div>
                                                         </div>
                                                         <div class="row">
@@ -659,28 +659,37 @@ if (!isset($_SESSION["admin_log"])) {
                                                         <div class="row">
                                                             <div class="col-12">
                                                                 <label>เป็นตัวชี้วัดหรือไม่<span style="color: red;">*</span></label>
-                                                                <select class="form-select" name="kpi"
-                                                                    aria-label="Default select example">
+                                                                <?php
+                                                                $sqlPublic = "SELECT kpi_name FROM kpi WHERE kpi_id IN (1, 2)";
+                                                                $stmt = $conn->prepare($sqlPublic);
+                                                                $stmt->execute();
+                                                                $publicKpis = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                                                                // 2. Assigned KPIs
+                                                                $sqlAssigned = "SELECT DISTINCT kpi.kpi_name 
+                FROM kpi 
+                INNER JOIN kpi_assignment 
+                ON kpi.kpi_id = kpi_assignment.kpi_id 
+                WHERE kpi.kpi_id NOT IN (1, 2) AND kpi_assignment.username = ?";
+                                                                $stmt = $conn->prepare($sqlAssigned);
+                                                                $stmt->execute([$admin]);
+                                                                $assignedKpis = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                                                                // 3. Merge both lists, keeping order
+                                                                $allKpis = array_merge($publicKpis, $assignedKpis);
+                                                                ?>
+
+                                                                <select class="form-select" name="kpi" aria-label="Default select example">
                                                                     <option value="<?= $row['kpi'] ?: '' ?>" selected>
                                                                         <?= !empty($row['kpi']) ? $row['kpi'] : '-' ?>
                                                                     </option>
-                                                                    <?php
-                                                                    $sql = "SELECT * FROM kpi";
-                                                                    $stmt = $conn->prepare($sql);
-                                                                    $stmt->execute();
-                                                                    $checkD = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                                                    foreach ($checkD as $d) {
-                                                                        if ($d['kpi_name'] != $row['kpi']) {
-                                                                    ?>
-                                                                            <option value="<?= $d['kpi_name'] ?>">
-                                                                                <?= $d['kpi_name'] ?>
-                                                                            </option>
-                                                                    <?php }
-                                                                    }
-                                                                    ?>
-
+                                                                    <?php foreach ($allKpis as $kpiName): ?>
+                                                                        <?php if ($kpiName != $row['kpi']): ?>
+                                                                            <option value="<?= $kpiName ?>"><?= $kpiName ?></option>
+                                                                        <?php endif; ?>
+                                                                    <?php endforeach; ?>
                                                                 </select>
+
                                                             </div>
                                                         </div>
 
@@ -922,7 +931,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                         };
 
                                                                                     $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                        console.log("Item highlighted: ", ui.item.label);
+                                                                                        // console.log("Item highlighted: ", ui.item.label);
                                                                                         return false;
                                                                                     });
 
@@ -1261,10 +1270,10 @@ if (!isset($_SESSION["admin_log"])) {
                                                                         $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
                                                                         ?>
 
-                                                                        <input type="text" class="form-control" id="departInput<?= $row['id'] ?>" name="ref_depart"
+                                                                        <input type="text" class="form-control" id="departInputTarget<?= $row['id'] ?>" name="ref_depart"
                                                                             value="<?= $departRow['depart_name'] ?>">
 
-                                                                        <input type="hidden" name="depart_id" id="departId<?= $row['id'] ?>"
+                                                                        <input type="text" name="depart_id" id="departIdTarget<?= $row['id'] ?>"
                                                                             value="<?= $row['department'] ?>">
                                                                     </div>
 
@@ -1312,7 +1321,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                     };
 
                                                                                 $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                    console.log("Item highlighted: ", ui.item.label);
+                                                                                    // console.log("Item highlighted: ", ui.item.label);
                                                                                     return false;
                                                                                 });
 
@@ -1408,7 +1417,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="col-sm-6">
                                                                     <div class="mb-3">
                                                                         <label id="basic-addon1">เหตุผลและความจำเป็น</label>
-                                                                        <input type="text" name="reason" class="form-control" value="<?= $row['description'] ?>">
+                                                                        <input type="text" name="reason" class="form-control" id="reasonTarget<?= $row['id'] ?>" value="<?= $row['description'] ?>">
                                                                     </div>
                                                                 </div>
 
@@ -1528,6 +1537,33 @@ if (!isset($_SESSION["admin_log"])) {
 
                                                             <?php }
                                                             ?>
+
+                                                            <script>
+                                                                document.addEventListener("DOMContentLoaded", function() {
+                                                                    const descriptionSource = document.getElementById("descriptionSource<?= $row['id'] ?>");
+                                                                    const reasonTarget = document.getElementById("reasonTarget<?= $row['id'] ?>");
+                                                                    console.log('descriptionSource', descriptionSource)
+                                                                    console.log('reasonTarget', reasonTarget)
+                                                                    if (descriptionSource && reasonTarget) {
+                                                                        descriptionSource.addEventListener("input", function() {
+                                                                            reasonTarget.value = this.value;
+                                                                        });
+                                                                    }
+
+                                                                    const numberDeviceSource = document.querySelector('input[name="number_devices"]');
+                                                                    const deviceNumberContainer = document.getElementById("device-number-container-main-<?= $row['id'] ?>");
+
+                                                                    if (numberDeviceSource && deviceNumberContainer) {
+                                                                        const firstDeviceInput = deviceNumberContainer.querySelector('input[type="text"]');
+                                                                        if (firstDeviceInput) {
+                                                                            numberDeviceSource.addEventListener("input", function() {
+                                                                                firstDeviceInput.value = this.value;
+                                                                            });
+                                                                        }
+                                                                    }
+                                                                });
+                                                            </script>
+
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1635,7 +1671,7 @@ if (!isset($_SESSION["admin_log"])) {
 
     <div class="container-fluid">
         <?php
-            $sql = "
+        $sql = "
 SELECT * 
 FROM (
     SELECT dp.*, dt.depart_name, 
@@ -1695,8 +1731,8 @@ END,
 GROUP BY id
 ORDER BY id DESC;
 ";
-            $stmt = $conn->prepare($sql);
-            $stmt->bindParam(":username", $admin);
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":username", $admin);
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -1764,7 +1800,7 @@ ORDER BY id DESC;
                             } else {
                                 $closeDateFormatted = date('d/m/Y', strtotime($row['close_time']));
                             }
-                            
+
                             // Format time_report (e.g., 14:22:00.000000 to 14:22)
                             $timeString = $row['time_report'];
                             $timeFormatted = date('H:i', strtotime($timeString)) . ' น.';
@@ -1956,7 +1992,7 @@ ORDER BY id DESC;
                                                                                 };
 
                                                                             $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                console.log("Item highlighted: ", ui.item.label);
+                                                                                // console.log("Item highlighted: ", ui.item.label);
                                                                                 return false;
                                                                             });
 
@@ -2212,27 +2248,35 @@ ORDER BY id DESC;
                                                         <div class="row">
                                                             <div class="col-12">
                                                                 <label>เป็นตัวชี้วัดหรือไม่<span style="color: red;">*</span></label>
-                                                                <select class="form-select" name="kpi"
-                                                                    aria-label="Default select example">
+                                                                <?php
+                                                                $sqlPublic = "SELECT kpi_name FROM kpi WHERE kpi_id IN (1, 2)";
+                                                                $stmt = $conn->prepare($sqlPublic);
+                                                                $stmt->execute();
+                                                                $publicKpis = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                                                                // 2. Assigned KPIs
+                                                                $sqlAssigned = "SELECT DISTINCT kpi.kpi_name 
+                FROM kpi 
+                INNER JOIN kpi_assignment 
+                ON kpi.kpi_id = kpi_assignment.kpi_id 
+                WHERE kpi.kpi_id NOT IN (1, 2) AND kpi_assignment.username = ?";
+                                                                $stmt = $conn->prepare($sqlAssigned);
+                                                                $stmt->execute([$admin]);
+                                                                $assignedKpis = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                                                                // 3. Merge both lists, keeping order
+                                                                $allKpis = array_merge($publicKpis, $assignedKpis);
+                                                                ?>
+
+                                                                <select class="form-select" name="kpi" aria-label="Default select example">
                                                                     <option value="<?= $row['kpi'] ?: '' ?>" selected>
                                                                         <?= !empty($row['kpi']) ? $row['kpi'] : '-' ?>
                                                                     </option>
-                                                                    <?php
-                                                                    $sql = "SELECT * FROM kpi";
-                                                                    $stmt = $conn->prepare($sql);
-                                                                    $stmt->execute();
-                                                                    $checkD = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                                                    foreach ($checkD as $d) {
-                                                                        if ($d['kpi_name'] != $row['kpi']) {
-                                                                    ?>
-                                                                            <option value="<?= $d['kpi_name'] ?>">
-                                                                                <?= $d['kpi_name'] ?>
-                                                                            </option>
-                                                                    <?php }
-                                                                    }
-                                                                    ?>
-
+                                                                    <?php foreach ($allKpis as $kpiName): ?>
+                                                                        <?php if ($kpiName != $row['kpi']): ?>
+                                                                            <option value="<?= $kpiName ?>"><?= $kpiName ?></option>
+                                                                        <?php endif; ?>
+                                                                    <?php endforeach; ?>
                                                                 </select>
                                                             </div>
                                                         </div>
@@ -2470,7 +2514,7 @@ ORDER BY id DESC;
 
                                                                                     $(inputId).on("autocompletefocus", function(event, ui) {
                                                                                         // You can log or do something here but won't change the input value
-                                                                                        console.log("Item highlighted: ", ui.item.label);
+                                                                                        // console.log("Item highlighted: ", ui.item.label);
                                                                                         return false;
                                                                                     });
 
@@ -2858,7 +2902,7 @@ ORDER BY id DESC;
 
                                                                                 $(inputId).on("autocompletefocus", function(event, ui) {
                                                                                     // You can log or do something here but won't change the input value
-                                                                                    console.log("Item highlighted: ", ui.item.label);
+                                                                                    // console.log("Item highlighted: ", ui.item.label);
                                                                                     return false;
                                                                                 });
 
@@ -3229,7 +3273,7 @@ ORDER BY id DESC;
 
             $(inputId).on("autocompletefocus", function(event, ui) {
                 // You can log or do something here but won't change the input value
-                console.log("Item highlighted: ", ui.item.label);
+                // console.log("Item highlighted: ", ui.item.label);
                 return false;
             });
 
@@ -3246,7 +3290,7 @@ ORDER BY id DESC;
                     }
                     if (userInput === "") return;
 
-                    
+
                     let found = false;
                     $(this).autocomplete("instance").menu.element.find("div").each(function() {
                         if ($(this).text() === userInput) {
@@ -3313,6 +3357,7 @@ ORDER BY id DESC;
         }
     }
 </script>
+
 <script>
     //เพิ่มแถวตาราง
     function calculateSumTotal(tableBodyId) {

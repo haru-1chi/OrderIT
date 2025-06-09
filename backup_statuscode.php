@@ -123,3 +123,89 @@
                   ?>
                 </tbody>
               </table>
+
+              ---------------------------------------------------------------------------------------------------
+               <div class="row me-1">
+            <form action="export.php" method="post">
+              <div class="d-flex justify-content-end">
+                <button type="submit" name="DataAll" class="btn btn-primary my-3">Export to Excel</button>
+              </div>
+            </form>
+            <?php
+
+            $sql = "
+SELECT os.status, COUNT(*) AS count
+FROM orderdata_new AS od
+LEFT JOIN (
+    SELECT order_id, status
+    FROM order_status AS os1
+    WHERE (os1.timestamp, os1.status) IN (
+                       SELECT MAX(os2.timestamp) AS latest_timestamp, MAX(os2.status) AS latest_status
+                       FROM order_status AS os2
+                       WHERE os2.order_id = os1.order_id
+                     )
+) AS os ON os.order_id = od.id
+WHERE os.status IS NOT NULL  
+GROUP BY os.status
+ORDER BY os.status;
+
+";
+
+            $stmt = $conn->prepare($sql);
+            $stmt->execute();
+            $statusCounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $statusOptions = array(
+              1 => array(
+                'text' => "รอรับเอกสารจากหน่วยงาน",
+                'color' => "#FFAE2C"
+              ),
+              2 => array(
+                'text' => "รอส่งเอกสารไปพัสดุ",
+                'color' => "#6CB1FF"
+              ),
+              3 => array(
+                'text' => "รอพัสดุสั่งของ",
+                'color' => "#7ECC7A"
+              ),
+              4 => array(
+                'text' => "รอหมายเลขครุภัณฑ์",
+                'color' => "#FF9359"
+              ),
+              5 => array(
+                'text' => "ปิดงาน",
+                'color' => "#51A075"
+              ),
+              6 => array(
+                'text' => "ยกเลิก",
+                'color' => "#FF7575"
+              )
+            );
+
+            foreach ($statusCounts as $statusCount) {
+              $status = $statusCount['status'];
+              $count = $statusCount['count'];
+
+              // Use default values if status is not mapped
+              $textS = isset($statusOptions[$status]['text']) ? $statusOptions[$status]['text'] : "ไม่ระบุสถานะ";
+              $color = isset($statusOptions[$status]['color']) ? $statusOptions[$status]['color'] : sprintf('#%06X', rand(0, 0xFFFFFF));
+            ?>
+
+              <div class="col-sm-6">
+                <div class="card text-white mb-3" style="background-color: <?= $color ?>">
+                  <div class="card-body">
+                    <h1 class="card-title" style="font-size: 50px;"><?= $count ?></h1>
+                    <h5 class="m-0"><?= htmlspecialchars($textS) ?></h5>
+                  </div>
+                  <div class="card-footer">
+                    <h5 class="card-text text-end">
+                      <a href="checkStatus.php?status=<?= urlencode($status) ?>" class="text-white" style="text-decoration: none;"> ▽ รายละเอียดเพิ่มเติม</a>
+                    </h5>
+                  </div>
+                </div>
+              </div>
+
+            <?php
+            }
+            ?>
+          </div>
