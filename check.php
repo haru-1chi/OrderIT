@@ -496,12 +496,12 @@ ORDER BY nd.id, oi.id
         }
       }
       ?>
-      <div class="row">
-        <div class="card col-sm-12 p-3">
-          <?php
-          if (!empty($order)) {
-          ?>
-            <form action="system/update.php" method="POST">
+      <?php
+      if (!empty($order)) {
+      ?>
+        <form id="mainForm" action="system/update.php" method="POST">
+          <div class="row">
+            <div class="card col-sm-12 p-3">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
                   <h4><?= $numberWork ?></h4>
@@ -688,11 +688,10 @@ ORDER BY nd.id, oi.id
                     <div class="col-3">
                       <div class="d-flex justify-content-between">
                         <label>เลขที่ใบเสนอราคา</label>
-                        <?php renderEditHistory('quotation', $historyByField); ?>
                       </div>
 
                       <input disabled type="text" name="quotation" class="form-control" value="<?= $order['quotation'] ?>">
-
+                      <?php renderEditHistory('quotation', $historyByField); ?>
                     </div>
 
                     <div class="col-3">
@@ -704,10 +703,10 @@ ORDER BY nd.id, oi.id
                     <?php
                     $order_id = $order['id'];
                     $sql = "
-    SELECT id, status, timestamp 
-    FROM order_status 
-    WHERE order_id = :order_id 
-    ORDER BY status";
+                    SELECT id, status, timestamp 
+                    FROM order_status 
+                    WHERE order_id = :order_id 
+                    ORDER BY status";
                     $stmt = $conn->prepare($sql);
                     $stmt->execute(['order_id' => $order_id]);
                     $statuses = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -777,16 +776,16 @@ ORDER BY nd.id, oi.id
 
                         <div>
                           <div class="next-status d-flex align-items-center">
-                            <?php if ($nextStatus): ?>
-                              <p class="m-0 me-2"
-                                data-bs-toggle="tooltip"
-                                data-bs-placement="left"
-                                title="<?= date('Y-m-d', strtotime($currentTimestamp)) ?>">
-                                <?= $statusNames[$nextStatus] ?>
-                              </p>
-                              <button type="button" class="btn btn-warning confirm-btn"
-                                data-order-id="<?= $order_id ?>"
-                                data-status="<?= $nextStatus ?>">✔</button>
+                            <?php if (in_array($currentStatus, [1, 2, 3])): ?>
+                              <select class="form-select me-2 next-status-select" style="width: auto;" data-order-id="<?= $order_id ?>">
+                                <?php foreach ([1, 2, 3, 4] as $status): ?>
+                                  <?php if ($status > $currentStatus): ?>
+                                    <option value="<?= $status ?>"><?= $statusNames[$status] ?></option>
+                                  <?php endif; ?>
+                                <?php endforeach; ?>
+                              </select>
+                              <button type="button" class="btn btn-warning confirm-select-btn" data-order-id="<?= $order_id ?>">✔</button>
+
                             <?php elseif ($currentStatus == 4 || $currentStatus == 5): ?>
                               <p class="m-0 me-2"
                                 data-bs-toggle="tooltip"
@@ -796,6 +795,7 @@ ORDER BY nd.id, oi.id
                               </p>
                               <button type="button" class="btn btn-warning undo-btn"
                                 data-id="<?= $statuses[array_search(4, array_column($statuses, 'status'))]['id'] ?>">↻</button>
+
                             <?php elseif ($currentStatus == 6 && $lastValidStatus): ?>
                               <p class="m-0 me-2"
                                 data-bs-toggle="tooltip"
@@ -806,11 +806,19 @@ ORDER BY nd.id, oi.id
                               <button type="button" class="btn btn-warning undo-btn" data-id="<?= $lastValidStatus['id'] ?>">
                                 ↻
                               </button>
-                            <?php else: ?>
-                              <p class="m-0 me-2">ไม่มีสถานะถัดไปแล้ว</p>
-                            <?php endif; ?>
 
+                            <?php else: ?>
+                              <select class="form-select me-2 next-status-select" style="width: auto;" data-order-id="<?= $order_id ?>">
+                                <?php foreach ([1, 2, 3, 4] as $status): ?>
+                                  <?php if ($status > $currentStatus): ?>
+                                    <option value="<?= $status ?>"><?= $statusNames[$status] ?></option>
+                                  <?php endif; ?>
+                                <?php endforeach; ?>
+                              </select>
+                              <button type="button" class="btn btn-warning confirm-select-btn" data-order-id="<?= $order_id ?>">✔</button>
+                            <?php endif; ?>
                           </div>
+
 
 
                           <div class="collapse" id="collapseExample">
@@ -878,298 +886,358 @@ ORDER BY nd.id, oi.id
                           new bootstrap.Tooltip(tooltipTriggerEl);
                         });
                       });
+
+                      document.querySelectorAll('.confirm-select-btn').forEach(button => {
+                        button.addEventListener('click', () => {
+                          const orderId = button.dataset.orderId;
+                          const select = button.previousElementSibling;
+                          const selectedStatus = select.value;
+                          const selectedStatusText = select.options[select.selectedIndex].text;
+
+                          Swal.fire({
+                            title: 'คุณแน่ใจหรือไม่?',
+                            text: `คุณต้องการอัพเดตสถานะ "${selectedStatusText}" ใช่หรือไม่`,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'ใช่',
+                            cancelButtonText: 'ไม่'
+                          }).then(result => {
+                            if (result.isConfirmed) {
+                              updateStatus({
+                                status: selectedStatus,
+                                order_id: orderId
+                              });
+                            }
+                          });
+                        });
+                      });
                     </script>
                   </div>
                 </div>
               </div>
-        </div>
-
-      </div>
-    </div>
-
-    <div class="row mb-5">
-      <div class="col-sm-12 col-md-12 col-lg-6 mt-3">
-        <div class="row me-1">
-          <div class="card pb-3">
-            <div class="d-flex justify-content-between">
-              <div class="d-flex align-items-center">
-                <p class="p-0 m-0 me-2">สถานะ</p>
-                <select class="form-select" id="statusField">
-                  <option value="1" <?= (isset($_GET['statusField']) && $_GET['statusField'] == 1) ? 'selected' : '' ?>>รอรับเอกสารจากหน่วยงาน</option>
-                  <option value="2" <?= (isset($_GET['statusField']) && $_GET['statusField'] == 2) ? 'selected' : '' ?>>รอส่งเอกสารไปพัสดุ</option>
-                  <option value="3" <?= (isset($_GET['statusField']) && $_GET['statusField'] == 3) ? 'selected' : '' ?>>รอพัสดุสั่งของ</option>
-                  <option value="4" <?= (isset($_GET['statusField']) && $_GET['statusField'] == 4) ? 'selected' : '' ?>>รอหมายเลขครุภัณฑ์</option>
-                  <option value="5" <?= (isset($_GET['statusField']) && $_GET['statusField'] == 5) ? 'selected' : '' ?>>ปิดงาน</option>
-                  <option value="6" <?= (isset($_GET['statusField']) && $_GET['statusField'] == 6) ? 'selected' : '' ?>>ยกเลิก</option>
-                </select>
-                <script>
-                  document.getElementById('statusField').addEventListener('change', function() {
-                    const statusField = this.value;
-                    const urlParams = new URLSearchParams(window.location.search);
-                    urlParams.set('statusField', statusField); // update or add statusField
-                    window.location.href = 'check.php?' + urlParams.toString();
-                  });
-                </script>
-              </div>
-              <form action="export.php" method="post">
-                <button type="submit" name="DataAll" class="btn btn-primary my-3">Export to Excel</button>
-              </form>
             </div>
-            <table id="example" class="table">
-              <thead class="table-primary">
-                <tr class="text-center">
-                  <th scope="col" class="text-center">เลขใบเบิก</th>
-                  <th scope="col" class="text-center">วันที่</th>
-                  <th scope="col" class="text-center">หน่วยงาน</th>
-                  <th scope="col" class="text-center">ผู้รับเรื่อง</th>
-                  <th scope="col" class="text-center">หมายเหตุ</th>
-                  <th scope="col" class="text-center">ดูข้อมูล</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php
-                $status = 1; // default status
+          </div>
 
-                if (isset($_GET['statusField']) && in_array($_GET['statusField'], ['1', '2', '3', '4', '5', '6'])) {
-                  $status = $_GET['statusField'];
-                }
-                $sql = "SELECT od.id AS order_id, od.*, os.status, os.timestamp ,dv.device_name,dw.withdraw_name,dp.depart_name 
+          <div class="row mb-5">
+            <div class="col-sm-12 col-md-12 col-lg-6 mt-3">
+              <div class="row me-1">
+                <div class="card pb-3">
+                  <div class="d-flex justify-content-between">
+                    <div class="d-flex align-items-center">
+                      <p class="p-0 m-0 me-2">สถานะ</p>
+                      <select class="form-select" id="statusField">
+                        <option value="1" <?= (isset($_GET['statusField']) && $_GET['statusField'] == 1) ? 'selected' : '' ?>>รอรับเอกสารจากหน่วยงาน</option>
+                        <option value="2" <?= (isset($_GET['statusField']) && $_GET['statusField'] == 2) ? 'selected' : '' ?>>รอส่งเอกสารไปพัสดุ</option>
+                        <option value="3" <?= (isset($_GET['statusField']) && $_GET['statusField'] == 3) ? 'selected' : '' ?>>รอพัสดุสั่งของ</option>
+                        <option value="4" <?= (isset($_GET['statusField']) && $_GET['statusField'] == 4) ? 'selected' : '' ?>>รอหมายเลขครุภัณฑ์</option>
+                        <option value="5" <?= (isset($_GET['statusField']) && $_GET['statusField'] == 5) ? 'selected' : '' ?>>ปิดงาน</option>
+                        <option value="6" <?= (isset($_GET['statusField']) && $_GET['statusField'] == 6) ? 'selected' : '' ?>>ยกเลิก</option>
+                      </select>
+                      <script>
+                        document.getElementById('statusField').addEventListener('change', function() {
+                          const statusField = this.value;
+                          const urlParams = new URLSearchParams(window.location.search);
+                          urlParams.set('statusField', statusField); // update or add statusField
+                          window.location.href = 'check.php?' + urlParams.toString();
+                        });
+                      </script>
+                    </div>
+                    <!-- <form action="export.php" method="post">
+                      <button type="submit" name="DataAll" class="btn btn-primary my-3">Export to Excel</button>
+                    </form> -->
+                    <div class="my-3">
+                      <button type="button" id="exportExcel" class="btn btn-primary">Export to Excel</button>
+                    </div>
+
+                  </div>
+
+                  <script>
+                    document.getElementById("exportExcel").addEventListener("click", function() {
+                      // Create a new form dynamically
+                      const form = document.createElement("form");
+                      form.action = "export.php";
+                      form.method = "POST";
+
+                      // Add input if needed, for example sending same fields:
+                      const input = document.createElement("input");
+                      input.type = "hidden";
+                      input.name = "DataAll";
+                      input.value = "1"; // or whatever export.php expects
+                      form.appendChild(input);
+
+                      // If you want to include data from the main form:
+                      const mainFormData = new FormData(document.getElementById("mainForm"));
+                      for (const [name, value] of mainFormData.entries()) {
+                        const hiddenInput = document.createElement("input");
+                        hiddenInput.type = "hidden";
+                        hiddenInput.name = name;
+                        hiddenInput.value = value;
+                        form.appendChild(hiddenInput);
+                      }
+
+                      document.body.appendChild(form);
+                      form.submit();
+                      document.body.removeChild(form);
+                    });
+                  </script>
+
+                  <table id="example" class="table">
+                    <thead class="table-primary">
+                      <tr class="text-center">
+                        <th scope="col" class="text-center">เลขใบเบิก</th>
+                        <th scope="col" class="text-center">วันที่</th>
+                        <th scope="col" class="text-center">หน่วยงาน</th>
+                        <th scope="col" class="text-center">ผู้รับเรื่อง</th>
+                        <th scope="col" class="text-center">หมายเหตุ</th>
+                        <th scope="col" class="text-center">ดูข้อมูล</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php
+                      $status = 1; // default status
+
+                      if (isset($_GET['statusField']) && in_array($_GET['statusField'], ['1', '2', '3', '4', '5', '6'])) {
+                        $status = $_GET['statusField'];
+                      }
+                      $sql = "SELECT od.id AS order_id, od.*, os.status, os.timestamp ,dv.device_name,dw.withdraw_name,dp.depart_name 
                 FROM orderdata_new AS od
                 LEFT JOIN device AS dv ON od.refDevice = dv.device_id
                 LEFT JOIN withdraw AS dw ON od.refWithdraw = dw.withdraw_id
                 LEFT JOIN 
-depart AS dp ON od.refDepart = dp.depart_id
+                depart AS dp ON od.refDepart = dp.depart_id
                 LEFT JOIN (
-          SELECT os1.order_id, os1.status, os1.timestamp
-          FROM order_status AS os1
-          WHERE (os1.timestamp, os1.id) IN (
-          SELECT MAX(os2.timestamp) AS latest_timestamp, MAX(os2.id) AS latest_id
-          FROM order_status AS os2
-          WHERE os2.order_id = os1.order_id
-            )
-          ) AS os ON os.order_id = od.id
+                SELECT os1.order_id, os1.status, os1.timestamp
+                FROM order_status AS os1
+                WHERE (os1.timestamp, os1.id) IN (
+                SELECT MAX(os2.timestamp) AS latest_timestamp, MAX(os2.id) AS latest_id
+                FROM order_status AS os2
+                WHERE os2.order_id = os1.order_id
+                )
+                ) AS os ON os.order_id = od.id
                 WHERE os.status = :status
                 ORDER BY od.id DESC";
 
-                $stmt = $conn->prepare($sql);
-                $stmt->bindParam(":status", $status);
-                $stmt->execute();
-                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                      $stmt = $conn->prepare($sql);
+                      $stmt->bindParam(":status", $status);
+                      $stmt->execute();
+                      $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                foreach ($result as $row) {
-                  $dateWithdrawThai = formatDateThai($row['dateWithdraw']);
-                  $timestamp = formatDateThai($row['timestamp']);
+                      foreach ($result as $row) {
+                        $dateWithdrawThai = formatDateThai($row['dateWithdraw']);
+                        $timestamp = formatDateThai($row['timestamp']);
 
-                  $dateString = $row['dateWithdraw'];
-                  $timestamp = strtotime($dateString);
-                  $dateFormatted = date('d/m/Y', $timestamp);
+                        $dateString = $row['dateWithdraw'];
+                        $timestamp = strtotime($dateString);
+                        $dateFormatted = date('d/m/Y', $timestamp);
 
-                  $options = [
-                    1 => 'รอรับเอกสารจากหน่วยงาน',
-                    2 => 'รอส่งเอกสารไปพัสดุ',
-                    3 => 'รอพัสดุสั่งของ',
-                    4 => 'รอหมายเลขครุภัณฑ์',
-                    5 => 'ปิดงาน',
-                    6 => 'ยกเลิก',
-                  ];
+                        $options = [
+                          1 => 'รอรับเอกสารจากหน่วยงาน',
+                          2 => 'รอส่งเอกสารไปพัสดุ',
+                          3 => 'รอพัสดุสั่งของ',
+                          4 => 'รอหมายเลขครุภัณฑ์',
+                          5 => 'ปิดงาน',
+                          6 => 'ยกเลิก',
+                        ];
 
-                  $status = $row['status'];
+                        $status = $row['status'];
 
-                  if (isset($options[$status])) {
-                    $statusName = $options[$status];
-                  } else {
-                    $statusName = "ไม่ระบุสถานะ";
-                  }
-                ?>
-                  <tr class="text-center">
-                    <td>
-                      <?= $row['numberWork'] ?>
-                    </td>
-                    <td class="thaiDateInput">
-                      <?= $dateFormatted ?>
-                    </td>
-                    <td style="max-width: 120px;" class="text-truncate">
-                      <?= $row['depart_name'] ?>
-                    </td>
-                    <td style="max-width: 120px;" class="text-truncate">
-                      <?= $row['refUsername'] ?>
-                    </td>
-                    <td style="max-width: 120px;" class="text-truncate">
-                      <?= $row['note'] ?>
-                    </td>
-                    <td>
-                      <a class="btn btn-primary" href="check.php?numberWork=<?= $row['numberWork'] ?>&statusField=<?= isset($_GET['statusField']) ? $_GET['statusField'] : '' ?>">ดูข้อมูล</a>
-                    </td>
-                  </tr>
-                <?php    }
-                ?>
-              </tbody>
-            </table>
-
-            <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-            <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-            <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-            <script>
-              new DataTable('#example', {
-                "order": [],
-                "pageLength": 5,
-                "lengthMenu": [5, 10, 25, 50, 100]
-              });
-            </script>
-          </div>
-        </div>
-      </div>
-
-      <div class="card col-sm-12 col-md-12 col-lg-6 mt-3 py-2">
-        <div class="d-flex justify-content-between align-items-center">
-          <h4 class="m-0">รายการเบิก</h4>
-          <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-main" class="fs-4 fw-bold text-primary">0</span> บาท</p>
-        </div>
-        <div class="my-2">
-          <a href="แบบฟอร์มคำขอส่งซ่อมบำรุงอุปกรณ์คอมพิวเตอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบซ่อม</a>
-          <a href="ใบเบิกวัสดุอะไหล่.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบเบิกวัสดุอะไหล่</a>
-          <a href="ใบเบิกครุภัณฑ์ในแผน_รวม.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบเบิกคุรภัณฑ์ในแผน</a>
-          <a href="ใบเบิกปรับแผน_รวม.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบเบิกคุรภัณฑ์นอกแผน</a>
-          <a href="พิมพ์สติ๊กเกอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">สติ๊กเกอร์งาน</a>
-        </div>
-
-        <table id="pdf" style="width: 100%;" class="table">
-          <thead class="text-center table-primary">
-            <tr>
-              <th scope="col">ลำดับ</th>
-              <th scope="col">รายการ</th>
-              <th scope="col">คุณสมบัติ</th>
-              <th scope="col">จำนวน</th>
-              <th scope="col">ราคา</th>
-              <th scope="col">รวม</th>
-              <th scope="col">หน่วย</th>
-              <th scope="col" style="display: none;"></th>
-            </tr>
-          </thead>
-
-          <tbody id="table-body-main" class="text-center">
-            <?php if (!empty($items)) { ?>
-              <?php foreach ($items as $index => $item): ?>
-                <tr>
-                  <td><?= $index + 1 ?></td>
-                  <td>
-                    <select
-                      disabled
-                      style="width: 150px"
-                      class="form-select device-select"
-                      name="update_list[<?= $order['id'] ?>][<?= $item['item_id'] ?>]">
-                      <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-                      <?php
-                      $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
-                      $deviceStmt = $conn->prepare($deviceSql);
-                      $deviceStmt->execute();
-                      $devices = $deviceStmt->fetchAll(PDO::FETCH_ASSOC);
-                      $deviceOptions = '';
-                      foreach ($devices as $device) {
-                        $deviceOptions .= "<option value='{$device['models_id']}'>{$device['models_name']}</option>";
-                        $selected = $device['models_id'] == $item['list'] ? 'selected' : '';
-                        echo "<option value='{$device['models_id']}' $selected>{$device['models_name']}</option>";
-                      }
+                        if (isset($options[$status])) {
+                          $statusName = $options[$status];
+                        } else {
+                          $statusName = "ไม่ระบุสถานะ";
+                        }
                       ?>
-                    </select>
-                  </td>
-                  <td>
-                    <textarea disabled class="form-control" name="update_quality[<?= $order['id'] ?>][<?= $item['item_id'] ?>]"><?= htmlspecialchars($item['quality']) ?></textarea>
-                  </td>
-                  <td>
-                    <input disabled name="update_amount[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['amount']) ?>" style="width: 3rem;" type="text" class="form-control">
-                  </td>
-                  <td>
-                    <input disabled name="update_price[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['price']) ?>" style="width: 5rem;" type="text" class="form-control">
-                  </td>
-                  <td>
-                    <input disabled value="<?= htmlspecialchars($item['total']) ?>" style="width: 5rem;" type="text" class="form-control no-toggle">
-                  </td>
-                  <td>
-                    <input disabled name="update_unit[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['unit']) ?>" style="width: 4rem;" type="text" class="form-control">
-                    <div style="position: absolute; right: 20px;">
-                      <?php renderItemEditorInfo($item['item_id'], $itemHistoryByItemId); ?>
-                    </div>
-                  </td>
-                  <td>
-                    <button type="button" class="btn btn-warning remove-row"
-                      data-items-id="<?= $item['item_id'] ?>"
-                      data-items-row-id="<?= $order['id'] ?>"
-                      style="display: none;">ลบ</button>
-                  </td>
-                </tr>
-              <?php endforeach; ?>
-            <?php  } else { ?>
-              <tr>
-                <th scope="row">1</th>
-                <td>
-                  <select
-                    disabled
-                    style="width: 120px"
-                    class="form-select device-select"
-                    name="list[]">
-                    <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-                    <!-- Populate options dynamically -->
-                    <?php
-                    $sql = "SELECT * FROM device_models ORDER BY models_name ASC";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->execute();
-                    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    $deviceOptions = '';
-                    foreach ($result as $d) {
-                      $deviceOptions .= "<option value='{$d['models_id']}'>{$d['models_name']}</option>";
-                    ?>
+                        <tr class="text-center">
+                          <td>
+                            <?= $row['numberWork'] ?>
+                          </td>
+                          <td class="thaiDateInput">
+                            <?= $dateFormatted ?>
+                          </td>
+                          <td style="max-width: 120px;" class="text-truncate">
+                            <?= $row['depart_name'] ?>
+                          </td>
+                          <td style="max-width: 120px;" class="text-truncate">
+                            <?= $row['refUsername'] ?>
+                          </td>
+                          <td style="max-width: 120px;" class="text-truncate">
+                            <?= $row['note'] ?>
+                          </td>
+                          <td>
+                            <a class="btn btn-primary" href="check.php?numberWork=<?= $row['numberWork'] ?>&statusField=<?= isset($_GET['statusField']) ? $_GET['statusField'] : '' ?>">ดูข้อมูล</a>
+                          </td>
+                        </tr>
+                      <?php    }
+                      ?>
+                    </tbody>
+                  </table>
 
-                      <option value="<?= $d['models_id'] ?>"><?= $d['models_name'] ?></option>
-                    <?php
-                    }
-                    ?>
-                  </select>
-                </td>
-                <td>
-                  <textarea disabled class="form-control" name="quality[]"></textarea>
-                </td>
-                <td>
-                  <input disabled name="amount[]" value="" style="width: 3rem;" type="text" class="form-control">
-                </td>
-                <td>
-                  <input disabled name="price[]" value="" style="width: 4rem;" type="text" class="form-control">
-                </td>
-                <td>
-                  <input disabled style="width: 4rem;" type="text" class="form-control no-toggle">
-                </td>
-                <td>
-                  <input disabled name="unit[]" value="" style="width: 5rem;" type="text" class="form-control">
-                </td>
-                <td>
-                  <button type="button" class="btn btn-warning remove-row"
-                    style="display: none;">ลบ</button>
-                </td>
-              </tr>
-            <?php } ?>
-          </tbody>
-        </table>
-        <div class="d-flex justify-content-end">
-          <button type="button" id="add-row-main" class="btn btn-success" style="display: none;">+ เพิ่มแถว</button>
-        </div>
+                  <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+                  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+                  <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+                  <script>
+                    new DataTable('#example', {
+                      "order": [],
+                      "pageLength": 5,
+                      "lengthMenu": [5, 10, 25, 50, 100]
+                    });
+                  </script>
+                </div>
+              </div>
+            </div>
+
+            <div class="card col-sm-12 col-md-12 col-lg-6 mt-3 py-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <h4 class="m-0">รายการเบิก</h4>
+                <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-main" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+              </div>
+              <div class="my-2">
+                <a href="แบบฟอร์มคำขอส่งซ่อมบำรุงอุปกรณ์คอมพิวเตอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบซ่อม</a>
+                <a href="ใบเบิกวัสดุอะไหล่.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบเบิกวัสดุอะไหล่</a>
+                <a href="ใบเบิกครุภัณฑ์ในแผน_รวม.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบเบิกคุรภัณฑ์ในแผน</a>
+                <a href="ใบเบิกปรับแผน_รวม.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">ใบเบิกคุรภัณฑ์นอกแผน</a>
+                <a href="พิมพ์สติ๊กเกอร์.php?workid=<?= $numberWork ?>" target="_blank" class="btn btn-primary p-2">สติ๊กเกอร์งาน</a>
+              </div>
+
+              <table id="pdf" style="width: 100%;" class="table">
+                <thead class="text-center table-primary">
+                  <tr>
+                    <th scope="col">ลำดับ</th>
+                    <th scope="col">รายการ</th>
+                    <th scope="col">คุณสมบัติ</th>
+                    <th scope="col">จำนวน</th>
+                    <th scope="col">ราคา</th>
+                    <th scope="col">รวม</th>
+                    <th scope="col">หน่วย</th>
+                    <th scope="col" style="display: none;"></th>
+                  </tr>
+                </thead>
+
+                <tbody id="table-body-main" class="text-center">
+                  <?php if (!empty($items)) { ?>
+                    <?php foreach ($items as $index => $item): ?>
+                      <tr>
+                        <td><?= $index + 1 ?></td>
+                        <td>
+                          <select
+                            disabled
+                            style="width: 150px"
+                            class="form-select device-select"
+                            name="update_list[<?= $order['id'] ?>][<?= $item['item_id'] ?>]">
+                            <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+                            <?php
+                            $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
+                            $deviceStmt = $conn->prepare($deviceSql);
+                            $deviceStmt->execute();
+                            $devices = $deviceStmt->fetchAll(PDO::FETCH_ASSOC);
+                            $deviceOptions = '';
+                            foreach ($devices as $device) {
+                              $deviceOptions .= "<option value='{$device['models_id']}'>{$device['models_name']}</option>";
+                              $selected = $device['models_id'] == $item['list'] ? 'selected' : '';
+                              echo "<option value='{$device['models_id']}' $selected>{$device['models_name']}</option>";
+                            }
+                            ?>
+                          </select>
+                        </td>
+                        <td>
+                          <textarea disabled class="form-control" name="update_quality[<?= $order['id'] ?>][<?= $item['item_id'] ?>]"><?= htmlspecialchars($item['quality']) ?></textarea>
+                        </td>
+                        <td>
+                          <input disabled name="update_amount[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['amount']) ?>" style="width: 3rem;" type="text" class="form-control">
+                        </td>
+                        <td>
+                          <input disabled name="update_price[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['price']) ?>" style="width: 5rem;" type="text" class="form-control">
+                        </td>
+                        <td>
+                          <input disabled value="<?= htmlspecialchars($item['total']) ?>" style="width: 5rem;" type="text" class="form-control no-toggle">
+                        </td>
+                        <td>
+                          <input disabled name="update_unit[<?= $order['id'] ?>][<?= $item['item_id'] ?>]" value="<?= htmlspecialchars($item['unit']) ?>" style="width: 4rem;" type="text" class="form-control">
+                          <div style="position: absolute; right: 20px;">
+                            <?php renderItemEditorInfo($item['item_id'], $itemHistoryByItemId); ?>
+                          </div>
+                        </td>
+                        <td>
+                          <button type="button" class="btn btn-warning remove-row"
+                            data-items-id="<?= $item['item_id'] ?>"
+                            data-items-row-id="<?= $order['id'] ?>"
+                            style="display: none;">ลบ</button>
+                        </td>
+                      </tr>
+                    <?php endforeach; ?>
+                  <?php  } else { ?>
+                    <tr>
+                      <th scope="row">1</th>
+                      <td>
+                        <select
+                          disabled
+                          style="width: 120px"
+                          class="form-select device-select"
+                          name="list[]">
+                          <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+                          <!-- Populate options dynamically -->
+                          <?php
+                          $sql = "SELECT * FROM device_models ORDER BY models_name ASC";
+                          $stmt = $conn->prepare($sql);
+                          $stmt->execute();
+                          $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                          $deviceOptions = '';
+                          foreach ($result as $d) {
+                            $deviceOptions .= "<option value='{$d['models_id']}'>{$d['models_name']}</option>";
+                          ?>
+
+                            <option value="<?= $d['models_id'] ?>"><?= $d['models_name'] ?></option>
+                          <?php
+                          }
+                          ?>
+                        </select>
+                      </td>
+                      <td>
+                        <textarea disabled class="form-control" name="quality[]"></textarea>
+                      </td>
+                      <td>
+                        <input disabled name="amount[]" value="" style="width: 3rem;" type="text" class="form-control">
+                      </td>
+                      <td>
+                        <input disabled name="price[]" value="" style="width: 4rem;" type="text" class="form-control">
+                      </td>
+                      <td>
+                        <input disabled style="width: 4rem;" type="text" class="form-control no-toggle">
+                      </td>
+                      <td>
+                        <input disabled name="unit[]" value="" style="width: 5rem;" type="text" class="form-control">
+                      </td>
+                      <td>
+                        <button type="button" class="btn btn-warning remove-row"
+                          style="display: none;">ลบ</button>
+                      </td>
+                    </tr>
+                  <?php } ?>
+                </tbody>
+              </table>
+              <div class="d-flex justify-content-end">
+                <button type="button" id="add-row-main" class="btn btn-success" style="display: none;">+ เพิ่มแถว</button>
+              </div>
+            </div>
+          </div>
         </form>
       <?php
-          } else {
-            $sql = "SELECT * FROM device_models ORDER BY models_name ASC";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            $deviceOptions = '';
-            foreach ($result as $d) {
-              $deviceOptions .= "<option value='{$d['models_id']}'>{$d['models_name']}</option>";
-            }
+      } else {
+        $sql = "SELECT * FROM device_models ORDER BY models_name ASC";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $deviceOptions = '';
+        foreach ($result as $d) {
+          $deviceOptions .= "<option value='{$d['models_id']}'>{$d['models_name']}</option>";
+        }
       ?>
         <h2 class="mt-4 text-center">*ไม่พบข้อมูล*</h2>
       <?php
-          }
+      }
       ?>
-      </div>
     </div>
+  </div>
   </div>
   </div>
   <!-- modal - create mode -->
@@ -1428,7 +1496,7 @@ depart AS dp ON od.refDepart = dp.depart_id
                     $stmt->execute();
                     $offers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     foreach ($offers as $offer) { ?>
-                      <option value="<?= $offer['offer_id'] ?>"><?= $offer['offer_name'] ?></option>
+                      <option value="<?= $offer['offer_id'] ?>" <?= $offer['offer_id'] == 11 ? 'selected' : '' ?>><?= $offer['offer_name'] ?></option>
                     <?php }
                     ?>
                   </select>

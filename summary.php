@@ -237,7 +237,8 @@ if (!isset($_SESSION["admin_log"])) {
             </div>
         </div>
 
-        <div class="card p-3 m-4" style="width: 1850px; height: 1110px;">
+        <div class="card p-3 m-4" style="width: 1850px; height: 775px;">
+            <!-- 1850px 1110px -->
             <input type="date" id="filter-date" class="form-control mb-3" />
             <select id="timelineFilter" class="form-control">
                 <option value="problem" selected>Activity Report</option>
@@ -245,7 +246,7 @@ if (!isset($_SESSION["admin_log"])) {
                 <option value="report">อาการรับแจ้ง</option>
                 <option value="sla">SLA</option>
             </select>
-            <canvas id="gantt-chart" width="800" height="150"></canvas>
+            <!-- <canvas id="gantt-chart" width="800" height="150"></canvas> -->
             <canvas id="gantt-summary" width="800" height="150"></canvas>
 
             <hr />

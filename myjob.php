@@ -58,6 +58,15 @@ if (!isset($_SESSION["admin_log"])) {
 
         .job-modal {
             width: 500px;
+            transition: width 0.3s ease;
+        }
+
+        .job-modal.wide {
+            width: 750px;
+        }
+
+        .job-modal-content {
+            width: 500px;
         }
 
         .withdraw-modal {
@@ -327,395 +336,453 @@ if (!isset($_SESSION["admin_log"])) {
                                         <!-- modal -->
                                         <div id="workflowModalTask<?= $row['id'] ?>" class="modal" style="display: none;">
                                             <div class="p-5 d-flex justify-content-center gap-4">
-                                                <div class="modal-content job-modal">
-                                                    <div class="modal-header">
+                                                <div class="modal-content job-modal" id="job-modal-main-<?= $row['id'] ?>">
+                                                    <div class="modal-header justify-content-between">
                                                         <h1 class="modal-title fs-5" id="staticBackdropLabel">รายละเอียดงาน</h1>
-                                                        <button type="button" class="btn-close" onclick="toggleModal('#workflowModalTask<?= $row['id'] ?>')"></button>
+                                                        <div class="d-flex align-items-center">
+                                                            <button type="button" class="btn btn-primary me-2" id="toggleAssignSectionBtn-main-<?= $row['id'] ?>">เพิ่มเจ้าหน้าที่ร่วมงาน</button>
+                                                            <button type="button" class="btn-close" onclick="toggleModal('#workflowModalTask<?= $row['id'] ?>')"></button>
+                                                        </div>
                                                     </div>
-                                                    <div class="modal-body">
-                                                        <div class="row">
-                                                            <div class="col-6">
-                                                                <label>หมายเลขงาน</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= $row['id'] ?>" disabled>
+                                                    <div class="modal-body d-flex">
+                                                        <div class="job-modal-content">
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>หมายเลขงาน</label>
+                                                                    <input type="text" class="form-control"
+                                                                        value="<?= $row['id'] ?>" disabled>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label>วันที่</label>
+                                                                    <input type="date" class="form-control" name="date_report"
+                                                                        value="<?= $row['date_report'] ?>">
+                                                                </div>
                                                             </div>
-                                                            <div class="col-6">
-                                                                <label>วันที่</label>
-                                                                <input type="date" class="form-control" name="date_report"
-                                                                    value="<?= $row['date_report'] ?>">
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-4">
-                                                                <label>เวลาแจ้ง</label>
-                                                                <input type="time" class="form-control" name="time_report"
-                                                                    value="<?= date('H:i', strtotime($row['time_report'])) ?>">
-                                                            </div>
-                                                            <div class="col-4">
-                                                                <label>เวลารับงาน</label>
-                                                                <input type="time" class="form-control" name="take"
-                                                                    value="<?= date('H:i', strtotime($row['take']))  ?>">
-                                                            </div>
-                                                            <div class="col-4">
-                                                                <label>เวลาปิดงาน (ถ้ามี)</label>
-                                                                <input type="time" class="form-control" id="time_report" name="close_date"
-                                                                    value="<?= ($row['status'] == 3 && ($row['close_date'] === '00:00:00.000000' || $row['close_date'] === null || trim($row['close_date']) === ''))
-                                                                                ? '' : (($row['close_date'] && $row['close_date'] !== '00:00:00.000000') ? date('H:i', strtotime($row['close_date'])) : '') ?>">
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="row">
-                                                            <div class="col-6">
-                                                                <label>ผู้แจ้ง</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= $row['reporter'] ?>" disabled>
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <label>หน่วยงาน</label>
-                                                                <?php
-                                                                $sql = "SELECT depart_name FROM depart WHERE depart_id = ?";
-                                                                $stmt = $conn->prepare($sql);
-                                                                $stmt->execute([$row['department']]);
-                                                                $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                                                                ?>
-
-                                                                <input type="text" class="form-control" id="departInputTask<?= $row['id'] ?>"
-                                                                    value="<?= $departRow['depart_name'] ?>">
-
-                                                                <input type="hidden" name="department" id="departIdTask<?= $row['id'] ?>"
-                                                                    value="<?= $row['department'] ?>">
-
-                                                                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
-
-                                                                <!-- Add SweetAlert2 JS -->
-                                                                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
-
-                                                                <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-                                                                <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-                                                                <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-                                                                <script>
-                                                                    $(function() {
-                                                                        function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
-                                                                            let inputChanged = false;
-                                                                            let alertShown = false; // Flag to track if the alert has been shown already
-
-                                                                            $(inputId).autocomplete({
-                                                                                    source: function(request, response) {
-                                                                                        $.ajax({
-                                                                                            url: url,
-                                                                                            dataType: "json",
-                                                                                            data: {
-                                                                                                term: request.term,
-                                                                                                type: type
-                                                                                            },
-                                                                                            success: function(data) {
-                                                                                                response(data); // Show suggestions
-                                                                                            }
-                                                                                        });
-                                                                                    },
-                                                                                    minLength: 1,
-                                                                                    autoFocus: true,
-                                                                                    select: function(event, ui) {
-                                                                                        $(inputId).val(ui.item.label); // Fill input with label
-                                                                                        $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
-                                                                                        return false; // Prevent default behavior
-                                                                                    }
-                                                                                })
-                                                                                .data("ui-autocomplete")._renderItem = function(ul, item) {
-                                                                                    return $("<li>")
-                                                                                        .append("<div>" + item.label + "</div>")
-                                                                                        .appendTo(ul);
-                                                                                };
-
-                                                                            $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                // console.log("Item highlighted: ", ui.item.label);
-                                                                                return false;
-                                                                            });
-
-                                                                            $(inputId).on("keyup", function() {
-                                                                                inputChanged = true;
-                                                                            });
-
-                                                                            $(inputId).on("blur", function() {
-                                                                                if (inputChanged && !alertShown) {
-                                                                                    const userInput = $(this).val().trim();
-                                                                                    const hiddenValue = $(hiddenInputId).val();
-                                                                                    if (userInput === "") return;
-                                                                                    if (hiddenValue !== "") {
-                                                                                        inputChanged = false;
-                                                                                        return;
-                                                                                    }
-
-                                                                                    let found = false;
-                                                                                    $(this).autocomplete("instance").menu.element.find("div").each(function() {
-                                                                                        if ($(this).text() === userInput) {
-                                                                                            found = true;
-                                                                                            return false;
-                                                                                        }
-                                                                                    });
-
-                                                                                    if (!found) {
-                                                                                        alertShown = true; // Prevent the alert from firing again
-                                                                                        // Show SweetAlert to confirm insert data
-                                                                                        Swal.fire({
-                                                                                            title: confirmMessage,
-                                                                                            icon: "info",
-                                                                                            showCancelButton: true,
-                                                                                            confirmButtonText: "ใช่",
-                                                                                            cancelButtonText: "ไม่"
-                                                                                        }).then((result) => {
-                                                                                            if (result.isConfirmed) {
-                                                                                                $.ajax({
-                                                                                                    url: addDataUrl,
-                                                                                                    method: "POST",
-                                                                                                    data: {
-                                                                                                        dataToInsert: userInput
-                                                                                                    },
-                                                                                                    success: function(response) {
-                                                                                                        console.log("Data inserted successfully!");
-                                                                                                        $(hiddenInputId).val(response); // Set inserted ID
-                                                                                                    },
-                                                                                                    error: function(xhr, status, error) {
-                                                                                                        console.error("Error inserting data:", error);
-                                                                                                    }
-                                                                                                });
-                                                                                            } else {
-                                                                                                $(inputId).val(""); // Clear input if canceled
-                                                                                                $(hiddenInputId).val("");
-                                                                                            }
-                                                                                            alertShown = false; // Reset the flag after the action
-                                                                                        });
-                                                                                    }
-                                                                                }
-                                                                                inputChanged = false; // Reset the flag
-                                                                            });
-                                                                        }
-
-                                                                        $("input[id^='departInput']").each(function() {
-                                                                            const i = $(this).attr("id").replace("departInput", ""); // Extract index
-                                                                            setupAutocomplete(
-                                                                                "depart",
-                                                                                `#departInputTask${i}`,
-                                                                                `#departIdTask${i}`,
-                                                                                "autocomplete.php",
-                                                                                "insertDepart.php",
-                                                                                "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
-                                                                            );
-                                                                        });
-                                                                    });
-                                                                </script>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="row">
-                                                            <div class="col-6">
-                                                                <label>เบอร์ติดต่อกลับ</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= $row['tel'] ?>" disabled>
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <label for="deviceInput">อุปกรณ์</label>
-                                                                <input type="text" class="form-control" id="deviceInput<?= $row['id'] ?>" name="deviceName"
-                                                                    value="<?= $row['deviceName'] ?>">
-                                                                <input type="hidden" id="deviceId<?= $row['id'] ?>">
+                                                            <div class="row">
+                                                                <div class="col-4">
+                                                                    <label>เวลาแจ้ง</label>
+                                                                    <input type="time" class="form-control" name="time_report"
+                                                                        value="<?= date('H:i', strtotime($row['time_report'])) ?>">
+                                                                </div>
+                                                                <div class="col-4">
+                                                                    <label>เวลารับงาน</label>
+                                                                    <input type="time" class="form-control" name="take"
+                                                                        value="<?= date('H:i', strtotime($row['take']))  ?>">
+                                                                </div>
+                                                                <div class="col-4">
+                                                                    <label>เวลาปิดงาน (ถ้ามี)</label>
+                                                                    <input type="time" class="form-control" id="time_report" name="close_date"
+                                                                        value="<?= ($row['status'] == 3 && ($row['close_date'] === '00:00:00.000000' || $row['close_date'] === null || trim($row['close_date']) === ''))
+                                                                                    ? '' : (($row['close_date'] && $row['close_date'] !== '00:00:00.000000') ? date('H:i', strtotime($row['close_date'])) : '') ?>">
+                                                                </div>
                                                             </div>
 
-                                                        </div>
-
-                                                        <div class="row">
-                                                            <div class="col-6">
-                                                                <label>หมายเลขครุภัณฑ์ (ถ้ามี)</label>
-                                                                <input value="<?= $row['number_device'] ?>" type="text"
-                                                                    class="form-control" name="number_devices" id="numberDeviceSource<?= $row['id'] ?>">
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <label>หมายเลข IP addrees</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= $row['ip_address'] ?>" disabled>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <label>อาการที่ได้รับแจ้ง</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= $row['report'] ?>" disabled>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-6">
-                                                                <label>รูปแบบการทำงาน<span style="color: red;">*</span></label>
-                                                                <select class="form-select" name="device"
-                                                                    aria-label="Default select example">
-                                                                    <option value="<?= $row['device'] ?: '' ?>"
-                                                                        selected>
-                                                                        <?= !empty($row['device']) ? $row['device'] : '-' ?>
-                                                                    </option>
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>ผู้แจ้ง</label>
+                                                                    <input type="text" class="form-control"
+                                                                        value="<?= $row['reporter'] ?>" disabled>
+                                                                    <input type="hidden" class="form-control" name="reporter"
+                                                                        value="<?= $row['reporter'] ?>">
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label>หน่วยงาน</label>
                                                                     <?php
-                                                                    $sql = "SELECT * FROM workinglist";
+                                                                    $sql = "SELECT depart_name FROM depart WHERE depart_id = ?";
                                                                     $stmt = $conn->prepare($sql);
-                                                                    $stmt->execute();
-                                                                    $checkD = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                                                    foreach ($checkD as $d) {
-                                                                        if ($d['workingName'] != $row['device']) {
+                                                                    $stmt->execute([$row['department']]);
+                                                                    $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
                                                                     ?>
-                                                                            <option value="<?= $d['workingName'] ?>">
-                                                                                <?= $d['workingName'] ?>
-                                                                            </option>
-                                                                    <?php }
-                                                                    }
-                                                                    ?>
-                                                                </select>
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <label>หมายเลขใบเบิก</label>
-                                                                <?php if (empty($row['withdraw'])) { ?>
-                                                                    <input disabled type="text"
-                                                                        class="form-control withdrawInput" name="withdraw"
-                                                                        id="withdrawInput<?= $row['id'] ?>">
-                                                                <?php } else { ?>
-                                                                    <input disabled value="<?= $row['withdraw'] ?>"
-                                                                        type="text" class="form-control withdrawInput"
-                                                                        name="withdraw" id="withdrawInput<?= $row['id'] ?>">
-                                                                    <input type="hidden" value="<?= $row['withdraw'] ?>"
-                                                                        class="form-control withdrawInput"
-                                                                        id="withdrawInputHidden<?= $row['id'] ?>" name="withdraw2">
-                                                                <?php } ?>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <label>รายละเอียด<span style="color: red;">*</span></label>
-                                                                <textarea class="form-control " name="description" rows="2" id="descriptionSource<?= $row['id'] ?>"><?= $row['description'] ?></textarea>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <label>หมายเหตุ</label>
-                                                                <input value="<?= $row['note'] ?>" type="text"
-                                                                    class="form-control" name="noteTask">
-                                                            </div>
-                                                        </div>
 
-                                                        <div class="row">
-                                                            <div class="col-6">
-                                                                <label>ผู้คีย์งาน</label>
-                                                                <input value="<?= $row['create_by'] ?>" type="text"
-                                                                    class="form-control" name="create_by" disabled>
+                                                                    <input type="text" class="form-control" id="departInputTask<?= $row['id'] ?>"
+                                                                        value="<?= $departRow['depart_name'] ?>">
+
+                                                                    <input type="hidden" name="department" id="departIdTask<?= $row['id'] ?>"
+                                                                        value="<?= $row['department'] ?>">
+
+                                                                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
+
+                                                                    <!-- Add SweetAlert2 JS -->
+                                                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
+
+                                                                    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+                                                                    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+                                                                    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+                                                                    <script>
+                                                                        $(function() {
+                                                                            function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
+                                                                                let inputChanged = false;
+                                                                                let alertShown = false; // Flag to track if the alert has been shown already
+
+                                                                                $(inputId).autocomplete({
+                                                                                        source: function(request, response) {
+                                                                                            $.ajax({
+                                                                                                url: url,
+                                                                                                dataType: "json",
+                                                                                                data: {
+                                                                                                    term: request.term,
+                                                                                                    type: type
+                                                                                                },
+                                                                                                success: function(data) {
+                                                                                                    response(data); // Show suggestions
+                                                                                                }
+                                                                                            });
+                                                                                        },
+                                                                                        minLength: 1,
+                                                                                        autoFocus: true,
+                                                                                        select: function(event, ui) {
+                                                                                            $(inputId).val(ui.item.label); // Fill input with label
+                                                                                            $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
+                                                                                            return false; // Prevent default behavior
+                                                                                        }
+                                                                                    })
+                                                                                    .data("ui-autocomplete")._renderItem = function(ul, item) {
+                                                                                        return $("<li>")
+                                                                                            .append("<div>" + item.label + "</div>")
+                                                                                            .appendTo(ul);
+                                                                                    };
+
+                                                                                $(inputId).on("autocompletefocus", function(event, ui) {
+                                                                                    // console.log("Item highlighted: ", ui.item.label);
+                                                                                    return false;
+                                                                                });
+
+                                                                                $(inputId).on("keyup", function() {
+                                                                                    inputChanged = true;
+                                                                                });
+
+                                                                                $(inputId).on("blur", function() {
+                                                                                    if (inputChanged && !alertShown) {
+                                                                                        const userInput = $(this).val().trim();
+                                                                                        const hiddenValue = $(hiddenInputId).val();
+                                                                                        if (userInput === "") return;
+                                                                                        if (hiddenValue !== "") {
+                                                                                            inputChanged = false;
+                                                                                            return;
+                                                                                        }
+
+                                                                                        let found = false;
+                                                                                        $(this).autocomplete("instance").menu.element.find("div").each(function() {
+                                                                                            if ($(this).text() === userInput) {
+                                                                                                found = true;
+                                                                                                return false;
+                                                                                            }
+                                                                                        });
+
+                                                                                        if (!found) {
+                                                                                            alertShown = true; // Prevent the alert from firing again
+                                                                                            // Show SweetAlert to confirm insert data
+                                                                                            Swal.fire({
+                                                                                                title: confirmMessage,
+                                                                                                icon: "info",
+                                                                                                showCancelButton: true,
+                                                                                                confirmButtonText: "ใช่",
+                                                                                                cancelButtonText: "ไม่"
+                                                                                            }).then((result) => {
+                                                                                                if (result.isConfirmed) {
+                                                                                                    $.ajax({
+                                                                                                        url: addDataUrl,
+                                                                                                        method: "POST",
+                                                                                                        data: {
+                                                                                                            dataToInsert: userInput
+                                                                                                        },
+                                                                                                        success: function(response) {
+                                                                                                            console.log("Data inserted successfully!");
+                                                                                                            $(hiddenInputId).val(response); // Set inserted ID
+                                                                                                        },
+                                                                                                        error: function(xhr, status, error) {
+                                                                                                            console.error("Error inserting data:", error);
+                                                                                                        }
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    $(inputId).val(""); // Clear input if canceled
+                                                                                                    $(hiddenInputId).val("");
+                                                                                                }
+                                                                                                alertShown = false; // Reset the flag after the action
+                                                                                            });
+                                                                                        }
+                                                                                    }
+                                                                                    inputChanged = false; // Reset the flag
+                                                                                });
+                                                                            }
+
+                                                                            $("input[id^='departInput']").each(function() {
+                                                                                const i = $(this).attr("id").replace("departInput", ""); // Extract index
+                                                                                setupAutocomplete(
+                                                                                    "depart",
+                                                                                    `#departInputTask${i}`,
+                                                                                    `#departIdTask${i}`,
+                                                                                    "autocomplete.php",
+                                                                                    "insertDepart.php",
+                                                                                    "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
+                                                                                );
+                                                                            });
+                                                                        });
+                                                                    </script>
+                                                                </div>
                                                             </div>
-                                                            <div class="col-6">
-                                                                <label>ซ่อมครั้งที่</label>
-                                                                <?php
-                                                                if (!empty($row['number_device']) && $row['number_device'] !== '-') {
-                                                                    $sqlCount = "SELECT COUNT(*) AS repair_count 
+
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>เบอร์ติดต่อกลับ</label>
+                                                                    <input type="text" class="form-control"
+                                                                        value="<?= $row['tel'] ?>" disabled>
+                                                                    <input type="hidden" class="form-control" name="tel"
+                                                                        value="<?= $row['tel'] ?>">
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label for="deviceInput">อุปกรณ์</label>
+                                                                    <input type="text" class="form-control" id="deviceInput<?= $row['id'] ?>" name="deviceName"
+                                                                        value="<?= $row['deviceName'] ?>">
+                                                                    <input type="hidden" id="deviceId<?= $row['id'] ?>">
+                                                                </div>
+
+                                                            </div>
+
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>หมายเลขครุภัณฑ์ (ถ้ามี)</label>
+                                                                    <input value="<?= $row['number_device'] ?>" type="text"
+                                                                        class="form-control" name="number_devices" id="numberDeviceSource<?= $row['id'] ?>">
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label>หมายเลข IP addrees</label>
+                                                                    <input type="text" class="form-control" name="ip_address"
+                                                                        value="<?= $row['ip_address'] ?>">
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <label>อาการที่ได้รับแจ้ง</label>
+                                                                    <input type="text" class="form-control"
+                                                                        value="<?= $row['report'] ?>" disabled>
+                                                                    <input type="hidden" class="form-control" name="report_work"
+                                                                        value="<?= $row['report'] ?>">
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>รูปแบบการทำงาน<span style="color: red;">*</span></label>
+                                                                    <select class="form-select" name="device"
+                                                                        aria-label="Default select example">
+                                                                        <option value="<?= $row['device'] ?: '' ?>"
+                                                                            selected>
+                                                                            <?= !empty($row['device']) ? $row['device'] : '-' ?>
+                                                                        </option>
+                                                                        <?php
+                                                                        $sql = "SELECT * FROM workinglist";
+                                                                        $stmt = $conn->prepare($sql);
+                                                                        $stmt->execute();
+                                                                        $checkD = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                                                        foreach ($checkD as $d) {
+                                                                            if ($d['workingName'] != $row['device']) {
+                                                                        ?>
+                                                                                <option value="<?= $d['workingName'] ?>">
+                                                                                    <?= $d['workingName'] ?>
+                                                                                </option>
+                                                                        <?php }
+                                                                        }
+                                                                        ?>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label>หมายเลขใบเบิก</label>
+                                                                    <?php if (empty($row['withdraw'])) { ?>
+                                                                        <input disabled type="text"
+                                                                            class="form-control withdrawInput" name="withdraw"
+                                                                            id="withdrawInput<?= $row['id'] ?>">
+                                                                    <?php } else { ?>
+                                                                        <input disabled value="<?= $row['withdraw'] ?>"
+                                                                            type="text" class="form-control withdrawInput"
+                                                                            name="withdraw" id="withdrawInput<?= $row['id'] ?>">
+                                                                        <input type="hidden" value="<?= $row['withdraw'] ?>"
+                                                                            class="form-control withdrawInput"
+                                                                            id="withdrawInputHidden<?= $row['id'] ?>" name="withdraw2">
+                                                                    <?php } ?>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <label>รายละเอียด<span style="color: red;">*</span></label>
+                                                                    <textarea class="form-control " name="description" rows="2" id="descriptionSource<?= $row['id'] ?>"><?= $row['description'] ?></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <label>หมายเหตุ</label>
+                                                                    <input value="<?= $row['note'] ?>" type="text"
+                                                                        class="form-control" name="noteTask">
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>ผู้คีย์งาน</label>
+                                                                    <input value="<?= $row['create_by'] ?>" type="text"
+                                                                        class="form-control" name="create_by" disabled>
+                                                                    <input value="<?= $row['create_by'] ?>" type="hidden"
+                                                                        class="form-control" name="create_by">
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label>ซ่อมครั้งที่</label>
+                                                                    <?php
+                                                                    if (!empty($row['number_device']) && $row['number_device'] !== '-') {
+                                                                        $sqlCount = "SELECT COUNT(*) AS repair_count 
                      FROM data_report 
                      WHERE number_device = :number_device 
                      AND (number_device IS NOT NULL AND number_device <> '' AND number_device <> '-')";
-                                                                    $stmtCount = $conn->prepare($sqlCount);
-                                                                    $stmtCount->bindParam(":number_device", $row['number_device']);
-                                                                    $stmtCount->execute();
-                                                                    $count = $stmtCount->fetch(PDO::FETCH_ASSOC);
-                                                                    $repairCount = $count['repair_count'];
-                                                                } else {
-                                                                    $repairCount = '-';
-                                                                }
-                                                                ?>
-                                                                <input value="<?= $repairCount ?>" type="text" class="form-control" name="repair_count">
-                                                            </div>
-                                                        </div>
-
-                                                        <hr class="mb-2">
-                                                        <!-- !!!!! -->
-                                                        <h4 class="mt-0 mb-3" id="staticBackdropLabel">งานคุณภาพ</h4>
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <label>ปัญหาอยู่ใน SLA หรือไม่<span style="color: red;">*</span></label>
-                                                                <select class="form-select" name="sla"
-                                                                    aria-label="Default select example">
-                                                                    <option value="<?= $row['sla'] ?: '' ?>" selected>
-                                                                        <?= !empty($row['sla']) ? $row['sla'] : '-' ?>
-                                                                    </option>
-                                                                    <?php
-                                                                    $sql = "SELECT * FROM sla";
-                                                                    $stmt = $conn->prepare($sql);
-                                                                    $stmt->execute();
-                                                                    $checkD = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                                                    foreach ($checkD as $d) {
-                                                                        if ($d['sla_name'] != $row['sla']) {
-                                                                    ?>
-                                                                            <option value="<?= $d['sla_name'] ?>">
-                                                                                <?= $d['sla_name'] ?>
-                                                                            </option>
-                                                                    <?php }
+                                                                        $stmtCount = $conn->prepare($sqlCount);
+                                                                        $stmtCount->bindParam(":number_device", $row['number_device']);
+                                                                        $stmtCount->execute();
+                                                                        $count = $stmtCount->fetch(PDO::FETCH_ASSOC);
+                                                                        $repairCount = $count['repair_count'];
+                                                                    } else {
+                                                                        $repairCount = '-';
                                                                     }
                                                                     ?>
-
-                                                                </select>
+                                                                    <input value="<?= $repairCount ?>" type="text" class="form-control" name="repair_count">
+                                                                </div>
                                                             </div>
-                                                        </div>
 
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <label>เป็นตัวชี้วัดหรือไม่<span style="color: red;">*</span></label>
-                                                                <?php
-                                                                $sqlPublic = "SELECT kpi_name FROM kpi WHERE kpi_id IN (1, 2)";
-                                                                $stmt = $conn->prepare($sqlPublic);
-                                                                $stmt->execute();
-                                                                $publicKpis = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                                                            <hr class="mb-2">
+                                                            <!-- !!!!! -->
+                                                            <h4 class="mt-0 mb-3" id="staticBackdropLabel">งานคุณภาพ</h4>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <label>ปัญหาอยู่ใน SLA หรือไม่<span style="color: red;">*</span></label>
+                                                                    <select class="form-select" name="sla"
+                                                                        aria-label="Default select example">
+                                                                        <option value="<?= $row['sla'] ?: '' ?>" selected>
+                                                                            <?= !empty($row['sla']) ? $row['sla'] : '-' ?>
+                                                                        </option>
+                                                                        <?php
+                                                                        $sql = "SELECT * FROM sla";
+                                                                        $stmt = $conn->prepare($sql);
+                                                                        $stmt->execute();
+                                                                        $checkD = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                                                                // 2. Assigned KPIs
-                                                                $sqlAssigned = "SELECT DISTINCT kpi.kpi_name 
+                                                                        foreach ($checkD as $d) {
+                                                                            if ($d['sla_name'] != $row['sla']) {
+                                                                        ?>
+                                                                                <option value="<?= $d['sla_name'] ?>">
+                                                                                    <?= $d['sla_name'] ?>
+                                                                                </option>
+                                                                        <?php }
+                                                                        }
+                                                                        ?>
+
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <label>เป็นตัวชี้วัดหรือไม่<span style="color: red;">*</span></label>
+                                                                    <?php
+                                                                    $sqlPublic = "SELECT kpi_name FROM kpi WHERE kpi_id IN (1, 2)";
+                                                                    $stmt = $conn->prepare($sqlPublic);
+                                                                    $stmt->execute();
+                                                                    $publicKpis = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                                                                    // 2. Assigned KPIs
+                                                                    $sqlAssigned = "SELECT DISTINCT kpi.kpi_name 
                 FROM kpi 
                 INNER JOIN kpi_assignment 
                 ON kpi.kpi_id = kpi_assignment.kpi_id 
                 WHERE kpi.kpi_id NOT IN (1, 2) AND kpi_assignment.username = ?";
-                                                                $stmt = $conn->prepare($sqlAssigned);
-                                                                $stmt->execute([$admin]);
-                                                                $assignedKpis = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                                                                    $stmt = $conn->prepare($sqlAssigned);
+                                                                    $stmt->execute([$admin]);
+                                                                    $assignedKpis = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-                                                                // 3. Merge both lists, keeping order
-                                                                $allKpis = array_merge($publicKpis, $assignedKpis);
-                                                                ?>
+                                                                    // 3. Merge both lists, keeping order
+                                                                    $allKpis = array_merge($publicKpis, $assignedKpis);
+                                                                    ?>
 
-                                                                <select class="form-select" name="kpi" aria-label="Default select example">
-                                                                    <option value="<?= $row['kpi'] ?: '' ?>" selected>
-                                                                        <?= !empty($row['kpi']) ? $row['kpi'] : '-' ?>
-                                                                    </option>
-                                                                    <?php foreach ($allKpis as $kpiName): ?>
-                                                                        <?php if ($kpiName != $row['kpi']): ?>
-                                                                            <option value="<?= $kpiName ?>"><?= $kpiName ?></option>
-                                                                        <?php endif; ?>
-                                                                    <?php endforeach; ?>
-                                                                </select>
+                                                                    <select class="form-select" name="kpi" aria-label="Default select example">
+                                                                        <option value="<?= $row['kpi'] ?: '' ?>" selected>
+                                                                            <?= !empty($row['kpi']) ? $row['kpi'] : '-' ?>
+                                                                        </option>
+                                                                        <?php foreach ($allKpis as $kpiName): ?>
+                                                                            <?php if ($kpiName != $row['kpi']): ?>
+                                                                                <option value="<?= $kpiName ?>"><?= $kpiName ?></option>
+                                                                            <?php endif; ?>
+                                                                        <?php endforeach; ?>
+                                                                    </select>
 
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <label>Activity Report<span style="color: red;">*</span></label>
+                                                                    <select class="form-select" name="problem"
+                                                                        aria-label="Default select example">
+                                                                        <?php
+                                                                        $sql = "SELECT * FROM problemlist";
+                                                                        $stmt = $conn->prepare($sql);
+                                                                        $stmt->execute();
+                                                                        $data = $stmt->fetchAll(PDO::FETCH_ASSOC); ?>
+                                                                        <option value="<?= $row['problem'] ?: '' ?>"
+                                                                            selected>
+                                                                            <?= !empty($row['problem']) ? $row['problem'] : '-' ?>
+                                                                        </option>
+                                                                        <?php foreach ($data as $d) {
+                                                                            if ($row['problem'] != $d['problemName']) { ?>
+                                                                                <option value="<?= $d['problemName'] ?>">
+                                                                                    <?= $d['problemName'] ?>
+                                                                                </option>
+                                                                        <?php }
+                                                                        }
+                                                                        ?>
+                                                                    </select>
+                                                                </div>
                                                             </div>
                                                         </div>
+                                                        <div>
+                                                            <div id="assignSection-main-<?= $row['id'] ?>" style="display: none; width: 210px;" class="ms-3">
+                                                                <h6 class="mb-1">เพิ่มเจ้าหน้าที่ร่วมงาน</h6>
+                                                                <?php
+                                                                $assignedStmt = $conn->prepare("SELECT username FROM admin");
+                                                                $assignedStmt->execute();
+                                                                $allAdmins = $assignedStmt->fetchAll(PDO::FETCH_ASSOC);
 
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <label>Activity Report<span style="color: red;">*</span></label>
-                                                                <select class="form-select" name="problem"
-                                                                    aria-label="Default select example">
-                                                                    <?php
-                                                                    $sql = "SELECT * FROM problemlist";
-                                                                    $stmt = $conn->prepare($sql);
-                                                                    $stmt->execute();
-                                                                    $data = $stmt->fetchAll(PDO::FETCH_ASSOC); ?>
-                                                                    <option value="<?= $row['problem'] ?: '' ?>"
-                                                                        selected>
-                                                                        <?= !empty($row['problem']) ? $row['problem'] : '-' ?>
-                                                                    </option>
-                                                                    <?php foreach ($data as $d) {
-                                                                        if ($row['problem'] != $d['problemName']) { ?>
-                                                                            <option value="<?= $d['problemName'] ?>">
-                                                                                <?= $d['problemName'] ?>
-                                                                            </option>
-                                                                    <?php }
-                                                                    }
-                                                                    ?>
-                                                                </select>
+                                                                $currentAdmin = $_SESSION['admin_log'] ?? null;
+                                                                $assignedTask = array_filter($allAdmins, fn($admin) => $admin['username'] !== $currentAdmin);
+
+                                                                $reportName = $row['report'];
+                                                                $checkAssignedStmt = $conn->prepare("SELECT username FROM data_report WHERE report = :report");
+                                                                $checkAssignedStmt->bindParam(":report", $reportName);
+                                                                $checkAssignedStmt->execute();
+                                                                $alreadyAssigned = $checkAssignedStmt->fetchAll(PDO::FETCH_COLUMN);
+                                                                ?>
+                                                                <div class="col-sm-12 mb-3">
+                                                                    <div class="list-group">
+                                                                        <label class="list-group-item">
+                                                                            <input type="checkbox" class="form-check-input me-1" id="toggleAssignedTask-main-<?= $row['id'] ?>">
+                                                                            เลือกทั้งหมด
+                                                                        </label>
+                                                                        <?php foreach ($assignedTask as $task): ?>
+                                                                            <?php
+                                                                            $username = $task['username'];
+                                                                            $isAssigned = in_array($username, $alreadyAssigned);
+                                                                            ?>
+                                                                            <label class="list-group-item">
+                                                                                <input
+                                                                                    class="form-check-input me-1"
+                                                                                    type="checkbox"
+                                                                                    name="assignedTask[]"
+                                                                                    value="<?= htmlspecialchars($username) ?>"
+                                                                                    <?= $isAssigned ? 'disabled checked' : '' ?>>
+                                                                                <?= htmlspecialchars($username) ?>
+                                                                                <?php if ($isAssigned): ?>
+                                                                                    <span class="text-muted">(เพิ่มแล้ว)</span>
+                                                                                <?php endif; ?>
+                                                                            </label>
+                                                                        <?php endforeach; ?>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -724,8 +791,11 @@ if (!isset($_SESSION["admin_log"])) {
                                                         <button type="submit" class="btn btn-danger"
                                                             onclick="removeHiddenInputOnModalClose('#requisitionModal<?= $row['id'] ?>')"
                                                             name="disWork">คืนงาน</button>
+                                                        <button type="submit" class="btn btn-dark"
+                                                            onclick="removeHiddenInputOnModalClose('#requisitionModal<?= $row['id'] ?>')"
+                                                            name="cancelWork">ยกเลิก</button>
                                                         <button type="button" class="btn btn-primary" onclick="toggleModal('#requisitionModal<?= $row['id'] ?>')">เบิก/ส่งซ่อม</button>
-                                                        <button type="submit" class="btn me-3 btn-primary"
+                                                        <button type="submit" class="btn btn-primary"
                                                             onclick="removeHiddenInputOnModalClose('#requisitionModal<?= $row['id'] ?>')"
                                                             name="Bantext">บันทึก</button>
                                                         <button type="submit" name="CloseSubmit"
@@ -1273,7 +1343,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                         <input type="text" class="form-control" id="departInputTarget<?= $row['id'] ?>" name="ref_depart"
                                                                             value="<?= $departRow['depart_name'] ?>">
 
-                                                                        <input type="text" name="depart_id" id="departIdTarget<?= $row['id'] ?>"
+                                                                        <input type="hidden" name="depart_id" id="departIdTarget<?= $row['id'] ?>"
                                                                             value="<?= $row['department'] ?>">
                                                                     </div>
 
@@ -1432,7 +1502,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                             $stmt->execute();
                                                                             $offers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                                             foreach ($offers as $offer) { ?>
-                                                                                <option value="<?= $offer['offer_id'] ?>"><?= $offer['offer_name'] ?></option>
+                                                                                <option value="<?= $offer['offer_id'] ?>" <?= $offer['offer_id'] == 11 ? 'selected' : '' ?>><?= $offer['offer_name'] ?></option>
                                                                             <?php }
                                                                             ?>
                                                                         </select>
@@ -1889,428 +1959,489 @@ ORDER BY id DESC;
                                         <!-- modal -->
                                         <div id="workflowModalUncomplete<?= $row['id'] ?>" class="modal" style="display: none;">
                                             <div class="p-5 d-flex justify-content-center gap-4">
-                                                <div class="modal-content job-modal">
-                                                    <div class="modal-header">
+                                                <div class="modal-content job-modal" id="job-modal-unCo-<?= $row['id'] ?>">
+                                                    <div class="modal-header justify-content-between">
                                                         <h1 class="modal-title fs-5" id="staticBackdropLabel">รายละเอียดงาน</h1>
-                                                        <button type="button" class="btn-close" onclick="toggleModal('#workflowModalUncomplete<?= $row['id'] ?>')"></button>
+                                                        <div class="d-flex align-items-center">
+                                                            <button type="button" class="btn btn-primary me-2" id="toggleAssignSectionBtn-unCo-<?= $row['id'] ?>">เพิ่มเจ้าหน้าที่ร่วมงาน</button>
+                                                            <button type="button" class="btn-close" onclick="toggleModal('#workflowModalUncomplete<?= $row['id'] ?>')"></button>
+                                                        </div>
                                                     </div>
-                                                    <div class="modal-body">
-
-                                                        <div class="row">
-                                                            <div class="col-6">
-                                                                <label>หมายเลขงาน</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= $row['id'] ?>" disabled>
+                                                    <div class="modal-body d-flex">
+                                                        <div class="job-modal-content">
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>หมายเลขงาน</label>
+                                                                    <input type="text" class="form-control"
+                                                                        value="<?= $row['id'] ?>" disabled>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label>วันที่</label>
+                                                                    <input type="date" class="form-control" name="date_report"
+                                                                        value="<?= $row['date_report'] ?>">
+                                                                </div>
                                                             </div>
-                                                            <div class="col-6">
-                                                                <label>วันที่</label>
-                                                                <input type="date" class="form-control" name="date_report"
-                                                                    value="<?= $row['date_report'] ?>">
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-4">
-                                                                <label>เวลาแจ้ง</label>
-                                                                <input type="time" class="form-control" name="time_report"
-                                                                    value="<?= date('H:i', strtotime($row['time_report'])) ?>">
-                                                            </div>
-                                                            <div class="col-4">
-                                                                <label>เวลารับงาน</label>
-                                                                <input type="time" class="form-control" name="take"
-                                                                    value="<?= date('H:i', strtotime($row['take']))  ?>">
-                                                            </div>
-                                                            <div class="col-4">
-                                                                <label>เวลาปิดงาน (ถ้ามี)</label>
-                                                                <input type="time" class="form-control" id="time_report" name="close_date"
-                                                                    value="<?= ($row['status'] == 3 && ($row['close_date'] === '00:00:00.000000' || $row['close_date'] === null || trim($row['close_date']) === ''))
-                                                                                ? '' : (($row['close_date'] && $row['close_date'] !== '00:00:00.000000') ? date('H:i', strtotime($row['close_date'])) : '') ?>">
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="row">
-                                                            <div class="col-6">
-                                                                <label>ผู้แจ้ง</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= $row['reporter'] ?>" disabled>
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <label>หน่วยงาน</label>
-                                                                <?php
-                                                                $sql = "SELECT depart_name FROM depart WHERE depart_id = ?";
-                                                                $stmt = $conn->prepare($sql);
-                                                                $stmt->execute([$row['department']]);
-                                                                $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                                                                ?>
-
-                                                                <input type="text" class="form-control" id="departInputTask<?= $row['id'] ?>"
-                                                                    value="<?= $departRow['depart_name'] ?>">
-
-                                                                <input type="hidden" name="department" id="departIdTask<?= $row['id'] ?>"
-                                                                    value="<?= $row['department'] ?>">
-
-                                                                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
-
-                                                                <!-- Add SweetAlert2 JS -->
-                                                                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
-
-                                                                <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-                                                                <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-                                                                <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-                                                                <script>
-                                                                    $(function() {
-                                                                        function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
-                                                                            let inputChanged = false;
-                                                                            let alertShown = false; // Flag to track if the alert has been shown already
-
-                                                                            $(inputId).autocomplete({
-                                                                                    source: function(request, response) {
-                                                                                        $.ajax({
-                                                                                            url: url,
-                                                                                            dataType: "json",
-                                                                                            data: {
-                                                                                                term: request.term,
-                                                                                                type: type
-                                                                                            },
-                                                                                            success: function(data) {
-                                                                                                response(data); // Show suggestions
-                                                                                            }
-                                                                                        });
-                                                                                    },
-                                                                                    minLength: 1,
-                                                                                    autoFocus: true,
-                                                                                    select: function(event, ui) {
-                                                                                        $(inputId).val(ui.item.label); // Fill input with label
-                                                                                        $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
-                                                                                        return false; // Prevent default behavior
-                                                                                    }
-                                                                                })
-                                                                                .data("ui-autocomplete")._renderItem = function(ul, item) {
-                                                                                    return $("<li>")
-                                                                                        .append("<div>" + item.label + "</div>")
-                                                                                        .appendTo(ul);
-                                                                                };
-
-                                                                            $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                // console.log("Item highlighted: ", ui.item.label);
-                                                                                return false;
-                                                                            });
-
-                                                                            $(inputId).on("keyup", function() {
-                                                                                inputChanged = true;
-                                                                            });
-
-                                                                            $(inputId).on("blur", function() {
-                                                                                if (inputChanged && !alertShown) {
-                                                                                    const userInput = $(this).val().trim();
-                                                                                    const hiddenValue = $(hiddenInputId).val();
-                                                                                    if (userInput === "") return;
-                                                                                    if (hiddenValue !== "") {
-                                                                                        inputChanged = false;
-                                                                                        return;
-                                                                                    }
-                                                                                    let found = false;
-                                                                                    $(this).autocomplete("instance").menu.element.find("div").each(function() {
-                                                                                        if ($(this).text() === userInput) {
-                                                                                            found = true;
-                                                                                            return false;
-                                                                                        }
-                                                                                    });
-
-                                                                                    if (!found) {
-                                                                                        alertShown = true; // Prevent the alert from firing again
-                                                                                        // Show SweetAlert to confirm insert data
-                                                                                        Swal.fire({
-                                                                                            title: confirmMessage,
-                                                                                            icon: "info",
-                                                                                            showCancelButton: true,
-                                                                                            confirmButtonText: "ใช่",
-                                                                                            cancelButtonText: "ไม่"
-                                                                                        }).then((result) => {
-                                                                                            if (result.isConfirmed) {
-                                                                                                $.ajax({
-                                                                                                    url: addDataUrl,
-                                                                                                    method: "POST",
-                                                                                                    data: {
-                                                                                                        dataToInsert: userInput
-                                                                                                    },
-                                                                                                    success: function(response) {
-                                                                                                        console.log("Data inserted successfully!");
-                                                                                                        $(hiddenInputId).val(response); // Set inserted ID
-                                                                                                    },
-                                                                                                    error: function(xhr, status, error) {
-                                                                                                        console.error("Error inserting data:", error);
-                                                                                                    }
-                                                                                                });
-                                                                                            } else {
-                                                                                                $(inputId).val(""); // Clear input if canceled
-                                                                                                $(hiddenInputId).val("");
-                                                                                            }
-                                                                                            alertShown = false; // Reset the flag after the action
-                                                                                        });
-                                                                                    }
-                                                                                }
-                                                                                inputChanged = false; // Reset the flag
-                                                                            });
-                                                                        }
-
-                                                                        $("input[id^='departInput']").each(function() {
-                                                                            const i = $(this).attr("id").replace("departInput", ""); // Extract index
-                                                                            setupAutocomplete(
-                                                                                "depart",
-                                                                                `#departInputTask${i}`,
-                                                                                `#departIdTask${i}`,
-                                                                                "autocomplete.php",
-                                                                                "insertDepart.php",
-                                                                                "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
-                                                                            );
-                                                                        });
-                                                                    });
-                                                                </script>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="row">
-                                                            <div class="col-6">
-                                                                <label>เบอร์ติดต่อกลับ</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= $row['tel'] ?>" disabled>
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <label for="deviceInput">อุปกรณ์</label>
-                                                                <input type="text" class="form-control" id="deviceInput<?= $row['id'] ?>" name="deviceName"
-                                                                    value="<?= $row['deviceName'] ?>">
-                                                                <input type="hidden" id="deviceId<?= $row['id'] ?>">
+                                                            <div class="row">
+                                                                <div class="col-4">
+                                                                    <label>เวลาแจ้ง</label>
+                                                                    <input type="time" class="form-control" name="time_report"
+                                                                        value="<?= date('H:i', strtotime($row['time_report'])) ?>">
+                                                                </div>
+                                                                <div class="col-4">
+                                                                    <label>เวลารับงาน</label>
+                                                                    <input type="time" class="form-control" name="take"
+                                                                        value="<?= date('H:i', strtotime($row['take']))  ?>">
+                                                                </div>
+                                                                <div class="col-4">
+                                                                    <label>เวลาปิดงาน (ถ้ามี)</label>
+                                                                    <input type="time" class="form-control" id="time_report" name="close_date"
+                                                                        value="<?= ($row['status'] == 3 && ($row['close_date'] === '00:00:00.000000' || $row['close_date'] === null || trim($row['close_date']) === ''))
+                                                                                    ? '' : (($row['close_date'] && $row['close_date'] !== '00:00:00.000000') ? date('H:i', strtotime($row['close_date'])) : '') ?>">
+                                                                </div>
                                                             </div>
 
-                                                        </div>
-
-                                                        <div class="row">
-                                                            <div class="col-6">
-                                                                <label>หมายเลขครุภัณฑ์ (ถ้ามี)</label>
-                                                                <input value="<?= $row['number_device'] ?>" type="text"
-                                                                    class="form-control" name="number_devices">
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <label>หมายเลข IP addrees</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= $row['ip_address'] ?>" disabled>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <label>อาการที่ได้รับแจ้ง</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="<?= $row['report'] ?>" disabled>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-6">
-                                                                <label>รูปแบบการทำงาน<span style="color: red;">*</span></label>
-                                                                <select class="form-select" name="device"
-                                                                    aria-label="Default select example">
-                                                                    <option value="<?= $row['device'] ?: '' ?>"
-                                                                        selected>
-                                                                        <?= !empty($row['device']) ? $row['device'] : '-' ?>
-                                                                    </option>
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>ผู้แจ้ง</label>
+                                                                    <input type="text" class="form-control"
+                                                                        value="<?= $row['reporter'] ?>" disabled>
+                                                                    <input type="hidden" class="form-control" name="reporter"
+                                                                        value="<?= $row['reporter'] ?>">
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label>หน่วยงาน</label>
                                                                     <?php
-                                                                    $sql = "SELECT * FROM workinglist";
+                                                                    $sql = "SELECT depart_name FROM depart WHERE depart_id = ?";
                                                                     $stmt = $conn->prepare($sql);
-                                                                    $stmt->execute();
-                                                                    $checkD = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-                                                                    foreach ($checkD as $d) {
-                                                                        if ($d['workingName'] != $row['device']) {
+                                                                    $stmt->execute([$row['department']]);
+                                                                    $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
                                                                     ?>
-                                                                            <option value="<?= $d['workingName'] ?>">
-                                                                                <?= $d['workingName'] ?>
-                                                                            </option>
-                                                                    <?php }
-                                                                    }
-                                                                    ?>
-                                                                </select>
-                                                            </div>
-                                                            <div class="col-6">
-                                                                <label>หมายเลขใบเบิก</label>
-                                                                <?php if (empty($row['withdraw'])) { ?>
-                                                                    <input disabled type="text"
-                                                                        class="form-control withdrawInput" name="withdraw"
-                                                                        id="withdrawInput<?= $row['id'] ?>">
-                                                                <?php } else { ?>
-                                                                    <input disabled value="<?= $row['withdraw'] ?>"
-                                                                        type="text" class="form-control withdrawInput"
-                                                                        name="withdraw" id="withdrawInput<?= $row['id'] ?>">
-                                                                    <input type="hidden" value="<?= $row['withdraw'] ?>"
-                                                                        class="form-control withdrawInput"
-                                                                        id="withdrawInputHidden<?= $row['id'] ?>" name="withdraw2">
-                                                                <?php } ?>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <label>รายละเอียด<span style="color: red;">*</span></label>
-                                                                <textarea class="form-control " name="description" rows="2"><?= $row['description'] ?></textarea>
-                                                            </div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <?php if (!empty($row['over_time']) && $row['over_time'] !== '00:00:00'): ?>
-                                                                    <label class="text-danger">*กรุณากรอกหมายเหตุที่เกิน SLA</label>
-                                                                <?php else: ?>
-                                                                    <label>หมายเหตุ</label>
-                                                                <?php endif; ?>
 
-                                                                <input value="<?= htmlspecialchars($row['note']) ?>" type="text"
-                                                                    class="form-control" name="noteTask">
+                                                                    <input type="text" class="form-control" id="departInputTask<?= $row['id'] ?>"
+                                                                        value="<?= $departRow['depart_name'] ?>">
+
+                                                                    <input type="hidden" name="department" id="departIdTask<?= $row['id'] ?>"
+                                                                        value="<?= $row['department'] ?>">
+
+                                                                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
+
+                                                                    <!-- Add SweetAlert2 JS -->
+                                                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
+
+                                                                    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+                                                                    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+                                                                    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+                                                                    <script>
+                                                                        $(function() {
+                                                                            function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
+                                                                                let inputChanged = false;
+                                                                                let alertShown = false; // Flag to track if the alert has been shown already
+
+                                                                                $(inputId).autocomplete({
+                                                                                        source: function(request, response) {
+                                                                                            $.ajax({
+                                                                                                url: url,
+                                                                                                dataType: "json",
+                                                                                                data: {
+                                                                                                    term: request.term,
+                                                                                                    type: type
+                                                                                                },
+                                                                                                success: function(data) {
+                                                                                                    response(data); // Show suggestions
+                                                                                                }
+                                                                                            });
+                                                                                        },
+                                                                                        minLength: 1,
+                                                                                        autoFocus: true,
+                                                                                        select: function(event, ui) {
+                                                                                            $(inputId).val(ui.item.label); // Fill input with label
+                                                                                            $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
+                                                                                            return false; // Prevent default behavior
+                                                                                        }
+                                                                                    })
+                                                                                    .data("ui-autocomplete")._renderItem = function(ul, item) {
+                                                                                        return $("<li>")
+                                                                                            .append("<div>" + item.label + "</div>")
+                                                                                            .appendTo(ul);
+                                                                                    };
+
+                                                                                $(inputId).on("autocompletefocus", function(event, ui) {
+                                                                                    // console.log("Item highlighted: ", ui.item.label);
+                                                                                    return false;
+                                                                                });
+
+                                                                                $(inputId).on("keyup", function() {
+                                                                                    inputChanged = true;
+                                                                                });
+
+                                                                                $(inputId).on("blur", function() {
+                                                                                    if (inputChanged && !alertShown) {
+                                                                                        const userInput = $(this).val().trim();
+                                                                                        const hiddenValue = $(hiddenInputId).val();
+                                                                                        if (userInput === "") return;
+                                                                                        if (hiddenValue !== "") {
+                                                                                            inputChanged = false;
+                                                                                            return;
+                                                                                        }
+                                                                                        let found = false;
+                                                                                        $(this).autocomplete("instance").menu.element.find("div").each(function() {
+                                                                                            if ($(this).text() === userInput) {
+                                                                                                found = true;
+                                                                                                return false;
+                                                                                            }
+                                                                                        });
+
+                                                                                        if (!found) {
+                                                                                            alertShown = true; // Prevent the alert from firing again
+                                                                                            // Show SweetAlert to confirm insert data
+                                                                                            Swal.fire({
+                                                                                                title: confirmMessage,
+                                                                                                icon: "info",
+                                                                                                showCancelButton: true,
+                                                                                                confirmButtonText: "ใช่",
+                                                                                                cancelButtonText: "ไม่"
+                                                                                            }).then((result) => {
+                                                                                                if (result.isConfirmed) {
+                                                                                                    $.ajax({
+                                                                                                        url: addDataUrl,
+                                                                                                        method: "POST",
+                                                                                                        data: {
+                                                                                                            dataToInsert: userInput
+                                                                                                        },
+                                                                                                        success: function(response) {
+                                                                                                            console.log("Data inserted successfully!");
+                                                                                                            $(hiddenInputId).val(response); // Set inserted ID
+                                                                                                        },
+                                                                                                        error: function(xhr, status, error) {
+                                                                                                            console.error("Error inserting data:", error);
+                                                                                                        }
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    $(inputId).val(""); // Clear input if canceled
+                                                                                                    $(hiddenInputId).val("");
+                                                                                                }
+                                                                                                alertShown = false; // Reset the flag after the action
+                                                                                            });
+                                                                                        }
+                                                                                    }
+                                                                                    inputChanged = false; // Reset the flag
+                                                                                });
+                                                                            }
+
+                                                                            $("input[id^='departInput']").each(function() {
+                                                                                const i = $(this).attr("id").replace("departInput", ""); // Extract index
+                                                                                setupAutocomplete(
+                                                                                    "depart",
+                                                                                    `#departInputTask${i}`,
+                                                                                    `#departIdTask${i}`,
+                                                                                    "autocomplete.php",
+                                                                                    "insertDepart.php",
+                                                                                    "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
+                                                                                );
+                                                                            });
+                                                                        });
+                                                                    </script>
+                                                                </div>
                                                             </div>
-                                                        </div>
 
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>เบอร์ติดต่อกลับ</label>
+                                                                    <input type="text" class="form-control"
+                                                                        value="<?= $row['tel'] ?>" disabled>
+                                                                    <input type="hidden" class="form-control" name="tel"
+                                                                        value="<?= $row['tel'] ?>">
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label for="deviceInput">อุปกรณ์</label>
+                                                                    <input type="text" class="form-control" id="deviceInput<?= $row['id'] ?>" name="deviceName"
+                                                                        value="<?= $row['deviceName'] ?>">
+                                                                    <input type="hidden" id="deviceId<?= $row['id'] ?>">
+                                                                </div>
 
-
-                                                        <div class="row">
-                                                            <div class="col-6">
-                                                                <label>ผู้คีย์งาน</label>
-                                                                <input value="<?= $row['create_by'] ?>" type="text"
-                                                                    class="form-control" name="create_by" disabled>
                                                             </div>
-                                                            <div class="col-6">
-                                                                <label>ซ่อมครั้งที่</label>
-                                                                <?php
-                                                                if (!empty($row['number_device']) && $row['number_device'] !== '-') {
-                                                                    $sqlCount = "SELECT COUNT(*) AS repair_count 
+
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>หมายเลขครุภัณฑ์ (ถ้ามี)</label>
+                                                                    <input value="<?= $row['number_device'] ?>" type="text"
+                                                                        class="form-control" name="number_devices">
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label>หมายเลข IP addrees</label>
+                                                                    <input type="text" class="form-control" name="ip_address"
+                                                                        value="<?= $row['ip_address'] ?>">
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <label>อาการที่ได้รับแจ้ง</label>
+                                                                    <input type="text" class="form-control"
+                                                                        value="<?= $row['report'] ?>" disabled>
+                                                                    <input type="hidden" class="form-control" name="report_work"
+                                                                        value="<?= $row['report'] ?>">
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>รูปแบบการทำงาน<span style="color: red;">*</span></label>
+                                                                    <select class="form-select" name="device"
+                                                                        aria-label="Default select example">
+                                                                        <option value="<?= $row['device'] ?: '' ?>"
+                                                                            selected>
+                                                                            <?= !empty($row['device']) ? $row['device'] : '-' ?>
+                                                                        </option>
+                                                                        <?php
+                                                                        $sql = "SELECT * FROM workinglist";
+                                                                        $stmt = $conn->prepare($sql);
+                                                                        $stmt->execute();
+                                                                        $checkD = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                                                        foreach ($checkD as $d) {
+                                                                            if ($d['workingName'] != $row['device']) {
+                                                                        ?>
+                                                                                <option value="<?= $d['workingName'] ?>">
+                                                                                    <?= $d['workingName'] ?>
+                                                                                </option>
+                                                                        <?php }
+                                                                        }
+                                                                        ?>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label>หมายเลขใบเบิก</label>
+                                                                    <?php if (empty($row['withdraw'])) { ?>
+                                                                        <input disabled type="text"
+                                                                            class="form-control withdrawInput" name="withdraw"
+                                                                            id="withdrawInput<?= $row['id'] ?>">
+                                                                    <?php } else { ?>
+                                                                        <input disabled value="<?= $row['withdraw'] ?>"
+                                                                            type="text" class="form-control withdrawInput"
+                                                                            name="withdraw" id="withdrawInput<?= $row['id'] ?>">
+                                                                        <input type="hidden" value="<?= $row['withdraw'] ?>"
+                                                                            class="form-control withdrawInput"
+                                                                            id="withdrawInputHidden<?= $row['id'] ?>" name="withdraw2">
+                                                                    <?php } ?>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <label>รายละเอียด<span style="color: red;">*</span></label>
+                                                                    <textarea class="form-control " name="description" rows="2"><?= $row['description'] ?></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <?php if (!empty($row['over_time']) && $row['over_time'] !== '00:00:00'): ?>
+                                                                        <label class="text-danger">*กรุณากรอกหมายเหตุที่เกิน SLA</label>
+                                                                    <?php else: ?>
+                                                                        <label>หมายเหตุ</label>
+                                                                    <?php endif; ?>
+
+                                                                    <input value="<?= htmlspecialchars($row['note']) ?>" type="text"
+                                                                        class="form-control" name="noteTask">
+                                                                </div>
+                                                            </div>
+
+
+
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>ผู้คีย์งาน</label>
+                                                                    <input value="<?= $row['create_by'] ?>" type="text"
+                                                                        class="form-control" name="create_by" disabled>
+                                                                    <input value="<?= $row['create_by'] ?>" type="hidden"
+                                                                        class="form-control" name="create_by">
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <label>ซ่อมครั้งที่</label>
+                                                                    <?php
+                                                                    if (!empty($row['number_device']) && $row['number_device'] !== '-') {
+                                                                        $sqlCount = "SELECT COUNT(*) AS repair_count 
                      FROM data_report 
                      WHERE number_device = :number_device 
                      AND (number_device IS NOT NULL AND number_device <> '' AND number_device <> '-')";
-                                                                    $stmtCount = $conn->prepare($sqlCount);
-                                                                    $stmtCount->bindParam(":number_device", $row['number_device']);
-                                                                    $stmtCount->execute();
-                                                                    $count = $stmtCount->fetch(PDO::FETCH_ASSOC);
-                                                                    $repairCount = $count['repair_count'];
-                                                                } else {
-                                                                    $repairCount = '-';
-                                                                }
-                                                                ?>
-                                                                <input value="<?= $repairCount ?>" type="text" class="form-control" name="repair_count">
+                                                                        $stmtCount = $conn->prepare($sqlCount);
+                                                                        $stmtCount->bindParam(":number_device", $row['number_device']);
+                                                                        $stmtCount->execute();
+                                                                        $count = $stmtCount->fetch(PDO::FETCH_ASSOC);
+                                                                        $repairCount = $count['repair_count'];
+                                                                    } else {
+                                                                        $repairCount = '-';
+                                                                    }
+                                                                    ?>
+                                                                    <input value="<?= $repairCount ?>" type="text" class="form-control" name="repair_count">
+                                                                </div>
                                                             </div>
-                                                        </div>
 
-                                                        <hr class="mb-2">
-                                                        <!-- !!!!! -->
-                                                        <h4 class="mt-0 mb-3" id="staticBackdropLabel">งานคุณภาพ</h4>
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <label>ปัญหาอยู่ใน SLA หรือไม่<span style="color: red;">*</span></label>
-                                                                <select class="form-select" name="sla"
-                                                                    aria-label="Default select example">
-                                                                    <option value="<?= $row['sla'] ?: '' ?>" selected>
-                                                                        <?= !empty($row['sla']) ? $row['sla'] : '-' ?>
-                                                                    </option>
+                                                            <hr class="mb-2">
+                                                            <!-- !!!!! -->
+                                                            <h4 class="mt-0 mb-3" id="staticBackdropLabel">งานคุณภาพ</h4>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <label>ปัญหาอยู่ใน SLA หรือไม่<span style="color: red;">*</span></label>
+                                                                    <select class="form-select" name="sla"
+                                                                        aria-label="Default select example">
+                                                                        <option value="<?= $row['sla'] ?: '' ?>" selected>
+                                                                            <?= !empty($row['sla']) ? $row['sla'] : '-' ?>
+                                                                        </option>
+                                                                        <?php
+                                                                        $sql = "SELECT * FROM sla";
+                                                                        $stmt = $conn->prepare($sql);
+                                                                        $stmt->execute();
+                                                                        $checkD = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                                                        foreach ($checkD as $d) {
+                                                                            if ($d['sla_name'] != $row['sla']) {
+                                                                        ?>
+                                                                                <option value="<?= $d['sla_name'] ?>">
+                                                                                    <?= $d['sla_name'] ?>
+                                                                                </option>
+                                                                        <?php }
+                                                                        }
+                                                                        ?>
+                                                                    </select>
                                                                     <?php
-                                                                    $sql = "SELECT * FROM sla";
-                                                                    $stmt = $conn->prepare($sql);
-                                                                    $stmt->execute();
-                                                                    $checkD = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                                                    if (!empty($row['over_time']) && $row['over_time'] !== '00:00:00') {
+                                                                        // Convert over_time to hours and minutes
+                                                                        list($hours, $minutes, $seconds) = explode(":", $row['over_time']);
+                                                                        $hours = (int) $hours; // Convert to integer to remove leading zeros
+                                                                        $minutes = (int) $minutes;
 
-                                                                    foreach ($checkD as $d) {
-                                                                        if ($d['sla_name'] != $row['sla']) {
-                                                                    ?>
-                                                                            <option value="<?= $d['sla_name'] ?>">
-                                                                                <?= $d['sla_name'] ?>
-                                                                            </option>
-                                                                    <?php }
+                                                                        // Format output
+                                                                        $formattedOverTime = "";
+                                                                        if ($hours > 0) {
+                                                                            $formattedOverTime .= "$hours ชั่วโมง ";
+                                                                        }
+                                                                        if ($minutes > 0) {
+                                                                            $formattedOverTime .= "$minutes นาที";
+                                                                        }
+
+                                                                        // Display formatted text
+                                                                        echo "<p style='color: red;'>เกินเวลา SLA ไป - $formattedOverTime</p>";
                                                                     }
                                                                     ?>
-                                                                </select>
-                                                                <?php
-                                                                if (!empty($row['over_time']) && $row['over_time'] !== '00:00:00') {
-                                                                    // Convert over_time to hours and minutes
-                                                                    list($hours, $minutes, $seconds) = explode(":", $row['over_time']);
-                                                                    $hours = (int) $hours; // Convert to integer to remove leading zeros
-                                                                    $minutes = (int) $minutes;
 
-                                                                    // Format output
-                                                                    $formattedOverTime = "";
-                                                                    if ($hours > 0) {
-                                                                        $formattedOverTime .= "$hours ชั่วโมง ";
-                                                                    }
-                                                                    if ($minutes > 0) {
-                                                                        $formattedOverTime .= "$minutes นาที";
-                                                                    }
-
-                                                                    // Display formatted text
-                                                                    echo "<p style='color: red;'>เกินเวลา SLA ไป - $formattedOverTime</p>";
-                                                                }
-                                                                ?>
-
+                                                                </div>
                                                             </div>
-                                                        </div>
 
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <label>เป็นตัวชี้วัดหรือไม่<span style="color: red;">*</span></label>
-                                                                <?php
-                                                                $sqlPublic = "SELECT kpi_name FROM kpi WHERE kpi_id IN (1, 2)";
-                                                                $stmt = $conn->prepare($sqlPublic);
-                                                                $stmt->execute();
-                                                                $publicKpis = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <label>เป็นตัวชี้วัดหรือไม่<span style="color: red;">*</span></label>
+                                                                    <?php
+                                                                    $sqlPublic = "SELECT kpi_name FROM kpi WHERE kpi_id IN (1, 2)";
+                                                                    $stmt = $conn->prepare($sqlPublic);
+                                                                    $stmt->execute();
+                                                                    $publicKpis = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-                                                                // 2. Assigned KPIs
-                                                                $sqlAssigned = "SELECT DISTINCT kpi.kpi_name 
+                                                                    // 2. Assigned KPIs
+                                                                    $sqlAssigned = "SELECT DISTINCT kpi.kpi_name 
                 FROM kpi 
                 INNER JOIN kpi_assignment 
                 ON kpi.kpi_id = kpi_assignment.kpi_id 
                 WHERE kpi.kpi_id NOT IN (1, 2) AND kpi_assignment.username = ?";
-                                                                $stmt = $conn->prepare($sqlAssigned);
-                                                                $stmt->execute([$admin]);
-                                                                $assignedKpis = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                                                                    $stmt = $conn->prepare($sqlAssigned);
+                                                                    $stmt->execute([$admin]);
+                                                                    $assignedKpis = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-                                                                // 3. Merge both lists, keeping order
-                                                                $allKpis = array_merge($publicKpis, $assignedKpis);
-                                                                ?>
+                                                                    // 3. Merge both lists, keeping order
+                                                                    $allKpis = array_merge($publicKpis, $assignedKpis);
+                                                                    ?>
 
-                                                                <select class="form-select" name="kpi" aria-label="Default select example">
-                                                                    <option value="<?= $row['kpi'] ?: '' ?>" selected>
-                                                                        <?= !empty($row['kpi']) ? $row['kpi'] : '-' ?>
-                                                                    </option>
-                                                                    <?php foreach ($allKpis as $kpiName): ?>
-                                                                        <?php if ($kpiName != $row['kpi']): ?>
-                                                                            <option value="<?= $kpiName ?>"><?= $kpiName ?></option>
-                                                                        <?php endif; ?>
-                                                                    <?php endforeach; ?>
-                                                                </select>
+                                                                    <select class="form-select" name="kpi" aria-label="Default select example">
+                                                                        <option value="<?= $row['kpi'] ?: '' ?>" selected>
+                                                                            <?= !empty($row['kpi']) ? $row['kpi'] : '-' ?>
+                                                                        </option>
+                                                                        <?php foreach ($allKpis as $kpiName): ?>
+                                                                            <?php if ($kpiName != $row['kpi']): ?>
+                                                                                <option value="<?= $kpiName ?>"><?= $kpiName ?></option>
+                                                                            <?php endif; ?>
+                                                                        <?php endforeach; ?>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <label>Activity Report<span style="color: red;">*</span></label>
+                                                                    <select class="form-select" name="problem"
+                                                                        aria-label="Default select example">
+                                                                        <?php
+                                                                        $sql = "SELECT * FROM problemlist";
+                                                                        $stmt = $conn->prepare($sql);
+                                                                        $stmt->execute();
+                                                                        $data = $stmt->fetchAll(PDO::FETCH_ASSOC); ?>
+                                                                        <option value="<?= $row['problem'] ?: '' ?>"
+                                                                            selected>
+                                                                            <?= !empty($row['problem']) ? $row['problem'] : '-' ?>
+                                                                        </option>
+                                                                        <?php foreach ($data as $d) {
+                                                                            if ($row['problem'] != $d['problemName']) { ?>
+                                                                                <option value="<?= $d['problemName'] ?>">
+                                                                                    <?= $d['problemName'] ?>
+                                                                                </option>
+                                                                        <?php }
+                                                                        }
+                                                                        ?>
+                                                                    </select>
+                                                                </div>
                                                             </div>
                                                         </div>
+                                                        <div>
+                                                            <div id="assignSection-unCo-<?= $row['id'] ?>" style="display: none; width: 210px;" class="ms-3">
+                                                                <h6 class="mb-1">เพิ่มเจ้าหน้าที่ร่วมงาน</h6>
+                                                                <?php
+                                                                $assignedStmt = $conn->prepare("SELECT username FROM admin");
+                                                                $assignedStmt->execute();
+                                                                $allAdmins = $assignedStmt->fetchAll(PDO::FETCH_ASSOC);
 
-                                                        <div class="row">
-                                                            <div class="col-12">
-                                                                <label>Activity Report<span style="color: red;">*</span></label>
-                                                                <select class="form-select" name="problem"
-                                                                    aria-label="Default select example">
-                                                                    <?php
-                                                                    $sql = "SELECT * FROM problemlist";
-                                                                    $stmt = $conn->prepare($sql);
-                                                                    $stmt->execute();
-                                                                    $data = $stmt->fetchAll(PDO::FETCH_ASSOC); ?>
-                                                                    <option value="<?= $row['problem'] ?: '' ?>"
-                                                                        selected>
-                                                                        <?= !empty($row['problem']) ? $row['problem'] : '-' ?>
-                                                                    </option>
-                                                                    <?php foreach ($data as $d) {
-                                                                        if ($row['problem'] != $d['problemName']) { ?>
-                                                                            <option value="<?= $d['problemName'] ?>">
-                                                                                <?= $d['problemName'] ?>
-                                                                            </option>
-                                                                    <?php }
-                                                                    }
-                                                                    ?>
-                                                                </select>
+                                                                $currentAdmin = $_SESSION['admin_log'] ?? null;
+                                                                $assignedTask = array_filter($allAdmins, fn($admin) => $admin['username'] !== $currentAdmin);
+
+                                                                $reportName = $row['report'];
+                                                                $checkAssignedStmt = $conn->prepare("SELECT username FROM data_report WHERE report = :report");
+                                                                $checkAssignedStmt->bindParam(":report", $reportName);
+                                                                $checkAssignedStmt->execute();
+                                                                $alreadyAssigned = $checkAssignedStmt->fetchAll(PDO::FETCH_COLUMN);
+                                                                ?>
+                                                                <div class="col-sm-12 mb-3">
+                                                                    <div class="list-group">
+                                                                        <label class="list-group-item">
+                                                                            <input type="checkbox" class="form-check-input me-1" id="toggleAssignedTask-unCo-<?= $row['id'] ?>">
+                                                                            เลือกทั้งหมด
+                                                                        </label>
+                                                                        <?php foreach ($assignedTask as $task): ?>
+                                                                            <?php
+                                                                            $username = $task['username'];
+                                                                            $isAssigned = in_array($username, $alreadyAssigned);
+                                                                            ?>
+                                                                            <label class="list-group-item">
+                                                                                <input
+                                                                                    class="form-check-input me-1"
+                                                                                    type="checkbox"
+                                                                                    name="assignedTask[]"
+                                                                                    value="<?= htmlspecialchars($username) ?>"
+                                                                                    <?= $isAssigned ? 'disabled checked' : '' ?>>
+                                                                                <?= htmlspecialchars($username) ?>
+                                                                                <?php if ($isAssigned): ?>
+                                                                                    <span class="text-muted">(เพิ่มแล้ว)</span>
+                                                                                <?php endif; ?>
+                                                                            </label>
+                                                                        <?php endforeach; ?>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
+
                                                     <div class="modal-footer" style="justify-content: space-between; border: none;">
                                                         <button type="submit" class="btn btn-danger"
                                                             onclick="removeHiddenInputOnModalClose('#requisitionModal<?= $row['id'] ?>')"
                                                             name="disWork">คืนงาน</button>
+                                                        <button type="submit" class="btn btn-dark"
+                                                            onclick="removeHiddenInputOnModalClose('#requisitionModal<?= $row['id'] ?>')"
+                                                            name="cancelWork">ยกเลิก</button>
                                                         <button type="button" class="btn btn-primary" onclick="toggleModal('#UnCompleteModal<?= $row['id'] ?>')">เบิก/ส่งซ่อม</button>
                                                         <button type="submit" class="btn me-3 btn-primary"
                                                             onclick="removeHiddenInputOnModalClose('#UnCompleteModal<?= $row['id'] ?>')"
@@ -3009,7 +3140,7 @@ ORDER BY id DESC;
                                                                             $stmt->execute();
                                                                             $offers = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                                             foreach ($offers as $offer) { ?>
-                                                                                <option value="<?= $offer['offer_id'] ?>"><?= $offer['offer_name'] ?></option>
+                                                                                <option value="<?= $offer['offer_id'] ?>" <?= $offer['offer_id'] == 11 ? 'selected' : '' ?>><?= $offer['offer_name'] ?></option>
                                                                             <?php }
                                                                             ?>
                                                                         </select>
@@ -3803,6 +3934,44 @@ ORDER BY id DESC;
         modal.querySelector('#total-amount-sub-' + modal.id.split('-')[1] + '-' + modal.id.split('-')[2]).textContent = totalAmount;
     }
 </script>
+<script>
+    document.querySelectorAll('[id^="toggleAssignSectionBtn-"]').forEach((toggleBtn) => {
+        toggleBtn.addEventListener("click", function() {
+            // Get type and id from button ID like: toggleAssignSectionBtn-main-629
+            const parts = this.id.split("-");
+            const type = parts[1];
+            const rowId = parts[2];
+
+            // Target related elements
+            const section = document.getElementById(`assignSection-${type}-${rowId}`);
+            const jobModal = document.getElementById(`job-modal-${type}-${rowId}`);
+
+            const isHidden = section.style.display === "none" || section.style.display === "";
+
+            section.style.display = isHidden ? "block" : "none";
+
+            if (isHidden) {
+                jobModal?.classList.add("wide");
+            } else {
+                jobModal?.classList.remove("wide");
+            }
+        });
+    });
+
+    document.querySelectorAll('[id^="toggleAssignedTask"]').forEach((checkbox) => {
+        checkbox.addEventListener("change", function() {
+            const parts = this.id.split("-");
+            const rowId = parts[1]; // if your ID is like toggleAssignedTask-629
+
+            // Check all checkboxes (except disabled) inside the same list group
+            const wrapper = this.closest('.list-group');
+            wrapper.querySelectorAll('input[name="assignedTask[]"]:not(:disabled)').forEach(cb => {
+                cb.checked = this.checked;
+            });
+        });
+    });
+</script>
+
 <?php SC5() ?>
 </body>
 

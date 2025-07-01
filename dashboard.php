@@ -161,7 +161,7 @@ if (!isset($_SESSION["admin_log"])) {
                                         showNotification(report);
                                     });
                                 }
-                                
+
                                 console.log("reports:", data.reports);
                             })
                             .catch(error => console.error('Error:', error));
@@ -361,6 +361,8 @@ if (!isset($_SESSION["admin_log"])) {
                                     status,
                                     count
                                 }) => {
+                                    if (status == 1) return;
+
                                     const textS = statusOptions[status]?.text || "ไม่ระบุสถานะ";
                                     const color = statusOptions[status]?.color || `#${Math.floor(Math.random()*16777215).toString(16)}`;
 

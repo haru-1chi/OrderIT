@@ -314,9 +314,9 @@ ORDER BY nd.id, oi.id
         <br>
         <?php
         $reason = $order['reason'];
-        $style1 = (mb_strlen($reason) > 121) ? 'margin-top: -50pt;' : 'margin-top: -20pt;';
-        $style2 = (mb_strlen($reason) > 121) ? 'margin-top: -15px;' : 'margin-top: -22px;';
-        $style3 = (mb_strlen($reason) > 121) ? 'line-height: 1.5;' : '';
+        $style1 = (mb_strlen($reason) > 88) ? 'margin-top: -50pt;' : 'margin-top: -20pt;';
+        $style2 = (mb_strlen($reason) > 88) ? 'margin-top: -15px;' : 'margin-top: -22px;';
+        $style3 = (mb_strlen($reason) > 88) ? 'line-height: 1.5;' : '';
         ?>
         <p style="text-align:left; <?= $style3 ?>">รายละเอียด <?= htmlspecialchars($reason) ?></p>
         <div style="<?= $style1 ?>">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ............................................................................................................................................................................................................................................................</div>

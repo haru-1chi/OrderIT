@@ -9,6 +9,30 @@ require_once '../config/db.php';
 // print_r($_POST);
 // echo '</pre>';
 // exit;
+function sendTelegramMessage($message, $chatIds)
+{
+    $botToken = '7695900629:AAEA5RLovP1QDQy8w4jc8PMAvAoj1HZ6Ivo';
+    $url = "https://api.telegram.org/bot$botToken/sendMessage";
+
+    foreach ($chatIds as $chatId) {
+        $data = [
+            'chat_id' => $chatId,
+            'text' => $message,
+            'parse_mode' => 'HTML'
+        ];
+
+        $options = [
+            'http' => [
+                'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+                'method'  => 'POST',
+                'content' => http_build_query($data),
+            ]
+        ];
+
+        $context  = stream_context_create($options);
+        file_get_contents($url, false, $context);
+    }
+}
 
 if (isset($_POST['addUsers'])) { // เพิ่ม Admin
     $username = $_POST['username'];
@@ -490,6 +514,15 @@ if (isset($_POST['submitWithdraw'])) {
 
             if ($stmt->execute()) {
                 $orderId = $conn->lastInsertId();
+                if (!empty($id_ref)) {
+                    $statusUpdate = 3;
+                    $sqlUpdate = "UPDATE data_report SET status = :status, withdraw = :withdraw WHERE id = :id";
+                    $stmtUpdate = $conn->prepare($sqlUpdate);
+                    $stmtUpdate->bindParam(":status", $statusUpdate);
+                    $stmtUpdate->bindParam(":withdraw", $numberWork);
+                    $stmtUpdate->bindParam(":id", $id_ref);
+                    $stmtUpdate->execute();
+                }
 
                 // Insert into order_items table
                 $itemSql = "INSERT INTO order_items (order_id, list, quality, amount, price, unit) 
@@ -713,12 +746,17 @@ if (isset($_POST['submit_with_work'])) {
     $repair_count = $_POST['repair_count'] ?? null;
     $device = $_POST['device'] ?? null;
     $deviceName = $_POST['deviceName'] ?? null;
+    $ip_address = $_POST["ip_address"] ?? null;
     $noteTask = $_POST["noteTask"] ?? null;
     $sla = $_POST['sla'] ?? null;
     $kpi = $_POST['kpi'] ?? null;
     $close_date = $_POST['close_date'] ?? null;
     $close_time = null;
     $statusTask = 3;
+    $report_work = $_POST['report_work'];
+    $reporter = $_POST['reporter'];
+    $tel = $_POST['tel'];
+    $create_by = $_POST['create_by'];
     if (!empty($close_date) && strtotime($close_date)) {
         if (empty($device) || empty($problem) || empty($sla) || empty($kpi)) {
             $statusTask = 6; // Incomplete
@@ -862,7 +900,7 @@ if (isset($_POST['submit_with_work'])) {
                 $updateSql = "UPDATE data_report 
                               SET date_report = :date_report, time_report = :time_report, take = :take, problem = :problem, description = :description, note = :note, withdraw = :withdraw,
                                   number_device = :number_device, device = :device, deviceName = :deviceName, sla = :sla, 
-                                  kpi = :kpi, repair_count = :repair_count, close_time = :close_time, close_date = :close_date, department = :department";
+                                  kpi = :kpi,ip_address = :ip_address, repair_count = :repair_count, close_time = :close_time, close_date = :close_date, department = :department";
 
                 // if (!empty($close_date) && strtotime($close_date)) {
                 $updateSql .= ", status = :status";
@@ -876,6 +914,7 @@ if (isset($_POST['submit_with_work'])) {
                 $updateStmt->bindParam(":problem", $problem);
                 $updateStmt->bindParam(":description", $description);
                 $updateStmt->bindParam(":note", $noteTask);
+                $updateStmt->bindParam(":ip_address", $ip_address);
                 $updateStmt->bindParam(":withdraw", $withdraw);
                 $updateStmt->bindParam(":number_device", $firstNumberDevice);
                 $updateStmt->bindParam(":device", $device);
@@ -887,10 +926,42 @@ if (isset($_POST['submit_with_work'])) {
                 $updateStmt->bindParam(":close_time", $close_time);
                 $updateStmt->bindParam(":department", $department);
                 $updateStmt->bindParam(":id_ref", $id_ref);
-                // if (!empty($close_date) && strtotime($close_date)) {
                 $updateStmt->bindParam(":status", $statusTask);
-                // }
                 $updateStmt->execute();
+
+                if (isset($_POST['assignedTask'])) {
+                    $assignedTask = $_POST['assignedTask'];
+                    foreach ($assignedTask as $username) {
+                        $sql = "INSERT INTO data_report(time_report, date_report, device, number_device, ip_address, report, close_time, reporter, department,sla,kpi,note,repair_count,username, tel, take, problem, description, withdraw, close_date, status,deviceName ,create_by) 
+                VALUES (:time_report, :date_report, :device, :number_device, :ip_address, :report, :close_time, :reporter, :department, :sla,:kpi,:note,:repair_count,:username, :tel, :take, :problem, :description, :withdraw, :close_date, :status,:deviceName,:create_by)";
+                        $assignStmt = $conn->prepare($sql);
+                        $assignStmt->bindParam(':date_report', $date_report);
+                        $assignStmt->bindParam(':time_report', $time_report);
+                        $assignStmt->bindParam(':device', $device);
+                        $assignStmt->bindParam(":deviceName", $deviceName);
+                        $assignStmt->bindParam(":number_device", $firstNumberDevice);
+                        $assignStmt->bindParam(":ip_address", $ip_address);
+                        $assignStmt->bindParam(":report", $report_work);
+                        $assignStmt->bindParam(':reporter', $reporter);
+                        $assignStmt->bindParam(":department", $department);
+                        $assignStmt->bindParam(":tel", $tel);
+                        $assignStmt->bindParam(":take", $take);
+                        $assignStmt->bindParam(":problem", $problem);
+                        $assignStmt->bindParam(":sla", $sla);
+                        $assignStmt->bindParam(":kpi", $kpi);
+                        $assignStmt->bindParam(":username", $username);
+                        $statusAssigned = '3';
+                        $assignStmt->bindParam(":status", $statusAssigned);
+                        $assignStmt->bindParam(":description", $description);
+                        $assignStmt->bindParam(":withdraw", $withdraw);
+                        $assignStmt->bindParam(":close_date", $close_date);
+                        $assignStmt->bindParam(":note", $note);
+                        $assignStmt->bindParam(":create_by", $create_by);
+                        $assignStmt->bindParam(":repair_count", $repair_count);
+                        $assignStmt->bindParam(":close_time", $close_time);
+                        $assignStmt->execute();
+                    }
+                }
 
                 $conn->commit();
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จและอัปเดตเรียบร้อย";
@@ -953,11 +1024,16 @@ if (isset($_POST['save_with_work'])) {
     $device = $_POST['device'] ?? null;
     $deviceName = $_POST['deviceName'] ?? null;
     $noteTask = $_POST["noteTask"] ?? null;
+    $ip_address = $_POST["ip_address"] ?? null;
     $sla = $_POST['sla'] ?? null;
     $kpi = $_POST['kpi'] ?? null;
     $close_date = $_POST['close_date'] ?? null;
     $close_time = null;
     $statusTask = 3;
+    $report_work = $_POST['report_work'];
+    $reporter = $_POST['reporter'];
+    $tel = $_POST['tel'];
+    $create_by = $_POST['create_by'];
     if (!empty($close_date) && strtotime($close_date)) {
         if (empty($device) || empty($problem) || empty($sla) || empty($kpi)) {
             $statusTask = 6; // Incomplete
@@ -1180,7 +1256,7 @@ if (isset($_POST['save_with_work'])) {
                 $updateSql = "UPDATE data_report 
                               SET date_report = :date_report, time_report = :time_report, take = :take,problem = :problem, description = :description, note = :note, withdraw = :withdraw,
                                   number_device = :number_device, device = :device, deviceName = :deviceName, sla = :sla, 
-                                  kpi = :kpi, repair_count = :repair_count, close_time = :close_time,close_date = :close_date, department = :department";
+                                  kpi = :kpi,ip_address = :ip_address, repair_count = :repair_count, close_time = :close_time,close_date = :close_date, department = :department";
 
                 // if (!empty($close_date) && strtotime($close_date)) {
                 $updateSql .= ", status = :status";
@@ -1194,6 +1270,7 @@ if (isset($_POST['save_with_work'])) {
                 $updateStmt->bindParam(":problem", $problem);
                 $updateStmt->bindParam(":description", $description);
                 $updateStmt->bindParam(":note", $noteTask);
+                $updateStmt->bindParam(":ip_address", $ip_address);
                 $updateStmt->bindParam(":withdraw", $withdraw);
                 $updateStmt->bindParam(":number_device", $firstNumberDevice);
                 $updateStmt->bindParam(":device", $device);
@@ -1209,6 +1286,40 @@ if (isset($_POST['save_with_work'])) {
                 $updateStmt->bindParam(":status", $statusTask);
                 // }
                 $updateStmt->execute();
+
+                if (isset($_POST['assignedTask'])) {
+                    $assignedTask = $_POST['assignedTask'];
+                    foreach ($assignedTask as $username) {
+                        $sql = "INSERT INTO data_report(time_report, date_report, device, number_device, ip_address, report, close_time, reporter, department,sla,kpi,note,repair_count,username, tel, take, problem, description, withdraw, close_date, status,deviceName ,create_by) 
+                VALUES (:time_report, :date_report, :device, :number_device, :ip_address, :report, :close_time, :reporter, :department, :sla,:kpi,:note,:repair_count,:username, :tel, :take, :problem, :description, :withdraw, :close_date, :status,:deviceName,:create_by)";
+                        $assignStmt = $conn->prepare($sql);
+                        $assignStmt->bindParam(':date_report', $date_report);
+                        $assignStmt->bindParam(':time_report', $time_report);
+                        $assignStmt->bindParam(':device', $device);
+                        $assignStmt->bindParam(":deviceName", $deviceName);
+                        $assignStmt->bindParam(":number_device", $firstNumberDevice);
+                        $assignStmt->bindParam(":ip_address", $ip_address);
+                        $assignStmt->bindParam(":report", $report_work);
+                        $assignStmt->bindParam(':reporter', $reporter);
+                        $assignStmt->bindParam(":department", $department);
+                        $assignStmt->bindParam(":tel", $tel);
+                        $assignStmt->bindParam(":take", $take);
+                        $assignStmt->bindParam(":problem", $problem);
+                        $assignStmt->bindParam(":sla", $sla);
+                        $assignStmt->bindParam(":kpi", $kpi);
+                        $assignStmt->bindParam(":username", $username);
+                        $statusAssigned = '3';
+                        $assignStmt->bindParam(":status", $statusAssigned);
+                        $assignStmt->bindParam(":description", $description);
+                        $assignStmt->bindParam(":withdraw", $withdraw);
+                        $assignStmt->bindParam(":close_date", $close_date);
+                        $assignStmt->bindParam(":note", $note);
+                        $assignStmt->bindParam(":create_by", $create_by);
+                        $assignStmt->bindParam(":repair_count", $repair_count);
+                        $assignStmt->bindParam(":close_time", $close_time);
+                        $assignStmt->execute();
+                    }
+                }
 
                 $conn->commit();
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จและอัปเดตเรียบร้อย";
@@ -1556,7 +1667,7 @@ if (isset($_POST['CheckAll'])) {
     $dateWithdraw = $_POST["dateWithdraw"]; //วันที่ปัจจุบัน
     $refWithdraw = 23;
     $refWork = 10;
-    $refDevice = 43;
+    $refDevice = 107;
     $reason = $_POST['reason'];
     $report = "เบิกอะไหล่รายสัปดาห์ตามเอกสารแนบ";
     $refDepart = 3;
@@ -1687,13 +1798,22 @@ if (isset($_POST['CheckAll'])) {
         echo "" . $e->getMessage() . "";
     }
 }
-if (isset($_POST['takeaway'])) { // เพิ่ม รายการอุปกรณ์
+if (isset($_POST['takeaway'])) {
     $id = $_POST['id'];
     $username = $_POST['username'];
     date_default_timezone_set('Asia/Bangkok');
     $take = date('H:i:s');
     $status = 2;
     try {
+        // ✅ Fetch report details by ID to use in Telegram message
+        $detailStmt = $conn->prepare("SELECT dp.id, dp.report, dt.depart_name 
+                              FROM data_report AS dp 
+                              LEFT JOIN depart AS dt ON dp.department = dt.depart_id 
+                              WHERE dp.id = :id");
+        $detailStmt->bindParam(":id", $id);
+        $detailStmt->execute();
+        $report = $detailStmt->fetch(PDO::FETCH_ASSOC);
+
         $sql = "UPDATE data_report SET username = :username, take = :take, status = :status WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":username", $username);
@@ -1707,6 +1827,12 @@ if (isset($_POST['takeaway'])) { // เพิ่ม รายการอุป�
             $stmt->execute();
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             $_SESSION['report_count'] = $row['count'] ?? 0;
+
+            if ($report) {
+                $message = "📢 <b>รับงานแล้ว!</b>\n🧑‍💻ผู้รับงาน: $username\n🔧เลขงาน: <b>{$report['id']}</b>\n👤หน่วยงาน: <b>{$report['depart_name']}</b>\n🛠อาการรับแจ้ง: {$report['report']}";
+                $chatIds = ['6810241495'];
+                sendTelegramMessage($message, $chatIds);
+            }
 
             $_SESSION["success"] = "รับงานเรียบร้อยแล้ว";
             header("location: ../myjob.php");
@@ -1837,6 +1963,28 @@ if (isset($_POST['disWork'])) {
         echo '' . $e->getMessage() . '';
     }
 }
+if (isset($_POST['cancelWork'])) {
+    $id = $_POST['id'];
+    $username = "";
+    $status = 1;
+    try {
+        $sql = "UPDATE data_report SET status = :status, username = :username WHERE id = :id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":status", $status);
+        $stmt->bindParam(":username", $username);
+        $stmt->bindParam(":id", $id);
+
+        if ($stmt->execute()) {
+            $_SESSION["success"] = "ยกเลิกงานเรียบร้อยแล้ว";
+            header("location: ../dashboard.php");
+        } else {
+            $_SESSION["error"] = "พบข้อผิดพลาด";
+            header("location: ../myjob.php");
+        }
+    } catch (PDOException $e) {
+        echo '' . $e->getMessage() . '';
+    }
+}
 if (isset($_POST['CloseSubmit'])) {
     $id = $_POST['id'];
     $date_report = $_POST['date_report'];
@@ -1845,6 +1993,7 @@ if (isset($_POST['CloseSubmit'])) {
     $problem = $_POST['problem'];
     $description = $_POST['description'];
     $note = $_POST['noteTask'];
+    $ip_address = $_POST["ip_address"];
     $department = $_POST['department'];
     $device = $_POST['device'];
     $deviceName = $_POST['deviceName'];
@@ -1852,6 +2001,10 @@ if (isset($_POST['CloseSubmit'])) {
     $kpi = $_POST['kpi'];
     $number_device = $_POST['number_devices'];
     $repair_count = $_POST['repair_count'];
+    $report = $_POST['report_work'];
+    $reporter = $_POST['reporter'];
+    $tel = $_POST['tel'];
+    $create_by = $_POST['create_by'];
     // echo '<pre>';
     // var_dump([
     //     'close_date' => $_POST['close_date'],
@@ -1889,6 +2042,7 @@ if (isset($_POST['CloseSubmit'])) {
                     close_date = :close_date, 
                     close_time = :close_time, 
                     note = :note, 
+                    ip_address = :ip_address,
                     status = :status, 
                     department = :department 
                 WHERE id = :id";
@@ -1902,6 +2056,7 @@ if (isset($_POST['CloseSubmit'])) {
         $stmt->bindParam(":device", $device);
         $stmt->bindParam(":deviceName", $deviceName);
         $stmt->bindParam(":sla", $sla);
+        $stmt->bindParam(":ip_address", $ip_address);
         $stmt->bindParam(":number_device", $number_device);
         $stmt->bindParam(":repair_count", $repair_count);
         $stmt->bindParam(":kpi", $kpi);
@@ -1912,6 +2067,39 @@ if (isset($_POST['CloseSubmit'])) {
         $stmt->bindParam(":id", $id);
 
         if ($stmt->execute()) {
+            if (isset($_POST['assignedTask'])) {
+                $assignedTask = $_POST['assignedTask'];
+                foreach ($assignedTask as $username) {
+                    $sql = "INSERT INTO data_report(time_report, date_report, device, number_device, ip_address, report, close_time, reporter, department,sla,kpi,note,repair_count,username, tel, take, problem, description, close_date, status,deviceName ,create_by) 
+                VALUES (:time_report, :date_report, :device, :number_device, :ip_address, :report, :close_time, :reporter, :department, :sla,:kpi,:note,:repair_count,:username, :tel, :take, :problem, :description, :close_date, :status,:deviceName,:create_by)";
+                    $assignStmt = $conn->prepare($sql);
+                    $assignStmt->bindParam(':date_report', $date_report);
+                    $assignStmt->bindParam(':time_report', $time_report);
+                    $assignStmt->bindParam(':device', $device);
+                    $assignStmt->bindParam(":deviceName", $deviceName);
+                    $assignStmt->bindParam(":number_device", $number_device);
+                    $assignStmt->bindParam(":ip_address", $ip_address);
+                    $assignStmt->bindParam(":report", $report);
+                    $assignStmt->bindParam(':reporter', $reporter);
+                    $assignStmt->bindParam(":department", $department);
+                    $assignStmt->bindParam(":tel", $tel);
+                    $assignStmt->bindParam(":take", $take);
+                    $assignStmt->bindParam(":problem", $problem);
+                    $assignStmt->bindParam(":sla", $sla);
+                    $assignStmt->bindParam(":kpi", $kpi);
+                    $assignStmt->bindParam(":username", $username);
+                    $statusAssigned = '2';
+                    $assignStmt->bindParam(":status", $statusAssigned);
+                    $assignStmt->bindParam(":description", $description);
+                    $assignStmt->bindParam(":close_date", $close_date);
+                    $assignStmt->bindParam(":note", $note);
+                    $assignStmt->bindParam(":create_by", $create_by);
+                    $assignStmt->bindParam(":repair_count", $repair_count);
+                    $assignStmt->bindParam(":close_time", $close_time);
+                    $assignStmt->execute();
+                }
+            }
+
             $_SESSION["success"] = "เสร็จงานเรียบร้อยแล้ว";
             header("location: ../myjob.php");
         } else {
@@ -1963,12 +2151,12 @@ if (isset($_POST['Bantext'])) {
     $take = $_POST['take'];
     $problem = $_POST['problem'];
     $description = $_POST['description'];
-    $withdraw = $_POST['withdraw'];
+    $withdraw = $_POST['withdraw'] ?? "";
 
-    if ($withdraw == "" || empty($withdraw)) {
-        $withdraw = $_POST['withdraw2'];
-    }
-
+    // if ($withdraw == "" || empty($withdraw)) {
+    //     $withdraw = $_POST['withdraw2'] ?? "";
+    // }
+    $ip_address = $_POST["ip_address"];
     $note = $_POST['noteTask'];
     $department = $_POST['department'];
     $number_device = $_POST['number_devices'];
@@ -1978,7 +2166,11 @@ if (isset($_POST['Bantext'])) {
     $sla = $_POST['sla'];
     $kpi = $_POST['kpi'];
     $close_date = $_POST['close_date'];
-
+    //+report +reporter +tel +create_by
+    $report = $_POST['report_work'];
+    $reporter = $_POST['reporter'];
+    $tel = $_POST['tel'];
+    $create_by = $_POST['create_by'];
     // Determine the status only if close_date is provided
     $status = null;
     if (!empty($close_date) && strtotime($close_date)) {
@@ -2018,7 +2210,8 @@ if (isset($_POST['Bantext'])) {
                     kpi = :kpi, 
                     repair_count = :repair_count,
                     close_date = :close_date, 
-                    close_time = :close_time, 
+                    close_time = :close_time,
+                    ip_address = :ip_address, 
                     department = :department";
 
         // Append status update only if close_date is provided
@@ -2036,6 +2229,7 @@ if (isset($_POST['Bantext'])) {
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
         $stmt->bindParam(":note", $note);
+        $stmt->bindParam(":ip_address", $ip_address);
         $stmt->bindParam(":withdraw", $withdraw);
         $stmt->bindParam(":number_device", $number_device);
         $stmt->bindParam(":repair_count", $repair_count);
@@ -2054,6 +2248,41 @@ if (isset($_POST['Bantext'])) {
         }
 
         if ($stmt->execute()) {
+
+            if (isset($_POST['assignedTask'])) {
+                $assignedTask = $_POST['assignedTask'];
+                foreach ($assignedTask as $username) {
+                    $sql = "INSERT INTO data_report(time_report, date_report, device, number_device, ip_address, report, close_time, reporter, department,sla,kpi,note,repair_count,username, tel, take, problem, description, withdraw, close_date, status,deviceName ,create_by) 
+                VALUES (:time_report, :date_report, :device, :number_device, :ip_address, :report, :close_time, :reporter, :department, :sla,:kpi,:note,:repair_count,:username, :tel, :take, :problem, :description, :withdraw, :close_date, :status,:deviceName,:create_by)";
+                    $assignStmt = $conn->prepare($sql);
+                    $assignStmt->bindParam(':date_report', $date_report);
+                    $assignStmt->bindParam(':time_report', $time_report);
+                    $assignStmt->bindParam(':device', $device);
+                    $assignStmt->bindParam(":deviceName", $deviceName);
+                    $assignStmt->bindParam(":number_device", $number_device);
+                    $assignStmt->bindParam(":ip_address", $ip_address);
+                    $assignStmt->bindParam(":report", $report);
+                    $assignStmt->bindParam(':reporter', $reporter);
+                    $assignStmt->bindParam(":department", $department);
+                    $assignStmt->bindParam(":tel", $tel);
+                    $assignStmt->bindParam(":take", $take);
+                    $assignStmt->bindParam(":problem", $problem);
+                    $assignStmt->bindParam(":sla", $sla);
+                    $assignStmt->bindParam(":kpi", $kpi);
+                    $assignStmt->bindParam(":username", $username);
+                    $statusAssigned = '2';
+                    $assignStmt->bindParam(":status", $statusAssigned);
+                    $assignStmt->bindParam(":description", $description);
+                    $assignStmt->bindParam(":withdraw", $withdraw);
+                    $assignStmt->bindParam(":close_date", $close_date);
+                    $assignStmt->bindParam(":note", $note);
+                    $assignStmt->bindParam(":create_by", $create_by);
+                    $assignStmt->bindParam(":repair_count", $repair_count);
+                    $assignStmt->bindParam(":close_time", $close_time);
+                    $assignStmt->execute();
+                }
+            }
+
             $_SESSION["success"] = "บันทึกเรียบร้อยแล้ว";
             header("location: ../myjob.php");
         } else {

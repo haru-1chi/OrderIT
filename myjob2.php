@@ -165,7 +165,7 @@ if (!isset($_SESSION["admin_log"])) {
     </script>
     <script>
         $(function() {
-            function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
+            function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage, defaultValue, hiddenDefaultValue) {
                 let inputChanged = false;
 
                 $(inputId).autocomplete({
@@ -219,35 +219,17 @@ if (!isset($_SESSION["admin_log"])) {
                             }
                         });
 
-                        // if (!found) {
-                        //     Swal.fire({
-                        //         title: confirmMessage,
-                        //         icon: "info",
-                        //         showCancelButton: true,
-                        //         confirmButtonText: "ใช่",
-                        //         cancelButtonText: "ไม่"
-                        //     }).then((result) => {
-                        //         if (result.isConfirmed) {
-                        //             $.ajax({
-                        //                 url: addDataUrl,
-                        //                 method: "POST",
-                        //                 data: {
-                        //                     dataToInsert: userInput
-                        //                 },
-                        //                 success: function(response) {
-                        //                     console.log("Data inserted successfully!");
-                        //                     $(hiddenInputId).val(response); // Set inserted ID
-                        //                 },
-                        //                 error: function(xhr, status, error) {
-                        //                     console.error("Error inserting data:", error);
-                        //                 }
-                        //             });
-                        //         } else {
-                        //             $(inputId).val(""); // Clear input
-                        //             $(hiddenInputId).val("");
-                        //         }
-                        //     });
-                        // }
+                        if (!found) {
+                            Swal.fire({
+                                title: confirmMessage,
+                                text: "หากต้องการเพิ่ม กรุณาติดต่อแอดมิน",
+                                icon: "warning",
+                                confirmButtonText: "ตกลง"
+                            }).then((result) => {
+                                $(inputId).val(defaultValue); // Clear input
+                                $(hiddenInputId).val(hiddenDefaultValue);
+                            });
+                        }
                     }
                     inputChanged = false; // Reset the flag
                 });
@@ -260,7 +242,9 @@ if (!isset($_SESSION["admin_log"])) {
                 "#departId",
                 "autocomplete.php",
                 "insertDepart.php",
-                "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
+                "ไม่พบหน่วยงานนี้ในระบบ",
+                "-",
+                "222",
             );
 
             // Setup autocomplete for "อุปกรณ์" (deviceInput)
@@ -270,7 +254,9 @@ if (!isset($_SESSION["admin_log"])) {
                 "#deviceId",
                 "autocomplete.php",
                 "insertDevice.php",
-                "คุณต้องการเพิ่มข้อมูลอุปกรณ์นี้หรือไม่?"
+                "ไม่พบอุปกรณ์นี้ในระบบ",
+                "-",
+                "105",
             );
         });
     </script>
