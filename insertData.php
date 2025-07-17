@@ -745,8 +745,12 @@ if (!isset($_SESSION["admin_log"])) {
                 <hr>
                 <form action="system/insert.php" method="post">
                     <div class="form-floating mb-3">
-                        <input type="text" class="form-control" name="problemName" placeholder="Password">
+                        <input type="text" class="form-control" name="problemName" placeholder=" ">
                         <label for="floatingPassword">ปัญหาที่พบ</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" name="problemDetail" placeholder=" ">
+                        <label for="floatingPassword">รายละเอียด</label>
                     </div>
                     <div class="d-flex justify-content-center mb-3">
                         <button type="submit" name="addproblemName" class="btn btn-primary">เพิ่มข้อมูล</button>
@@ -778,7 +782,7 @@ if (!isset($_SESSION["admin_log"])) {
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">ร้านที่เสนอราคา</h1>
+                                                <h1 class="modal-title fs-5" id="staticBackdropLabel">ปัญหาที่พบ</h1>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
@@ -786,7 +790,11 @@ if (!isset($_SESSION["admin_log"])) {
                                                     <div class="form-floating mb-3">
                                                         <input type="text" class="form-control" value="<?= $row['problemName'] ?>" name="problemName" placeholder="Password">
                                                         <input type="hidden" class="form-control" value="<?= $row['id'] ?>" name="id" placeholder="Password">
-                                                        <label for="floatingPassword">ร้านที่เสนอราคา</label>
+                                                        <label for="floatingPassword">ปัญหาที่พบ</label>
+                                                    </div>
+                                                    <div class="form-floating mb-3">
+                                                        <input type="text" class="form-control" value="<?= $row['problemDetail'] ?>" name="problemDetail" placeholder="Password">
+                                                        <label for="floatingPassword">รายละเอียด</label>
                                                     </div>
                                             </div>
                                             <div class="modal-footer">

@@ -237,7 +237,7 @@ if (!isset($_SESSION["admin_log"])) {
             </div>
         </div>
 
-        <div class="card p-3 m-4" style="width: 1850px; height: 775px;">
+        <div class="card p-3 m-4" style="width: 1850px; height: 1325px;">
             <!-- 1850px 1110px -->
             <input type="date" id="filter-date" class="form-control mb-3" />
             <select id="timelineFilter" class="form-control">
@@ -246,12 +246,17 @@ if (!isset($_SESSION["admin_log"])) {
                 <option value="report">อาการรับแจ้ง</option>
                 <option value="sla">SLA</option>
             </select>
-            <!-- <canvas id="gantt-chart" width="800" height="150"></canvas> -->
+            <div class="d-flex justify-content-end mt-2">
+                <button id="prev-date" class="btn btn-outline-primary me-2">Previous</button>
+                <button id="next-date" class="btn btn-outline-primary">Next</button>
+            </div>
+
+            <canvas id="gantt-chart" width="800" height="150"></canvas>
             <canvas id="gantt-summary" width="800" height="150"></canvas>
 
             <hr />
             <div class="row">
-                <div class="col border-end border-secondary">
+                <div class="col ">
                     <h5 class="mb-3">Export รายงานการปฏิบัติงานรายวัน</h5>
                     <form method="POST" action="export.php">
                         <div class="d-flex mb-2">
@@ -268,8 +273,7 @@ if (!isset($_SESSION["admin_log"])) {
                         </div>
                     </form>
                 </div>
-
-                <div class="col">
+                <div class="col pb-3">
                     <h5 class="mb-3">Export รายงานการปฏิบัติงานรายบุคคลตามช่วงเวลา</h5>
                     <form method="POST" action="export.php">
                         <div class="row mb-2">
@@ -327,6 +331,59 @@ if (!isset($_SESSION["admin_log"])) {
                         </div>
                     </form>
                 </div>
+
+            </div>
+            <div class="row">
+                <div class="col"></div>
+                <div class="col">
+                    <h5 class="mb-3">Export รายงานสรุปการปฏิบัติงาน</h5>
+                    <form method="POST" action="export.php">
+                        <div class="row mb-2">
+                            <!-- <div class="col">
+                                <label><input class="form-check-input me-2" type="radio" name="date_filter_type" value="period" checked onclick="toggleDateInputs()">รายเดือน</label>
+                            </div> -->
+
+                            <div class="col">
+                                <input class="form-control" type="month" name="month" id="month" value="<?= date('Y-m') ?>" />
+                            </div>
+                            <div class="col">
+                                <select name="filter" class="form-control">
+                                    <option value="problem" selected>Activity Report</option>
+                                    <option value="device">รูปแบบการทำงาน</option>
+                                    <option value="report">อาการรับแจ้ง</option>
+                                    <option value="sla">SLA</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select name="username" style="margin-bottom: 15px;" class="form-control">
+                                    <option value="all" selected>ทุกคน</option>
+                                    <?php
+                                    $sql = "SELECT * FROM admin";
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->execute();
+                                    $checkD = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                    foreach ($checkD as $d) {
+                                        echo "<option value='{$d['username']}'>{$d['username']}</option>";
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- <div class="row mb-2">
+                            <div class="col">
+                                <label><input class="form-check-input me-2" type="radio" name="date_filter_type" value="period" checked onclick="toggleDateInputs()">รายปี</label>
+                            </div>
+                            <div class="col d-flex">
+                                <input class="form-control me-2" type="year" name="year" id="year" value="<?= date('Y') ?>" />
+                            </div>
+                        </div> -->
+
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" name="activity_usernames" class="btn btn-primary">Export to Excel</button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
 
             <?php if ($exportError): ?>
@@ -549,6 +606,22 @@ if (!isset($_SESSION["admin_log"])) {
                 });
             }
 
+            function adjustDate(days) {
+                const dateInput = document.getElementById('filter-date');
+                const currentDate = dateInput.value ? new Date(dateInput.value) : new Date();
+                currentDate.setDate(currentDate.getDate() + days);
+
+                // Format date as YYYY-MM-DD
+                const newDate = currentDate.toISOString().split('T')[0];
+                dateInput.value = newDate;
+
+                // Trigger change event to refresh chart
+                const event = new Event('change');
+                dateInput.dispatchEvent(event);
+            }
+
+            document.getElementById('prev-date').addEventListener('click', () => adjustDate(-1));
+            document.getElementById('next-date').addEventListener('click', () => adjustDate(1));
 
             // Start
             initChart();

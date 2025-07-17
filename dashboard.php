@@ -205,7 +205,10 @@ if (!isset($_SESSION["admin_log"])) {
                     // Check every 30 seconds
                     setInterval(checkNewReports, 30000);
                 </script>
-
+                <form action="system/send_telegram.php" method="post">
+                    <textarea name="message">Test message from form</textarea>
+                    <button type="submit">Send</button>
+                </form>
                 <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
                     <h1>งานวันนี้</h1>
                     <div class="table-responsive">

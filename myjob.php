@@ -347,15 +347,20 @@ if (!isset($_SESSION["admin_log"])) {
                                                     <div class="modal-body d-flex">
                                                         <div class="job-modal-content">
                                                             <div class="row">
-                                                                <div class="col-6">
+                                                                <div class="col-4">
                                                                     <label>หมายเลขงาน</label>
                                                                     <input type="text" class="form-control"
                                                                         value="<?= $row['id'] ?>" disabled>
                                                                 </div>
-                                                                <div class="col-6">
-                                                                    <label>วันที่</label>
+                                                                <div class="col-4">
+                                                                    <label>วันที่แจ้ง</label>
                                                                     <input type="date" class="form-control" name="date_report"
                                                                         value="<?= $row['date_report'] ?>">
+                                                                </div>
+                                                                <div class="col-4">
+                                                                    <label>วันที่ปิดงาน</label>
+                                                                    <input type="date" class="form-control" name="close_time"
+                                                                        value="<?= $row['close_time'] ?>">
                                                                 </div>
                                                             </div>
                                                             <div class="row">
@@ -380,9 +385,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                             <div class="row">
                                                                 <div class="col-6">
                                                                     <label>ผู้แจ้ง</label>
-                                                                    <input type="text" class="form-control"
-                                                                        value="<?= $row['reporter'] ?>" disabled>
-                                                                    <input type="hidden" class="form-control" name="reporter"
+                                                                    <input type="text" class="form-control" name="reporter"
                                                                         value="<?= $row['reporter'] ?>">
                                                                 </div>
                                                                 <div class="col-6">
@@ -526,9 +529,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                             <div class="row">
                                                                 <div class="col-6">
                                                                     <label>เบอร์ติดต่อกลับ</label>
-                                                                    <input type="text" class="form-control"
-                                                                        value="<?= $row['tel'] ?>" disabled>
-                                                                    <input type="hidden" class="form-control" name="tel"
+                                                                    <input type="text" class="form-control" name="tel"
                                                                         value="<?= $row['tel'] ?>">
                                                                 </div>
                                                                 <div class="col-6">
@@ -544,7 +545,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="col-6">
                                                                     <label>หมายเลขครุภัณฑ์ (ถ้ามี)</label>
                                                                     <input value="<?= $row['number_device'] ?>" type="text"
-                                                                        class="form-control" name="number_devices" id="numberDeviceSource<?= $row['id'] ?>">
+                                                                        class="form-control" name="number_devices" id="numberDeviceSource-main-<?= $row['id'] ?>">
                                                                 </div>
                                                                 <div class="col-6">
                                                                     <label>หมายเลข IP addrees</label>
@@ -555,9 +556,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                             <div class="row">
                                                                 <div class="col-12">
                                                                     <label>อาการที่ได้รับแจ้ง</label>
-                                                                    <input type="text" class="form-control"
-                                                                        value="<?= $row['report'] ?>" disabled>
-                                                                    <input type="hidden" class="form-control" name="report_work"
+                                                                    <input type="text" class="form-control" name="report_work"
                                                                         value="<?= $row['report'] ?>">
                                                                 </div>
                                                             </div>
@@ -606,7 +605,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                             <div class="row">
                                                                 <div class="col-12">
                                                                     <label>รายละเอียด<span style="color: red;">*</span></label>
-                                                                    <textarea class="form-control " name="description" rows="2" id="descriptionSource<?= $row['id'] ?>"><?= $row['description'] ?></textarea>
+                                                                    <textarea class="form-control " name="description" rows="2" id="descriptionSource-main-<?= $row['id'] ?>"><?= $row['description'] ?></textarea>
                                                                 </div>
                                                             </div>
                                                             <div class="row">
@@ -1487,7 +1486,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="col-sm-6">
                                                                     <div class="mb-3">
                                                                         <label id="basic-addon1">เหตุผลและความจำเป็น</label>
-                                                                        <input type="text" name="reason" class="form-control" id="reasonTarget<?= $row['id'] ?>" value="<?= $row['description'] ?>">
+                                                                        <input type="text" name="reason" class="form-control" id="reasonTarget-main-<?= $row['id'] ?>" value="<?= $row['description'] ?>">
                                                                     </div>
                                                                 </div>
 
@@ -1607,32 +1606,6 @@ if (!isset($_SESSION["admin_log"])) {
 
                                                             <?php }
                                                             ?>
-
-                                                            <script>
-                                                                document.addEventListener("DOMContentLoaded", function() {
-                                                                    const descriptionSource = document.getElementById("descriptionSource<?= $row['id'] ?>");
-                                                                    const reasonTarget = document.getElementById("reasonTarget<?= $row['id'] ?>");
-                                                                    console.log('descriptionSource', descriptionSource)
-                                                                    console.log('reasonTarget', reasonTarget)
-                                                                    if (descriptionSource && reasonTarget) {
-                                                                        descriptionSource.addEventListener("input", function() {
-                                                                            reasonTarget.value = this.value;
-                                                                        });
-                                                                    }
-
-                                                                    const numberDeviceSource = document.querySelector('input[name="number_devices"]');
-                                                                    const deviceNumberContainer = document.getElementById("device-number-container-main-<?= $row['id'] ?>");
-
-                                                                    if (numberDeviceSource && deviceNumberContainer) {
-                                                                        const firstDeviceInput = deviceNumberContainer.querySelector('input[type="text"]');
-                                                                        if (firstDeviceInput) {
-                                                                            numberDeviceSource.addEventListener("input", function() {
-                                                                                firstDeviceInput.value = this.value;
-                                                                            });
-                                                                        }
-                                                                    }
-                                                                });
-                                                            </script>
 
                                                         </div>
                                                     </div>
@@ -1959,26 +1932,31 @@ ORDER BY id DESC;
                                         <!-- modal -->
                                         <div id="workflowModalUncomplete<?= $row['id'] ?>" class="modal" style="display: none;">
                                             <div class="p-5 d-flex justify-content-center gap-4">
-                                                <div class="modal-content job-modal" id="job-modal-unCo-<?= $row['id'] ?>">
+                                                <div class="modal-content job-modal" id="job-modal-unComplete-<?= $row['id'] ?>">
                                                     <div class="modal-header justify-content-between">
                                                         <h1 class="modal-title fs-5" id="staticBackdropLabel">รายละเอียดงาน</h1>
                                                         <div class="d-flex align-items-center">
-                                                            <button type="button" class="btn btn-primary me-2" id="toggleAssignSectionBtn-unCo-<?= $row['id'] ?>">เพิ่มเจ้าหน้าที่ร่วมงาน</button>
+                                                            <button type="button" class="btn btn-primary me-2" id="toggleAssignSectionBtn-unComplete-<?= $row['id'] ?>">เพิ่มเจ้าหน้าที่ร่วมงาน</button>
                                                             <button type="button" class="btn-close" onclick="toggleModal('#workflowModalUncomplete<?= $row['id'] ?>')"></button>
                                                         </div>
                                                     </div>
                                                     <div class="modal-body d-flex">
                                                         <div class="job-modal-content">
                                                             <div class="row">
-                                                                <div class="col-6">
+                                                                <div class="col-4">
                                                                     <label>หมายเลขงาน</label>
                                                                     <input type="text" class="form-control"
                                                                         value="<?= $row['id'] ?>" disabled>
                                                                 </div>
-                                                                <div class="col-6">
-                                                                    <label>วันที่</label>
+                                                                <div class="col-4">
+                                                                    <label>วันที่แจ้ง</label>
                                                                     <input type="date" class="form-control" name="date_report"
                                                                         value="<?= $row['date_report'] ?>">
+                                                                </div>
+                                                                <div class="col-4">
+                                                                    <label>วันที่ปิดงาน</label>
+                                                                    <input type="date" class="form-control" name="close_time"
+                                                                        value="<?= $row['close_time'] ?>">
                                                                 </div>
                                                             </div>
                                                             <div class="row">
@@ -2003,9 +1981,7 @@ ORDER BY id DESC;
                                                             <div class="row">
                                                                 <div class="col-6">
                                                                     <label>ผู้แจ้ง</label>
-                                                                    <input type="text" class="form-control"
-                                                                        value="<?= $row['reporter'] ?>" disabled>
-                                                                    <input type="hidden" class="form-control" name="reporter"
+                                                                    <input type="text" class="form-control" name="reporter"
                                                                         value="<?= $row['reporter'] ?>">
                                                                 </div>
                                                                 <div class="col-6">
@@ -2148,9 +2124,7 @@ ORDER BY id DESC;
                                                             <div class="row">
                                                                 <div class="col-6">
                                                                     <label>เบอร์ติดต่อกลับ</label>
-                                                                    <input type="text" class="form-control"
-                                                                        value="<?= $row['tel'] ?>" disabled>
-                                                                    <input type="hidden" class="form-control" name="tel"
+                                                                    <input type="text" class="form-control" name="tel"
                                                                         value="<?= $row['tel'] ?>">
                                                                 </div>
                                                                 <div class="col-6">
@@ -2166,7 +2140,7 @@ ORDER BY id DESC;
                                                                 <div class="col-6">
                                                                     <label>หมายเลขครุภัณฑ์ (ถ้ามี)</label>
                                                                     <input value="<?= $row['number_device'] ?>" type="text"
-                                                                        class="form-control" name="number_devices">
+                                                                        class="form-control" name="number_devices" id="numberDeviceSource-unComplete-<?= $row['id'] ?>">
                                                                 </div>
                                                                 <div class="col-6">
                                                                     <label>หมายเลข IP addrees</label>
@@ -2177,9 +2151,7 @@ ORDER BY id DESC;
                                                             <div class="row">
                                                                 <div class="col-12">
                                                                     <label>อาการที่ได้รับแจ้ง</label>
-                                                                    <input type="text" class="form-control"
-                                                                        value="<?= $row['report'] ?>" disabled>
-                                                                    <input type="hidden" class="form-control" name="report_work"
+                                                                    <input type="text" class="form-control" name="report_work"
                                                                         value="<?= $row['report'] ?>">
                                                                 </div>
                                                             </div>
@@ -2228,7 +2200,7 @@ ORDER BY id DESC;
                                                             <div class="row">
                                                                 <div class="col-12">
                                                                     <label>รายละเอียด<span style="color: red;">*</span></label>
-                                                                    <textarea class="form-control " name="description" rows="2"><?= $row['description'] ?></textarea>
+                                                                    <textarea class="form-control " name="description" rows="2" id="descriptionSource-unComplete-<?= $row['id'] ?>"><?= $row['description'] ?></textarea>
                                                                 </div>
                                                             </div>
                                                             <div class="row">
@@ -2389,7 +2361,7 @@ ORDER BY id DESC;
                                                             </div>
                                                         </div>
                                                         <div>
-                                                            <div id="assignSection-unCo-<?= $row['id'] ?>" style="display: none; width: 210px;" class="ms-3">
+                                                            <div id="assignSection-unComplete-<?= $row['id'] ?>" style="display: none; width: 210px;" class="ms-3">
                                                                 <h6 class="mb-1">เพิ่มเจ้าหน้าที่ร่วมงาน</h6>
                                                                 <?php
                                                                 $assignedStmt = $conn->prepare("SELECT username FROM admin");
@@ -2408,7 +2380,7 @@ ORDER BY id DESC;
                                                                 <div class="col-sm-12 mb-3">
                                                                     <div class="list-group">
                                                                         <label class="list-group-item">
-                                                                            <input type="checkbox" class="form-check-input me-1" id="toggleAssignedTask-unCo-<?= $row['id'] ?>">
+                                                                            <input type="checkbox" class="form-check-input me-1" id="toggleAssignedTask-unComplete-<?= $row['id'] ?>">
                                                                             เลือกทั้งหมด
                                                                         </label>
                                                                         <?php foreach ($assignedTask as $task): ?>
@@ -3125,7 +3097,7 @@ ORDER BY id DESC;
                                                                 <div class="col-sm-6">
                                                                     <div class="mb-3">
                                                                         <label id="basic-addon1">เหตุผลและความจำเป็น</label>
-                                                                        <input type="text" name="reason" class="form-control" value="<?= $row['description'] ?>">
+                                                                        <input type="text" name="reason" class="form-control" id="reasonTarget-unComplete-<?= $row['id'] ?>" value="<?= $row['description'] ?>">
                                                                     </div>
                                                                 </div>
 
@@ -3502,7 +3474,7 @@ ORDER BY id DESC;
         if (totalAmount) {
             totalAmount.textContent = total.toLocaleString();
         }
-        console.log(`Total for ${tableType}-${modalId}: `, total);
+        // console.log(`Total for ${tableType}-${modalId}: `, total);
     }
 
     function calculateRowTotalAutoList(rowElement, tableBodyId) {
@@ -3776,7 +3748,7 @@ ORDER BY id DESC;
                 });
 
                 const result = await response.json();
-                console.log(result)
+                // console.log(result)
                 if (result.found) {
                     duplicateFound = true;
 
@@ -3821,8 +3793,8 @@ ORDER BY id DESC;
                     const orderRadioGroup = modal.querySelector('#orderRadioGroup');
                     orderRadioGroup.innerHTML = ''; // Clear existing buttons
 
-                    console.log('Modal:', modal);
-                    console.log('Order Radio Group:', orderRadioGroup);
+                    // console.log('Modal:', modal);
+                    // console.log('Order Radio Group:', orderRadioGroup);
 
 
                     const orderCount = Object.keys(ordersByNumberWork).length;
@@ -3838,7 +3810,7 @@ ORDER BY id DESC;
                         orderRadioGroup.classList.add('btn-group', 'w-100');
                     }
 
-                    console.log('ordersByNumberWork', ordersByNumberWork);
+                    // console.log('ordersByNumberWork', ordersByNumberWork);
 
                     Object.keys(ordersByNumberWork).forEach((numberWork, index) => {
 
@@ -3858,8 +3830,8 @@ ORDER BY id DESC;
                         orderRadioGroup.appendChild(radioButton);
                         orderRadioGroup.appendChild(label);
 
-                        console.log('radioButton', radioButton);
-                        console.log('label', label);
+                        // console.log('radioButton', radioButton);
+                        // console.log('label', label);
 
                         // Add event listener for radio change
                         radioButton.addEventListener('change', () => {
@@ -3935,19 +3907,16 @@ ORDER BY id DESC;
     }
 </script>
 <script>
-    document.querySelectorAll('[id^="toggleAssignSectionBtn-"]').forEach((toggleBtn) => {
-        toggleBtn.addEventListener("click", function() {
-            // Get type and id from button ID like: toggleAssignSectionBtn-main-629
-            const parts = this.id.split("-");
+    document.addEventListener("click", function(e) {
+        if (e.target && e.target.id.startsWith("toggleAssignSectionBtn-")) {
+            const parts = e.target.id.split("-");
             const type = parts[1];
             const rowId = parts[2];
 
-            // Target related elements
             const section = document.getElementById(`assignSection-${type}-${rowId}`);
             const jobModal = document.getElementById(`job-modal-${type}-${rowId}`);
 
             const isHidden = section.style.display === "none" || section.style.display === "";
-
             section.style.display = isHidden ? "block" : "none";
 
             if (isHidden) {
@@ -3955,20 +3924,48 @@ ORDER BY id DESC;
             } else {
                 jobModal?.classList.remove("wide");
             }
-        });
+        }
     });
 
-    document.querySelectorAll('[id^="toggleAssignedTask"]').forEach((checkbox) => {
-        checkbox.addEventListener("change", function() {
-            const parts = this.id.split("-");
-            const rowId = parts[1]; // if your ID is like toggleAssignedTask-629
+    document.addEventListener("change", function(e) {
+        if (e.target && e.target.id.startsWith("toggleAssignedTask-")) {
+            const wrapper = e.target.closest('.list-group');
+            if (!wrapper) return;
 
-            // Check all checkboxes (except disabled) inside the same list group
-            const wrapper = this.closest('.list-group');
             wrapper.querySelectorAll('input[name="assignedTask[]"]:not(:disabled)').forEach(cb => {
-                cb.checked = this.checked;
+                cb.checked = e.target.checked;
             });
-        });
+        }
+    });
+
+    document.addEventListener("input", function(e) {
+        if (e.target && e.target.id.startsWith("descriptionSource-")) {
+            const parts = e.target.id.split("-");
+            const type = parts[1]; // 'main' or 'unCo'
+            const rowId = parts[2];
+
+            const reasonTarget = document.getElementById(`reasonTarget-${type}-${rowId}`);
+            if (reasonTarget) {
+                reasonTarget.value = e.target.value;
+            }
+        }
+    });
+
+
+    document.addEventListener("input", function(e) {
+        if (e.target && e.target.id.startsWith("numberDeviceSource-")) {
+            const parts = e.target.id.split("-");
+            const type = parts[1]; // 'main' or 'unComplete'
+            const rowId = parts[2]; // the numeric ID
+
+            const container = document.getElementById(`device-number-container-${type}-${rowId}`);
+            if (container) {
+                const firstInput = container.querySelector("input[type='text']");
+                if (firstInput) {
+                    firstInput.value = e.target.value;
+                }
+            }
+        }
     });
 </script>
 

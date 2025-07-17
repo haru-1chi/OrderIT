@@ -210,6 +210,7 @@ if (isset($_POST['working'])) {
 }
 if (isset($_POST['problemL'])) {
     $problemName = $_POST['problemName'];
+    $problemDetail = $_POST['problemDetail'];
     $id = $_POST['id'];
     try {
         $sql = "SELECT * FROM problemlist WHERE problemName = :problemName";
@@ -224,11 +225,11 @@ if (isset($_POST['problemL'])) {
                 header('location: ../insertData.php');
             }
         } else if (!isset($_SESSION['error'])) {
-            $sql = "UPDATE problemlist SET problemName = :problemName WHERE id = :id";
+            $sql = "UPDATE problemlist SET problemName = :problemName, problemDetail = :problemDetail  WHERE id = :id";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(":id", $id);
             $stmt->bindParam(":problemName", $problemName);
-
+            $stmt->bindParam(":problemDetail", $problemDetail);
             if ($stmt->execute()) {
                 $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
                 header("location: ../insertData.php");

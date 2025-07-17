@@ -3,9 +3,40 @@
 header('Content-Type: text/html; charset=utf-8');
 
 require_once 'config/db.php';
-
+require_once 'config/leave_db.php';
 // Start the session if not already started
 session_start();
+
+// Step 1: Get leave days
+$leaveDaysMap = []; // username => [ 'YYYY-MM-DD', ... ]
+
+// Step 2: Get admin EMPLOYEE_ID → username
+$adminSql = "SELECT username, id_card FROM admin";
+$adminStmt = $conn->prepare($adminSql);
+$adminStmt->execute();
+$adminMap = [];
+foreach ($adminStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    $adminMap[$row['id_card']] = $row['username'];
+}
+
+// Step 3: Get leave ranges from leave_db
+$leaveSql = "SELECT EMPLOYEE_ID, START_DATE, END_DATE FROM data_leave";
+$leaveStmt = $leave_conn->prepare($leaveSql); // use leave_conn for leave_db
+$leaveStmt->execute();
+
+foreach ($leaveStmt->fetchAll(PDO::FETCH_ASSOC) as $leave) {
+    $empId = $leave['EMPLOYEE_ID'];
+    $username = $adminMap[$empId] ?? null;
+    if (!$username) continue;
+
+    $start = new DateTime($leave['START_DATE']);
+    $end = new DateTime($leave['END_DATE']);
+
+    while ($start <= $end) {
+        $leaveDaysMap[$username][] = $start->format('Y-m-d');
+        $start->modify('+1 day');
+    }
+}
 
 // Check if the user is logged in
 if (isset($_SESSION['admin_log'])) {
@@ -372,7 +403,273 @@ if (isset($_POST['actAll'])) {
     exit();
 }
 
+if (isset($_POST['activity_usernames'])) {
+    $selectedUser = $_POST['username'] ?? 'all';
+    // Insert leave days into NOT IN (...)
+    $leaveDates = $leaveDaysMap[$selectedUser] ?? [];
+    $leaveNotInMain = '';
+    $leaveNotInFree = '';
 
+    if (!empty($leaveDates)) {
+        $quotedDates = array_map(function ($d) use ($conn) {
+            return $conn->quote($d);
+        }, $leaveDates);
+
+        $leaveNotInMain = "AND d.date_report NOT IN (" . implode(',', $quotedDates) . ")";
+        $leaveNotInFree = "AND date_report NOT IN (" . implode(',', $quotedDates) . ")";
+    }
+
+    function getWorkingDays($year, $month, $holidays = [], $leaveDays = [])
+    {
+        $workingDays = [];
+        $start = new DateTime("$year-$month-01");
+        $end = clone $start;
+        $end->modify('last day of this month');
+
+        while ($start <= $end) {
+            $day = $start->format('Y-m-d');
+            $dayOfWeek = $start->format('N'); // 6 = Saturday, 7 = Sunday
+
+            if ($dayOfWeek < 6 && !in_array($day, $holidays) && !in_array($day, $leaveDays)) {
+                $workingDays[] = $day;
+            }
+
+            $start->modify('+1 day');
+        }
+
+        return $workingDays;
+    }
+
+
+    $filter = $_POST['filter'] ?? 'problem';
+    if (isset($_POST['month'])) {
+        list($year, $month) = explode('-', $_POST['month']);
+    } else {
+        $year = date('Y');
+        $month = date('n');
+    }
+
+
+    $sqld = "
+SELECT 
+    d.username,
+    CONCAT(a.fname, ' ', a.lname) AS name,
+    $filter AS info,
+    SEC_TO_TIME(AVG(ABS(TIME_TO_SEC(TIMEDIFF(d.close_date, d.take))))) AS avg_time,
+    ROUND(AVG(ABS(TIME_TO_SEC(TIMEDIFF(d.close_date, d.take)))) / 60, 2) AS avg_minutes,
+    ROUND(SUM(ABS(TIME_TO_SEC(TIMEDIFF(d.close_date, d.take)))) / 60, 2) AS total_minutes,
+    COUNT(*) AS count_tasks
+FROM 
+    data_report d
+JOIN 
+    admin a ON d.username = a.username
+WHERE 
+    d.status = 4
+    AND MONTH(d.date_report) = :month
+    AND YEAR(d.date_report) = :year
+    AND DAYOFWEEK(d.date_report) NOT IN (1, 7)
+    AND d.date_report NOT IN (
+        '2025-01-01','2025-02-12','2025-04-07','2025-04-14',
+        '2025-04-15','2025-04-16','2025-05-05','2025-05-09',
+        '2025-05-12','2025-06-02','2025-06-03'
+    )
+        $leaveNotInMain
+";
+    $sql = "SELECT 
+    d.username,
+    CONCAT(a.fname, ' ', a.lname) AS name,
+    $filter AS info,
+    
+    -- Average of rounded time (convert back to TIME)
+    SEC_TO_TIME(AVG(rounded_minutes * 60)) AS avg_time,
+     ROUND(AVG(rounded_minutes), 2) AS avg_minutes,
+    -- Total of rounded minutes
+    SUM(rounded_minutes) AS total_minutes,
+    
+    COUNT(*) AS count_tasks
+
+FROM (
+    SELECT 
+        d.*,
+        -- Time spent in minutes
+        ROUND(ABS(TIME_TO_SEC(TIMEDIFF(d.close_date, d.take))) / 60) AS raw_minutes,
+
+        -- Custom rounded minutes with ABS
+        CASE
+            WHEN ABS(TIME_TO_SEC(TIMEDIFF(d.close_date, d.take))) / 60 < 1 THEN 0
+            WHEN ABS(TIME_TO_SEC(TIMEDIFF(d.close_date, d.take))) / 60 < 30 THEN 60
+            WHEN ABS(TIME_TO_SEC(TIMEDIFF(d.close_date, d.take))) / 60 < 60 THEN 60
+            WHEN ABS(TIME_TO_SEC(TIMEDIFF(d.close_date, d.take))) / 60 < 90 THEN 90
+            WHEN ABS(TIME_TO_SEC(TIMEDIFF(d.close_date, d.take))) / 60 < 120 THEN 120
+            WHEN ABS(TIME_TO_SEC(TIMEDIFF(d.close_date, d.take))) / 60 < 150 THEN 150
+            WHEN ABS(TIME_TO_SEC(TIMEDIFF(d.close_date, d.take))) / 60 < 180 THEN 180
+            WHEN ABS(TIME_TO_SEC(TIMEDIFF(d.close_date, d.take))) / 60 < 210 THEN 210
+            ELSE CEIL(ABS(TIME_TO_SEC(TIMEDIFF(d.close_date, d.take))) / 1800) * 30
+        END AS rounded_minutes
+
+
+    FROM data_report d
+    WHERE 
+        d.status = 4
+        AND MONTH(d.date_report) = :month
+    AND YEAR(d.date_report) = :year
+        AND DAYOFWEEK(d.date_report) NOT IN (1, 7)
+        AND d.date_report NOT IN (
+            '2025-01-01', '2025-02-12', '2025-04-07', '2025-04-14',
+            '2025-04-15', '2025-04-16', '2025-05-05', '2025-05-09',
+            '2025-05-12', '2025-06-02', '2025-06-03'
+        )
+        $leaveNotInMain
+";
+
+    if ($selectedUser !== 'all') {
+        $sql .= " AND d.username = :username";
+    }
+
+    $sql .= ") AS d
+
+JOIN admin a ON d.username = a.username
+GROUP BY d.username, $filter ORDER BY d.username, $filter";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->bindValue(':month', (int)$month, PDO::PARAM_INT);
+    $stmt->bindValue(':year', (int)$year, PDO::PARAM_INT);
+
+
+    if ($selectedUser !== 'all') {
+        $stmt->bindValue(':username', $selectedUser, PDO::PARAM_STR);
+    }
+
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    echo '<head><meta charset="UTF-8">';
+    header("Content-Type: application/vnd.ms-excel");
+    header("Content-Disposition: attachment; filename=Activity_Report.xls");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    echo '</head>';
+
+    // Group by user
+    $grouped = [];
+    foreach ($results as $row) {
+        $grouped[$row['name']][] = $row;
+    }
+    $sqlFreeTime = "
+SELECT 
+    day_data.username,
+    SEC_TO_TIME(AVG(day_data.total_free_time_minutes) * 60) AS avg_free_time_hours,
+    ROUND(SUM(day_data.total_free_time_minutes), 2) AS total_free_time_minutes
+FROM (
+    SELECT
+        username,
+        date_report AS work_date,
+        ROUND(
+            480 - SUM(TIME_TO_SEC(TIMEDIFF(
+                STR_TO_DATE(CONCAT(date_report, ' ', close_date), '%Y-%m-%d %H:%i:%s'),
+                STR_TO_DATE(CONCAT(date_report, ' ', take), '%Y-%m-%d %H:%i:%s')
+            )) / 60), 2
+        ) AS total_free_time_minutes
+    FROM data_report
+    WHERE 
+        status = 4
+        AND MONTH(date_report) = :month
+        AND YEAR(date_report) = :year
+        AND DAYOFWEEK(date_report) NOT IN (1, 7)
+        AND date_report NOT IN (
+            '2025-01-01','2025-02-12','2025-04-07','2025-04-14',
+            '2025-04-15','2025-04-16','2025-05-05','2025-05-09',
+            '2025-05-12','2025-06-02','2025-06-03'
+        )
+            $leaveNotInFree
+    GROUP BY username, date_report
+) AS day_data
+WHERE day_data.total_free_time_minutes >= 0
+GROUP BY day_data.username";
+
+    $stmtFree = $conn->prepare($sqlFreeTime);
+    $stmtFree->bindValue(':month', (int)$month, PDO::PARAM_INT);
+    $stmtFree->bindValue(':year', (int)$year, PDO::PARAM_INT);
+    $stmtFree->execute();
+    $freeTimeResults = $stmtFree->fetchAll(PDO::FETCH_ASSOC);
+
+    // Map: username => [avg_hours, total_minutes]
+    $freeTimeMap = [];
+    foreach ($freeTimeResults as $row) {
+        $freeTimeMap[$row['username']] = [
+            'avg' => $row['avg_free_time_hours'],
+            'total' => $row['total_free_time_minutes']
+        ];
+    }
+    $thaiMonth = toMonthThai((int)$month);
+    echo "<table border='1' style='margin-bottom: 20px; border-collapse: collapse;'>";
+    echo "<tr><th colspan='4'>ข้อมูลการปฏิบัติงานของเจ้าหน้าที่ทุกคน เดือน $thaiMonth</th></tr>";
+    echo "<tr></tr>";
+    echo "</table>";
+    // Output tables per user
+    foreach ($grouped as $name => $rows) {
+        $username = $rows[0]['username'];
+
+        $thaiHolidays = [
+            '2025-01-01',
+            '2025-02-12',
+            '2025-04-07',
+            '2025-04-14',
+            '2025-04-15',
+            '2025-04-16',
+            '2025-05-05',
+            '2025-05-09',
+            '2025-05-12',
+            '2025-06-02',
+            '2025-06-03'
+        ];
+
+        $leaveDays = $leaveDaysMap[$username] ?? [];
+        $workingDays = getWorkingDays($year, str_pad($month, 2, '0', STR_PAD_LEFT), $thaiHolidays, $leaveDays);
+        $totalWorkingDays = count($workingDays);
+
+        echo "<table border='1' style='margin-bottom: 20px; border-collapse: collapse;'>";
+        echo "<tr><th colspan='4'>ข้อมูลการปฏิบัติงาน ของ $name</th></tr>";
+        echo "<tr><th>กิจกรรม</th><th>เวลาเฉลี่ย/ครั้ง</th><th>เวลาทั้งหมด (นาที)</th><th>จำนวนครั้ง</th></tr>";
+
+        foreach ($rows as $row) {
+            // Convert avg_minutes to readable format
+            $avg = floatval($row['avg_minutes']);
+            $hours = floor($avg / 60);
+            $minutes = round($avg % 60);
+            $avgText = ($hours > 0 ? "{$hours} ชม. " : "") . "{$minutes} นาที";
+
+            echo "<tr>";
+            echo "<td style='width: 700px; white-space: nowrap;'>{$row['info']}</td>";
+            echo "<td>$avgText</td>";
+            echo "<td>{$row['total_minutes']}</td>";
+            echo "<td>{$row['count_tasks']}</td>";
+            echo "</tr>";
+        }
+
+        if (isset($freeTimeMap[$username])) {
+            // all rows in this group share the same username
+            $avgTimeRaw = $freeTimeMap[$username]['avg']; // like 03:00:55
+            $totalMinutes = $freeTimeMap[$username]['total']; // like 2352
+
+            // Format avg time as readable Thai text
+            list($h, $m, $s) = explode(':', $avgTimeRaw);
+            $avgText = '';
+            if ((int)$h > 0) $avgText .= (int)$h . ' ชม. ';
+            if ((int)$m > 0) $avgText .= (int)$m . ' นาที';
+
+            echo "<tr>";
+            echo "<td><b>เวลาว่าง</b></td>";
+            echo "<td>$avgText</td>";
+            echo "<td>$totalMinutes</td>";
+            echo "<td>$totalWorkingDays วัน</td>";
+            echo "</tr>";
+        }
+        echo "<tr>";
+        echo "</tr>";
+        echo "</table>";
+    }
+}
 // Check if the export action is triggered
 if (isset($_POST['act'])) {
     echo '<head>';
