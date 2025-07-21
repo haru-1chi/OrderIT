@@ -2304,7 +2304,6 @@ if (isset($_POST['Bantext'])) {
 if (isset($_POST['saveWork'])) {
     $time_report = $_POST['time_report'];
     $date_report = $_POST['date_report'];
-    $device = $_POST['device'];
     $deviceName = $_POST['deviceName'];
     $number_device = $_POST['number_device'];
     $ip_address = $_POST['ip_address'];
@@ -2312,19 +2311,9 @@ if (isset($_POST['saveWork'])) {
     $reporter = $_POST['reporter'];
     $department = $_POST['depart_id'];
     $tel = $_POST['tel'];
-    $take = $_POST['take'];  // Placeholder for the 'take' field
-    $problem = $_POST['problem'];
-    $description = $_POST['description'];
-    $withdraw = $_POST['withdraw'];
-    $close_date = $_POST['close_date'];
-    $countList = $_POST['countList'];
-    $status = 0;
     $create_by = $_POST['create_by'];
-    // if ($department == "" || $department = null) {
-    //     $_SESSION['error'] = "หน่วยงานมีค่าว่าง กรุณากรอกใหม่อีกครั้ง";
-    //     header("location: ../myjob.php");
-    //     exit();
-    // }
+    $status = 0;
+    // username, take, problem, description, close_date, countList, device, withdraw, create_by}
 
     try {
         if (empty($department)) {
@@ -2333,35 +2322,27 @@ if (isset($_POST['saveWork'])) {
             exit();
         }
 
-        $sql = "INSERT INTO data_report(time_report, date_report, device, number_device, ip_address, report, reporter, department, tel, take, problem, description, withdraw, close_date, status,deviceName ,create_by) 
-                VALUES (:time_report, :date_report, :device, :number_device, :ip_address, :report, :reporter, :department, :tel, :take, :problem, :description, :withdraw, :close_date, :status,:deviceName,:create_by)";
+        $sql = "INSERT INTO data_report(time_report, date_report, number_device, ip_address, report, reporter, department, tel, status,deviceName, create_by) 
+                VALUES (:time_report, :date_report, :number_device, :ip_address, :report, :reporter, :department, :tel, :status,:deviceName, :create_by)";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":time_report", $time_report);
         $stmt->bindParam(":date_report", $date_report);
-        $stmt->bindParam(":device", $device);
         $stmt->bindParam(":number_device", $number_device);
         $stmt->bindParam(":ip_address", $ip_address);
         $stmt->bindParam(":report", $report);
         $stmt->bindParam(":reporter", $reporter);
         $stmt->bindParam(":department", $department);
         $stmt->bindParam(":tel", $tel);
-        $stmt->bindParam(":take", $take);
-        $stmt->bindParam(":problem", $problem);
-        $stmt->bindParam(":description", $description);
-        $stmt->bindParam(":withdraw", $withdraw);
-        $stmt->bindParam(":close_date", $close_date);
         $stmt->bindParam(":status", $status);
-        $stmt->bindParam(":deviceName", $deviceName);
         $stmt->bindParam(":create_by", $create_by);
-        for ($i = 1; $i <= $countList; $i++) {
-            if ($stmt->execute()) {
-                $_SESSION['success'] = "เพิ่มงานเรียบร้อยแล้ว";
-                header("location: ../dashboard.php");
-            } else {
-                $_SESSION['error'] = "พบข้อผิดพลาดบางอย่าง";
-                header("location: ../myjob.php");
-            }
+        $stmt->bindParam(":deviceName", $deviceName);
+        if ($stmt->execute()) {
+            $_SESSION['success'] = "เพิ่มงานเรียบร้อยแล้ว";
+            header("location: ../dashboard.php");
+        } else {
+            $_SESSION['error'] = "พบข้อผิดพลาดบางอย่าง";
+            header("location: ../myjob.php");
         }
     } catch (PDOException $e) {
         echo $e->getMessage();

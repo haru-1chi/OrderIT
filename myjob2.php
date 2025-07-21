@@ -4,19 +4,18 @@ require_once 'config/db.php';
 require_once 'template/navbar.php';
 date_default_timezone_set("Asia/Bangkok");
 
-if (isset($_SESSION['admin_log'])) {
-    $admin = $_SESSION['admin_log'];
-    $sql = "SELECT CONCAT(fname, ' ', lname) AS full_name FROM admin WHERE username = :admin";
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(":admin", $admin);
-    $stmt->execute();
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    $name = $result['full_name'];
-}
 if (!isset($_SESSION["admin_log"])) {
     $_SESSION["warning"] = "กรุณาเข้าสู่ระบบ";
     header("location: login.php");
+    exit;
 }
+$admin = $_SESSION['admin_log'];
+$sql = "SELECT CONCAT(fname, ' ', lname) AS full_name FROM admin WHERE username = :admin LIMIT 1";
+$stmt = $conn->prepare($sql);
+$stmt->bindParam(":admin", $admin);
+$stmt->execute();
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
+$name = $result['full_name'] ?? '-';
 
 ?>
 <!doctype html>
@@ -46,67 +45,35 @@ if (!isset($_SESSION["admin_log"])) {
     <div class="container" style="width: 50%;">
         <h1 class="text-center my-4">สร้างงาน</h1>
 
-        <?php if (isset($_SESSION['error'])) { ?>
-            <div class="alert alert-danger" role="alert">
-                <?php
-                echo $_SESSION['error'];
-                unset($_SESSION['error']);
-                ?>
-            </div>
-        <?php } ?>
+        <?php foreach (['error' => 'danger', 'warning' => 'warning', 'success' => 'success'] as $key => $class): ?>
+            <?php if (isset($_SESSION[$key])): ?>
+                <div class="alert alert-<?= $class ?>" role="alert">
+                    <?= htmlspecialchars($_SESSION[$key], ENT_QUOTES, 'UTF-8') ?>
+                    <?php unset($_SESSION[$key]); ?>
+                </div>
+            <?php endif; ?>
+        <?php endforeach; ?>
 
-        <?php if (isset($_SESSION['warning'])) { ?>
-            <div class="alert alert-warning" role="alert">
-                <?php
-                echo $_SESSION['warning'];
-                unset($_SESSION['warning']);
-                ?>
-            </div>
-        <?php } ?>
-
-        <?php if (isset($_SESSION['success'])) { ?>
-            <div class="alert alert-success" role="alert">
-                <?php
-                echo $_SESSION['success'];
-                unset($_SESSION['success']);
-                ?>
-            </div>
-        <?php } ?>
         <div class="card card-body rounded-4 mt-5 shadow-sm">
             <form action="system/insert.php" method="POST">
                 <div class="row">
-                    <input value="<?= $admin ?>" type="hidden" name="username" class="form-control">
-                    <input type="hidden" value="" name="device">
-                    <input class="form-control" type="hidden" id="receiveTimeInput" name="take">
-                    <!-- !!!!!!!!!! (ถ้าไม่ป้อนจะเป็น null) ให้ gen เป็นเวลาปัจจุบัน -->
-                    <input class="form-control" type="hidden" name="problem">
-                    <!-- !!!!!!!!!! บังคับไม่เป็นค่าว่าง -->
-                    <input type="hidden" class="form-control" id="descriptionInput" name="description">
-                    <!-- !!!!!!!!!! เป็นค่าว่างได้ -->
-                    <input type="hidden" class="form-control" id="closeTimeInput" name="close_date">
-                    <!-- !!!!!!!!!! เป็นค่าว่างได้ -->
-                    <input type="hidden" value="1" class="form-control" name="countList">
-                    <!-- !!!!!!!!! บังคับไม่เป็นค่าว่าง ให้มีค่าเริ่มต้นเป็น 1 -->
-
-
-
                     <div class="col-6 mb-3">
-                        <label class="form-label" for="issueInput">วันที่แจ้ง</label>
-                        <input required type="date" name="date_report" class="form-control thaiDateInput">
+                        <label class="form-label" for="date_report">วันที่แจ้ง</label>
+                        <input required type="date" name="date_report" id="date_report" class="form-control auto-date">
                     </div>
 
                     <div class="col-6 mb-3">
-                        <label class="form-label" for="issueInput">เวลาที่แจ้ง</label>
-                        <input type="time" name="time_report" class="time_report form-control">
+                        <label class="form-label" for="time_report">เวลาที่แจ้ง</label>
+                        <input type="time" name="time_report" id="time_report" class="form-control auto-time">
                     </div>
 
                     <div class="col-4 mb-3">
-                        <label class="form-label" for="issueInput">ผู้แจ้ง</label>
-                        <input class="form-control" value="-" type="text" name="reporter" required>
+                        <label class="form-label" for="reporter">ผู้แจ้ง</label>
+                        <input class="form-control" value="-" type="text" name="reporter" id="reporter" required>
                     </div>
                     <div class="col-4 mb-3">
                         <label class="form-label" for="departInput">หน่วยงาน</label>
-                        <input type="text" class="form-control" id="departInput" name="ref_depart" required>
+                        <input type="text" class="form-control" id="departInput" name="ref_depart" autocomplete="off" required>
                         <input type="hidden" id="departId" name="depart_id">
                     </div>
                     <div class="col-4 mb-3">
@@ -116,7 +83,7 @@ if (!isset($_SESSION["admin_log"])) {
 
                     <div class="col-4 mb-3">
                         <label class="form-label" for="deviceInput">อุปกรณ์</label>
-                        <input class="form-control" type="text" id="deviceInput" name="deviceName" value="-" required>
+                        <input class="form-control" type="text" id="deviceInput" name="deviceName" autocomplete="off" value="-" required>
                         <input type="hidden" id="deviceId" name="device_id" value="105">
                     </div>
 
@@ -134,7 +101,6 @@ if (!isset($_SESSION["admin_log"])) {
                         <textarea class="form-control " id="issueInput" name="report" rows="2" required></textarea>
 
                     </div>
-                    <input type="hidden" class="form-control" id="withdrawInput" name="withdraw">
                     <input type="hidden" name="create_by" value="<?= htmlspecialchars($name) ?>">
                     <div class="d-grid gap-3 my-3">
                         <button type="submit" name="saveWork" class="btn p-3 btn-primary">บันทึก</button>
@@ -154,143 +120,139 @@ if (!isset($_SESSION["admin_log"])) {
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script>
-        const now = new Date();
+        document.addEventListener("DOMContentLoaded", () => {
+            const now = new Date();
 
-        // Format the time as HH:mm
-        const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            // Format current date
+            const formattedDate = now.toISOString().split('T')[0];
+            document.querySelectorAll('.auto-date').forEach(input => {
+                input.value = formattedDate;
+            });
 
-        // Set the current time as the default value for the input fields
-        const timeReportInputs = document.querySelectorAll('.time_report');
-        timeReportInputs.forEach(input => input.value = currentTime);
-    </script>
-    <script>
-        $(function() {
-            function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage, defaultValue, hiddenDefaultValue) {
-                let inputChanged = false;
-
-                $(inputId).autocomplete({
-                        source: function(request, response) {
-                            $.ajax({
-                                url: url,
-                                dataType: "json",
-                                data: {
-                                    term: request.term,
-                                    type: type
-                                },
-                                success: function(data) {
-                                    response(data); // Show suggestions
-                                }
-                            });
-                        },
-                        minLength: 1,
-                        autoFocus: true,
-                        select: function(event, ui) {
-                            $(inputId).val(ui.item.label); // Fill input with label
-                            $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
-                            return false; // Prevent default behavior
-                        }
-                    })
-                    .data("ui-autocomplete")._renderItem = function(ul, item) {
-                        return $("<li>")
-                            .append("<div>" + item.label + "</div>")
-                            .appendTo(ul);
-                    };
-
-                $(inputId).on("autocompletefocus", function(event, ui) {
-                    // You can log or do something here but won't change the input value
-                    console.log("Item highlighted: ", ui.item.label);
-                    return false;
-                });
-
-                $(inputId).on("keyup", function() {
-                    inputChanged = true;
-                });
-
-                $(inputId).on("blur", function() {
-                    if (inputChanged) {
-                        const userInput = $(this).val().trim();
-                        if (userInput === "") return;
-
-                        let found = false;
-                        $(this).autocomplete("instance").menu.element.find("div").each(function() {
-                            if ($(this).text() === userInput) {
-                                found = true;
-                                return false;
-                            }
-                        });
-
-                        if (!found) {
-                            Swal.fire({
-                                title: confirmMessage,
-                                text: "หากต้องการเพิ่ม กรุณาติดต่อแอดมิน",
-                                icon: "warning",
-                                confirmButtonText: "ตกลง"
-                            }).then((result) => {
-                                $(inputId).val(defaultValue); // Clear input
-                                $(hiddenInputId).val(hiddenDefaultValue);
-                            });
-                        }
-                    }
-                    inputChanged = false; // Reset the flag
-                });
-            }
-
-            // Setup autocomplete for "หน่วยงาน" (departInput)
-            setupAutocomplete(
-                "depart",
-                "#departInput",
-                "#departId",
-                "autocomplete.php",
-                "insertDepart.php",
-                "ไม่พบหน่วยงานนี้ในระบบ",
-                "-",
-                "222",
-            );
-
-            // Setup autocomplete for "อุปกรณ์" (deviceInput)
-            setupAutocomplete(
-                "device",
-                "#deviceInput",
-                "#deviceId",
-                "autocomplete.php",
-                "insertDevice.php",
-                "ไม่พบอุปกรณ์นี้ในระบบ",
-                "-",
-                "105",
-            );
+            // Format current time as HH:mm
+            const currentTime = now.toTimeString().slice(0, 5); // HH:mm
+            document.querySelectorAll('.auto-time').forEach(input => {
+                input.value = currentTime;
+            });
         });
     </script>
     <script>
-        // ฟังก์ชันสำหรับแปลงปีคริสต์ศักราชเป็นปีพุทธศักราช
-        function convertToBuddhistYear(englishYear) {
-            return englishYear;
-        }
+        $(function() {
+            function setupAutocomplete({
+                type,
+                inputSelector,
+                hiddenInputSelector,
+                sourceUrl,
+                notFoundMessage = "ไม่พบข้อมูลในระบบ",
+                resetValue = '',
+                defaultHiddenId = ''
+            }) {
+                let userTyped = false;
 
-        // ดึงอินพุทธศักราชปัจจุบัน
-        const currentGregorianYear = new Date().getFullYear();
-        const currentBuddhistYear = convertToBuddhistYear(currentGregorianYear);
+                const $input = $(inputSelector);
+                const $hiddenInput = $(hiddenInputSelector);
 
-        // หากคุณมีหลาย input ที่ต้องการกำหนดค่า
-        const thaiDateInputs = document.querySelectorAll('.thaiDateInput');
+                $input.autocomplete({
+                    source: function(request, response) {
+                        $.ajax({
+                            url: sourceUrl,
+                            method: "GET",
+                            dataType: "json",
+                            data: {
+                                term: request.term,
+                                type: type
+                            },
+                            success: function(data) {
+                                response(data);
+                            },
+                            error: function() {
+                                response([]);
+                            }
+                        });
+                    },
+                    minLength: 1,
+                    autoFocus: true,
+                    select: function(event, ui) {
+                        if (ui.item && ui.item.value !== "") {
+                            $input.val(ui.item.label);
+                            $hiddenInput.val(ui.item.value);
+                        } else {
+                            $input.val('');
+                            $hiddenInput.val('');
+                        }
+                        return false;
+                    }
+                }).data("ui-autocomplete")._renderItem = function(ul, item) {
+                    return $("<li>")
+                        .append(`<div>${item.label}</div>`)
+                        .appendTo(ul);
+                };
 
-        thaiDateInputs.forEach((input) => {
-            // แปลงปีปัจจุบันเป็นปีพุทธศักราชแล้วกำหนดค่าให้กับ input
-            const currentDate = new Date();
-            input.value = currentBuddhistYear + '-' +
-                ('0' + (currentDate.getMonth() + 1)).slice(-2) + '-' +
-                ('0' + currentDate.getDate()).slice(-2);
+                $input.on("input", () => {
+                    userTyped = true;
+                });
+
+                $input.on("blur", function() {
+                    if (!userTyped) return;
+
+                    const enteredValue = $input.val().trim();
+                    if (!enteredValue) {
+                        $hiddenInput.val('');
+                        return;
+                    }
+
+                    $.ajax({
+                        url: sourceUrl,
+                        method: "GET",
+                        dataType: "json",
+                        data: {
+                            term: enteredValue,
+                            type: type
+                        },
+                        success: function(data) {
+                            const found = data.some(item => item.label === enteredValue);
+                            if (!found) {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: notFoundMessage,
+                                    text: 'หากต้องการเพิ่ม กรุณาติดต่อแอดมิน',
+                                    confirmButtonText: 'ตกลง'
+                                }).then(() => {
+                                    $input.val(resetValue);
+                                    $hiddenInput.val(defaultHiddenId);
+                                });
+                            }
+                        }
+                    });
+
+                    userTyped = false;
+                });
+            }
+
+            setupAutocomplete({
+                type: "depart",
+                inputSelector: "#departInput",
+                hiddenInputSelector: "#departId",
+                sourceUrl: "autocomplete.php",
+                notFoundMessage: "ไม่พบหน่วยงานนี้ในระบบ",
+                resetValue: "-",
+                defaultHiddenId: "222"
+            });
+
+            // Apply to "อุปกรณ์"
+            setupAutocomplete({
+                type: "device",
+                inputSelector: "#deviceInput",
+                hiddenInputSelector: "#deviceId",
+                sourceUrl: "autocomplete.php",
+                notFoundMessage: "ไม่พบอุปกรณ์นี้ในระบบ",
+                resetValue: "-",
+                defaultHiddenId: "105"
+            });
         });
     </script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-    <!-- <script>
-    $('#dataAll').DataTable({
-        order: [
-            [10, 'asc']
-        ] // assuming you want to sort the first column in ascending order
-    });
-  
-</script> -->
     <?php SC5() ?>
 </body>
 

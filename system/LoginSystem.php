@@ -2,9 +2,15 @@
 session_start();
 require_once '../config/db.php';
 
+// CSRF Token check
+if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== ($_SESSION['csrf_token'] ?? '')) {
+    $_SESSION['error'] = 'CSRF token ไม่ถูกต้อง';
+    header('Location: ../login.php');
+    exit();
+}
 
 if (isset($_POST['submit'])) {
-    $username = $_POST['username'];
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
 
     try {
@@ -12,19 +18,16 @@ if (isset($_POST['submit'])) {
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":username", $username);
         $stmt->execute();
-        $check = $stmt->fetch(PDO::FETCH_ASSOC);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($stmt->rowCount() > 0) {
-            if ($check['username'] == $username && password_verify($password, $check['password'])) {
-                $_SESSION['admin_log'] = $check['username'];
-                header('location: ../dashboard.php');
-            } else {
-                $_SESSION['error'] = 'ชื่อผู้ใช้หรือรหัสผ่านผิด';
-                header('location: ../login.php');
-            }
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['admin_log'] = $user['username'];
+            header('Location: ../dashboard.php');
+            exit();
         } else {
-            $_SESSION['error'] = 'ไม่พบข้อมูลในระบบ';
-            header('location: ../login.php');
+            $_SESSION['error'] = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+            header('Location: ../login.php');
+            exit();
         }
     } catch (Exception $e) {
         echo $e->getMessage();
