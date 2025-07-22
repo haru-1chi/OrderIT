@@ -5,18 +5,17 @@ require_once 'template/navbar.php';
 $dateNow = new DateTime();
 $dateThai = $dateNow->format("Y-m-d");
 
-if (isset($_SESSION['admin_log'])) {
-    $admin = $_SESSION['admin_log'];
-    $sql = "SELECT * FROM admin WHERE username = :admin";
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(":admin", $admin);
-    $stmt->execute();
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-}
 if (!isset($_SESSION["admin_log"])) {
     $_SESSION["warning"] = "กรุณาเข้าสู่ระบบ";
     header("location: login.php");
+    exit;
 }
+$admin = $_SESSION['admin_log'];
+$sql = "SELECT * FROM admin WHERE username = :admin";
+$stmt = $conn->prepare($sql);
+$stmt->bindParam(":admin", $admin);
+$stmt->execute();
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
 
 ?>
 <!doctype html>
@@ -27,21 +26,12 @@ if (!isset($_SESSION["admin_log"])) {
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="css/style.css">
 
     <!-- Bootstrap CSS v5.2.1 -->
     <?php bs5() ?>
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-    <script>
-        // Function to reload the page
-        // function refreshPage() {
-        //     location.reload();
-        // }
-
-        // // Set timeout to refresh the page every 1 m inute (60000 milliseconds)
-        // setTimeout(refreshPage, 30000);
-    </script>
     <style>
         body {
             background-color: #F9FDFF;
@@ -84,39 +74,22 @@ if (!isset($_SESSION["admin_log"])) {
     </style>
 </head>
 
-<body>
+<body data-admin="<?= isset($admin) ? htmlspecialchars($admin) : '' ?>">
     <?php
     $report_count = $_SESSION['report_count'] ?? 0;
     navbar($report_count)
     ?>
 
     <div class="container">
-        <?php if (isset($_SESSION['error'])) { ?>
-            <div class="alert alert-danger" role="alert">
-                <?php
-                echo $_SESSION['error'];
-                unset($_SESSION['error']);
-                ?>
-            </div>
-        <?php } ?>
+        <?php foreach (['error' => 'danger', 'warning' => 'warning', 'success' => 'success'] as $key => $class): ?>
+            <?php if (isset($_SESSION[$key])): ?>
+                <div class="alert alert-<?= $class ?>" role="alert">
+                    <?= htmlspecialchars($_SESSION[$key], ENT_QUOTES, 'UTF-8') ?>
+                    <?php unset($_SESSION[$key]); ?>
+                </div>
+            <?php endif; ?>
+        <?php endforeach; ?>
 
-        <?php if (isset($_SESSION['warning'])) { ?>
-            <div class="alert alert-warning" role="alert">
-                <?php
-                echo $_SESSION['warning'];
-                unset($_SESSION['warning']);
-                ?>
-            </div>
-        <?php } ?>
-
-        <?php if (isset($_SESSION['success'])) { ?>
-            <div class="alert alert-success" role="alert">
-                <?php
-                echo $_SESSION['success'];
-                unset($_SESSION['success']);
-                ?>
-            </div>
-        <?php } ?>
         <div class="row">
             <div class="col-sm-12 col-lg-12 col-md-12">
                 <h1 class="text-center my-4">สรุปยอดจำนวนงาน</h1>
@@ -138,73 +111,84 @@ if (!isset($_SESSION["admin_log"])) {
                 <!-- <button type="button" class="btn btn-primary" id="liveToastBtn">Show live toast</button> -->
 
                 <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
-                <audio id="notificationSound" src="audio/0313.MP3"></audio>
+                <audio id="notificationSound" src="audio/0313.MP3" preload="auto"></audio>
 
                 <script>
-                    let lastReportId = 0; // Track the highest ID we've seen
+                    let lastReportId = 0;
+                    let shownSetUpReports = new Set(); // To avoid duplicates
+                    const toastContainer = document.getElementById('toastContainer');
+                    const sound = document.getElementById('notificationSound');
 
-                    function checkNewReports() {
-                        fetch('check_new_reports.php')
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.reports && data.reports.length > 0) {
-                                    data.reports.forEach(report => {
-                                        if (report.id > lastReportId) {
-                                            lastReportId = report.id; // Update last seen ID
-                                            showNotification(report);
-                                        }
-                                    });
+                    const checkNewReports = async () => {
+                        try {
+                            const response = await fetch('check_new_reports.php', {
+                                method: 'GET',
+                                headers: {
+                                    'Content-Type': 'application/json'
                                 }
+                            });
 
-                                if (data.reports_set_up && data.reports_set_up.length > 0) {
-                                    data.reports_set_up.forEach(report => {
+                            const data = await response.json();
+
+                            if (Array.isArray(data.reports)) {
+                                data.reports.forEach(report => {
+                                    if (report.id > lastReportId) {
+                                        lastReportId = report.id;
                                         showNotification(report);
-                                    });
-                                }
+                                    }
+                                });
+                            }
 
-                                console.log("reports:", data.reports);
-                            })
-                            .catch(error => console.error('Error:', error));
-                    }
+                            if (Array.isArray(data.reports_set_up)) {
+                                data.reports_set_up.forEach(report => {
+                                    if (!shownSetUpReports.has(report.id)) {
+                                        shownSetUpReports.add(report.id);
+                                        showNotification(report);
+                                    }
+                                });
+                            }
 
-                    function showNotification(report) {
-                        const toastContainer = document.getElementById('toastContainer');
+                        } catch (error) {
+                            console.error('Error fetching reports:', error);
+                        }
+                    };
 
-                        const toastElement = document.createElement('div');
-                        toastElement.className = 'toast bg-primary text-white mb-2';
-                        toastElement.setAttribute('role', 'alert');
-                        toastElement.setAttribute('aria-live', 'assertive');
-                        toastElement.setAttribute('aria-atomic', 'true');
+                    const showNotification = (report) => {
+                        const toast = document.createElement('div');
+                        toast.className = 'toast bg-primary text-white mb-2';
+                        toast.setAttribute('role', 'alert');
+                        toast.setAttribute('aria-live', 'assertive');
+                        toast.setAttribute('aria-atomic', 'true');
 
-                        toastElement.innerHTML = `
-        <div class="toast-header">
-            <strong class="me-auto">หน่วยงาน ${report.depart_name}</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-        </div>
-        <div class="toast-body">
-            ${report.report}
-        </div>
-    `;
+                        toast.innerHTML = `
+            <div class="toast-header">
+                <strong class="me-auto">หน่วยงาน ${report.depart_name}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">${report.report}</div>
+        `;
 
-                        toastContainer.appendChild(toastElement);
+                        toastContainer.appendChild(toast);
 
-                        const toast = new bootstrap.Toast(toastElement);
-                        toast.show();
+                        const bsToast = new bootstrap.Toast(toast);
+                        bsToast.show();
 
-                        document.getElementById('notificationSound').play();
-
-                        // Optional: Auto-remove toast from DOM after hidden
-                        toastElement.addEventListener('hidden.bs.toast', () => {
-                            toastElement.remove();
+                        sound.play().catch(err => {
+                            console.warn('Audio play blocked or failed:', err);
                         });
-                    }
 
-                    // First check immediately
+                        toast.addEventListener('hidden.bs.toast', () => {
+                            toast.remove();
+                        });
+                    };
+
+                    // Initial check
                     checkNewReports();
 
-                    // Check every 30 seconds
+                    // Poll every 30s
                     setInterval(checkNewReports, 30000);
                 </script>
+
                 <form action="system/send_telegram.php" method="post">
                     <textarea name="message">Test message from form</textarea>
                     <button type="submit">Send</button>
@@ -324,167 +308,197 @@ if (!isset($_SESSION["admin_log"])) {
                         </table>
                     </div>
                 </div>
-
+                <hr>
                 <script>
-                    function fetchCards(type) {
-                        fetch(`dashboard_get_tasks.php?type=${type}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                const statusOptions = {
-                                    0: {
-                                        text: "งานที่ยังไม่ได้รับ",
-                                        color: "#FF7575"
-                                    },
-                                    2: {
-                                        text: "กำลังดำเนินงาน",
-                                        color: "#F8BF24"
-                                    },
-                                    3: {
-                                        text: "รออะไหล่",
-                                        color: "#659BFF"
-                                    },
-                                    4: {
-                                        text: "เสร็จงาน",
-                                        color: "#6CC668"
-                                    },
-                                    5: {
-                                        text: "ส่งซ่อม",
-                                        color: "#D673D3"
-                                    },
-                                    6: {
-                                        text: "รอกรอกรายละเอียด",
-                                        color: "#6CC668"
-                                    },
+                    const STATUS_OPTIONS = {
+                        0: {
+                            text: "งานที่ยังไม่ได้รับ",
+                            color: "#FF7575"
+                        },
+                        2: {
+                            text: "กำลังดำเนินงาน",
+                            color: "#F8BF24"
+                        },
+                        3: {
+                            text: "รออะไหล่",
+                            color: "#659BFF"
+                        },
+                        4: {
+                            text: "เสร็จงาน",
+                            color: "#6CC668"
+                        },
+                        5: {
+                            text: "ส่งซ่อม",
+                            color: "#D673D3"
+                        },
+                        6: {
+                            text: "รอกรอกรายละเอียด",
+                            color: "#6CC668"
+                        }
+                    };
+
+                    const typeRenderers = {
+                        today: (row, admin) => `
+            <td>${row.id}</td>
+            <td>${row.date_report}</td>
+            <td>${row.time_report}</td>
+            <td>${row.deviceName}</td>
+            <td>${row.report}</td>
+            <td>${row.reporter}</td>
+            <td>${row.depart_name}</td>
+            <td>${row.tel}</td>
+            <td>${row.create_by}</td>
+            <td>
+                <form action="system/insert.php" method="post">
+                    <input type="hidden" name="username" value="${admin}">
+                    <input type="hidden" name="id" value="${row.id}">
+                    <button type="submit" name="takeaway" class="btn btn-primary">รับงาน</button>
+                </form>
+            </td>
+        `,
+                        in_progress: row => `
+            <td>${row.id}</td>
+            <td>${row.fname} ${row.lname}</td>
+            <td>${row.deviceName}</td>
+            <td>${row.report}</td>
+            <td>${row.depart_name}</td>
+            <td>${row.time_report ?? '-'}</td>
+            <td>${row.take ?? '-'}</td>
+        `,
+                        calm: row => `
+            <td>${row.id}</td>
+            <td>${row.fname} ${row.lname}</td>
+            <td>${row.deviceName}</td>
+            <td>${row.report}</td>
+            <td>${row.depart_name}</td>
+            <td>${row.time_report ?? '-'}</td>
+            <td>${row.take ?? '-'}</td>
+        `,
+                        finish: row => `
+            <td>${row.id}</td>
+            <td>${row.fname} ${row.lname}</td>
+            <td>${row.report}</td>
+            <td>${row.depart_name}</td>
+            <td>${row.sla}</td>
+            <td>${row.kpi}</td>
+            <td>${row.time_report ?? '-'}</td>
+            <td>${row.take ?? '-'}</td>
+            <td>${row.close_date ?? '-'}</td>
+        `
+                    };
+
+                    const fetchCards = async (type) => {
+                        try {
+                            const res = await fetch(`dashboard_get_tasks.php?type=${type}`);
+                            const data = await res.json();
+                            const container = document.querySelector('.row.d-flex.justify-content-center');
+                            container.innerHTML = '';
+
+                            const fragment = document.createDocumentFragment();
+
+                            data.forEach(({
+                                status,
+                                count
+                            }) => {
+                                if (status == 1) return;
+
+                                const {
+                                    text,
+                                    color
+                                } = STATUS_OPTIONS[status] || {
+                                    text: "ไม่ระบุสถานะ",
+                                    color: `#${Math.floor(Math.random() * 16777215).toString(16)}`
                                 };
 
-                                const container = document.querySelector('.row.d-flex.justify-content-center');
-                                container.innerHTML = ''; // Clear existing content
-
-                                data.forEach(({
-                                    status,
-                                    count
-                                }) => {
-                                    if (status == 1) return;
-
-                                    const textS = statusOptions[status]?.text || "ไม่ระบุสถานะ";
-                                    const color = statusOptions[status]?.color || `#${Math.floor(Math.random()*16777215).toString(16)}`;
-
-                                    const card = `
-                        <div class="col-sm-2">
-                            <div class="rounded-3 text-white ps-3 pb-2" style="max-width: 18rem; background-color: ${color}">
-                                <div class="card-header">
-                                    <ion-icon name="people-outline"></ion-icon>
-                                    <div class="d-flex align-items-end">
-                                        <p style="font-size: 45px; margin: 0px;">${count}</p>
-                                        <p class="ms-2" style="font-size: 32px; margin: 0px; margin-bottom:.4rem;">งาน</p>
-                                    </div>
-                                    <p style="font-size: 20px; margin: 0px;">${textS}</p>
-                                </div>
+                                const card = document.createElement('div');
+                                card.className = 'col-sm-2';
+                                card.innerHTML = `
+                    <div class="rounded-3 text-white ps-3 pb-2" style="max-width: 18rem; background-color: ${color}">
+                        <div class="card-header">
+                            <ion-icon name="people-outline"></ion-icon>
+                            <div class="d-flex align-items-end">
+                                <p style="font-size: 45px; margin: 0px;" class="count">${count}</p>
+                                <p class="ms-2" style="font-size: 32px; margin: 0px; margin-bottom:.4rem;">งาน</p>
                             </div>
+                            <p style="font-size: 20px; margin: 0px;">${text}</p>
                         </div>
-                    `;
+                    </div>
+                `;
+                                fragment.appendChild(card);
+                            });
 
-                                    container.innerHTML += card;
+                            container.appendChild(fragment);
+                        } catch (err) {
+                            console.error("Error fetching cards:", err);
+                        }
+                    };
+
+
+                    const fetchTasks = async (type, tableId) => {
+                        try {
+                            const res = await fetch(`dashboard_get_tasks.php?type=${type}`);
+                            const data = await res.json();
+
+                            const tableSelector = `#${tableId}`;
+                            const tableElement = $(tableSelector);
+                            const isInitialized = $.fn.dataTable.isDataTable(tableSelector);
+                            const table = isInitialized ?
+                                tableElement.DataTable() :
+                                tableElement.DataTable({
+                                    order: [
+                                        [0, 'desc']
+                                    ],
+                                    destroy: true
                                 });
-                            })
-                            .catch(error => console.error('Error fetching data:', error));
-                    }
 
-                    function fetchTasks(type, tableId) {
-                        fetch(`dashboard_get_tasks.php?type=${type}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                let table = $.fn.dataTable.isDataTable(`#${tableId}`) ?
-                                    $(`#${tableId}`).DataTable() :
-                                    $(`#${tableId}`).DataTable({
-                                        order: [
-                                            [0, 'desc']
-                                        ],
-                                        destroy: true,
-                                    });
+                            table.clear();
+                            const tableBody = document.querySelector(`${tableSelector} tbody`);
+                            tableBody.innerHTML = '';
 
-                                table.clear();
+                            const renderRow = typeRenderers[type];
+                            const admin = document.body.dataset.admin || ""; // use from <body data-admin="...">
 
-                                let tableBody = document.querySelector(`#${tableId} tbody`);
-                                tableBody.innerHTML = "";
+                            data.forEach(row => {
+                                const tr = document.createElement('tr');
+                                tr.innerHTML = renderRow(row, admin);
+                                tableBody.appendChild(tr);
+                            });
 
-                                data.forEach(row => {
-                                    let tr = document.createElement("tr");
-                                    if (type === "today" || type === "over_due") {
-                                        tr.innerHTML = `
-                        <td>${row.id}</td>
-                        <td>${row.date_report}</td>
-                        <td>${row.time_report}</td>
-                        <td>${row.deviceName}</td>
-                        <td>${row.report}</td>
-                        <td>${row.reporter}</td>
-                        <td>${row.depart_name}</td>
-                        <td>${row.tel}</td>
-                        <td>${row.create_by}</td>
-                        <td>
-                            <form action="system/insert.php" method="post">
-                                <input type="hidden" name="username" value="<?= $admin ?>">
-                                <input type="hidden" name="id" value="${row.id}">
-                                <button type="submit" name="takeaway" class="btn btn-primary">รับงาน</button>
-                            </form>
-                        </td>
-                    `;
-                                    } else if (type === "in_progress") {
-                                        let takeFormatted = row.take ? row.take : "-";
-                                        tr.innerHTML = `
-                        <td>${row.id}</td>
-                        <td>${row.fname} ${row.lname}</td>
-                        <td>${row.deviceName}</td>
-                        <td>${row.report}</td>
-                        <td>${row.depart_name}</td>
-                        <td>${row.time_report}</td>
-                        <td>${takeFormatted}</td>
-                    `;
-                                    } else if (type === "calm") {
-                                        let reportFormatted = row.time_report ? row.time_report : "-";
-                                        let takeFormatted = row.take ? row.take : "-";
-                                        tr.innerHTML = `
-                        <td>${row.id}</td>
-                        <td>${row.fname} ${row.lname}</td>
-                        <td>${row.deviceName}</td>
-                        <td>${row.report}</td>
-                        <td>${row.depart_name}</td>
-                        <td>${reportFormatted}</td>
-                        <td>${takeFormatted}</td>
-                    `;
-                                    } else if (type === "finish") {
-                                        let reportFormatted = row.time_report ? row.time_report : "-";
-                                        let takeFormatted = row.take ? row.take : "-";
-                                        let closeTimeFormatted = row.close_date ? row.close_date : "-";
-                                        tr.innerHTML = `
-                        <td>${row.id}</td>
-                        <td>${row.fname} ${row.lname}</td>
-                        <td>${row.report}</td>
-                        <td>${row.depart_name}</td>
-                        <td>${row.sla}</td>
-                        <td>${row.kpi}</td>
-                        <td>${reportFormatted}</td>
-                        <td>${takeFormatted}</td>
-                        <td>${closeTimeFormatted}</td>
-                    `;
-                                    }
+                            table.rows.add($(tableBody).find("tr")).draw();
+                        } catch (err) {
+                            console.error("Error fetching tasks:", err);
+                        }
+                    };
 
-                                    tableBody.appendChild(tr);
-                                });
-                                table.rows.add($(tableBody).find("tr")).draw();
-                            })
-                            .catch(error => console.error("Error fetching tasks:", error));
-                    }
+                    // Initial load
+                    const taskTypes = [{
+                            type: "today",
+                            id: "dataAll"
+                        },
+                        {
+                            type: "in_progress",
+                            id: "inTime"
+                        },
+                        {
+                            type: "over_due",
+                            id: "dataAllNOTTAKE"
+                        },
+                        {
+                            type: "calm",
+                            id: "wait"
+                        },
+                        {
+                            type: "finish",
+                            id: "success"
+                        }
+                    ];
 
-                    // Call the functions on page load
-                    fetchTasks("today", "dataAll");
-                    fetchTasks("in_progress", "inTime");
-                    fetchTasks("over_due", "dataAllNOTTAKE");
-                    fetchTasks("calm", "wait");
-                    fetchTasks("finish", "success");
+                    taskTypes.forEach(({
+                        type,
+                        id
+                    }) => fetchTasks(type, id));
 
                     fetchCards('cards');
-                    // fetchTasks("success", "success");
 
                     // Optionally, refresh data every 30 seconds without reloading the page
                     setInterval(() => {
@@ -493,86 +507,7 @@ if (!isset($_SESSION["admin_log"])) {
                         fetchCards('cards');
                     }, 30000);
                 </script>
-
-                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const ctx = document.getElementById('myChart');
-                        <?php
-                        $sql_statuses = "SELECT status, COUNT(*) as count FROM data_report GROUP BY status";
-                        $stmt_statuses = $conn->prepare($sql_statuses);
-                        $stmt_statuses->execute();
-                        $statuses = $stmt_statuses->fetchAll(PDO::FETCH_ASSOC);
-
-                        // แปลง labels และ counts จาก status
-                        $status_labels = ['งานที่ยังไม่ได้รับ', 'กำลังดำเนินการ', 'รออะไหล่', 'งานที่เสร็จ'];
-                        $status_counts = ['0', '0', '0', '0'];
-                        foreach ($statuses as $status) {
-                            $status_code = $status['status'];
-                            $count = $status['count'];
-
-                            $status_counts[$status_code - 1] = $count;
-                        }
-
-                        // แปลงอาร์เรย์ counts เป็นสตริงที่คั่นด้วยเครื่องหมายจุลภาค
-                        $status_counts_str = implode(', ', $status_counts);
-
-                        ?>
-                        // Data from PHP
-                        const data = {
-                            labels: <?= json_encode($status_labels) ?>,
-                            datasets: [{
-                                label: 'จำนวนงาน',
-                                data: [<?= $status_counts_str ?>],
-
-                                backgroundColor: [
-                                    'rgba(255, 99, 132, 0.2)',
-                                    'rgba(255, 206, 86, 0.2)',
-                                    'rgba(54, 162, 235, 0.2)',
-                                    'rgba(75, 192, 192, 0.2)',
-                                ],
-                                borderColor: [
-                                    'rgba(255, 99, 132, 1)',
-                                    'rgba(255, 206, 86, 1)',
-                                    'rgba(54, 162, 235, 1)',
-                                    'rgba(75, 192, 192, 1)',
-                                ],
-                                borderWidth: 1
-                            }]
-                        };
-
-                        const options = {
-                            scales: {
-                                y: {
-                                    beginAtZero: true
-                                }
-                            }
-                        };
-
-                        new Chart(ctx, {
-                            type: 'bar',
-                            data: data,
-                            options: options
-                        });
-                        console.log('Labels:', data.labels);
-                        console.log('Data:', data.datasets[0].data);
-                    });
-                </script>
-                <hr>
             </div>
-            <br>
-            <script>
-                // Get the current date and time
-                const now = new Date();
-
-                // Format the time as HH:mm
-                const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-                // Set the current time as the default value for the input fields
-                const timeReportInputs = document.querySelectorAll('.time_report');
-                timeReportInputs.forEach(input => input.value = currentTime);
-            </script>
             <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
             <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
             <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
@@ -736,10 +671,10 @@ if (!isset($_SESSION["admin_log"])) {
                     });
                 });
             </script>
-            <footer class="mt-5 footer mt-auto py-3" style="background: #fff;">
+            <!-- <footer class="mt-5 footer mt-auto py-3" style="background: #fff;">
                 <marquee class="font-thai" style="font-weight: bold; font-size: 1rem"><span class="text-muted text-center">Design website by นายอภิชน ประสาทศรี , พุฒิพงศ์ ใหญ่แก้ว &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Coding โดย นายอานุภาพ ศรเทียน &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ควบคุมโดย นนท์ บรรณวัฒน์ นักวิชาการคอมพิวเตอร์ ปฏิบัติการ</span>
                 </marquee>
-            </footer>
+            </footer> -->
             <?php SC5() ?>
 
 

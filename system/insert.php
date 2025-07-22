@@ -29,7 +29,7 @@ if (isset($_POST['addUsers'])) { // เพิ่ม Admin
             }
         } else if (!isset($_SESSION['error'])) {
             $passwordhash = password_hash($password, PASSWORD_DEFAULT);
-            $sql = "INSERT INTO admin VALUES(:username,:password,:fname,:lname)";
+            $sql = "INSERT INTO admin (username, password, fname, lname) VALUES(:username,:password,:fname,:lname)";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(":username", $username);
             $stmt->bindParam(":password", $passwordhash);
