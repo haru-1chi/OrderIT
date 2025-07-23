@@ -1651,7 +1651,7 @@ WHERE id_ref = :id_ref";
 }
 if (isset($_POST['CheckAll'])) {
     $numberWork = generateNumberWork($conn) . ' S'; //gen numberWork โดยการเติมลงท้ายด้วย S
-    $dateWithdraw = $_POST["dateWithdraw"]; //วันที่ปัจจุบัน
+    $dateWithdraw = date('Y-m-d'); //วันที่ปัจจุบัน
     $refWithdraw = 23;
     $refWork = 10;
     $refDevice = 107;
@@ -1664,9 +1664,6 @@ if (isset($_POST['CheckAll'])) {
     if ($_POST['update_status']) {
         $update_status = array_map('intval', $_POST['update_status']);
     }
-    // $receiptDate = $_POST["dateWithdraw"];
-    // $deliveryDate = $_POST["dateWithdraw"];
-    // $closeDate = $_POST["dateWithdraw"];
     $note = "-";
     $status = 3;
     date_default_timezone_set('Asia/Bangkok');

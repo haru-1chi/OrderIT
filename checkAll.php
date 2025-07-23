@@ -3,19 +3,18 @@ session_start();
 require_once 'config/db.php';
 require_once 'template/navbar.php';
 
-if (isset($_SESSION['admin_log'])) {
-    $admin = $_SESSION['admin_log'];
-    $sql = "SELECT CONCAT(fname, ' ', lname) AS full_name FROM admin WHERE username = :admin";
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(":admin", $admin);
-    $stmt->execute();
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    $fullname = $result['full_name'];
-}
 if (!isset($_SESSION["admin_log"])) {
     $_SESSION["warning"] = "กรุณาเข้าสู่ระบบ";
     header("location: login.php");
+    exit;
 }
+$admin = $_SESSION['admin_log'];
+$sql = "SELECT CONCAT(fname, ' ', lname) AS full_name FROM admin WHERE username = :admin LIMIT 1";
+$stmt = $conn->prepare($sql);
+$stmt->bindParam(":admin", $admin);
+$stmt->execute();
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
+$fullname = $result['full_name'] ?? '-';
 
 ?>
 <!DOCTYPE html>
@@ -48,33 +47,14 @@ if (!isset($_SESSION["admin_log"])) {
 
     <div class="container-custom mt-5">
         <div class="mt-5">
-            <?php if (isset($_SESSION['error'])) { ?>
-                <div class="alert alert-danger" role="alert">
-                    <?php
-                    echo $_SESSION['error'];
-                    unset($_SESSION['error']);
-                    ?>
-                </div>
-            <?php } ?>
-
-            <?php if (isset($_SESSION['warning'])) { ?>
-                <div class="alert alert-warning" role="alert">
-                    <?php
-                    echo $_SESSION['warning'];
-                    unset($_SESSION['warning']);
-                    ?>
-                </div>
-            <?php } ?>
-
-            <?php if (isset($_SESSION['success'])) { ?>
-                <div class="alert alert-success" role="alert">
-                    <?php
-                    echo $_SESSION['success'];
-                    unset($_SESSION['success']);
-                    ?>
-                </div>
-            <?php }
-            ?>
+            <?php foreach (['error' => 'danger', 'warning' => 'warning', 'success' => 'success'] as $key => $class): ?>
+                <?php if (isset($_SESSION[$key])): ?>
+                    <div class="alert alert-<?= $class ?>" role="alert">
+                        <?= htmlspecialchars($_SESSION[$key], ENT_QUOTES, 'UTF-8') ?>
+                        <?php unset($_SESSION[$key]); ?>
+                    </div>
+                <?php endif; ?>
+            <?php endforeach; ?>
         </div>
         <h1 class="text-center my-5">สร้างใบเบิกประจำสัปดาห์</h1>
         <div class="row d-flex justify-content-between">
@@ -262,11 +242,8 @@ if (!isset($_SESSION["admin_log"])) {
                             <input type="text" name="reason" placeholder="เหตุผลและความจำเป็น" class="form-control" style="width: 300px">
                             <button type="submit" name="CheckAll" class="ms-2 btn btn-primary">บันทึกข้อมูล</button>
                         </div>
-
                         <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount" class="fs-4 fw-bold text-primary">0</span> บาท</p>
                     </div>
-                    <input type="hidden" name="dateWithdraw" class="form-control thaiDateInput">
-                    <input type="hidden" name="numberWork" value="<?= $newValueToCheck ?>">
                     <input type="hidden" name="username" value="<?= $fullname ?>">
                     <table class="table">
                         <thead class="table-primary">
@@ -329,6 +306,7 @@ if (!isset($_SESSION["admin_log"])) {
         });
     </script>
     <script>
+        //expand row
         document.addEventListener('DOMContentLoaded', () => {
             const toggleButtons = document.querySelectorAll('.toggle-expand');
 
@@ -751,70 +729,6 @@ if (!isset($_SESSION["admin_log"])) {
                 });
             });
         });
-
-
-        // document.querySelectorAll('.confirm-status').forEach(button => {
-        //     button.addEventListener('click', function() {
-        //         const orderId = this.dataset.orderId;
-        //         const status = 2;
-
-        //         if (confirm("คุณต้องการยืนยันสถานะ 'ส่งเอกสารไปยังพัสดุแล้ว' หรือไม่")) {
-        //             fetch('update_status.php', {
-        //                     method: 'POST',
-        //                     headers: {
-        //                         'Content-Type': 'application/x-www-form-urlencoded'
-        //                     },
-        //                     body: new URLSearchParams({
-        //                         status,
-        //                         order_id: orderId
-        //                     })
-        //                 })
-        //                 .then(response => response.text())
-        //                 .then(data => {
-        //                     alert(data); // Alert with success or error message
-        //                     location.reload(); // Reload page to reflect updated status
-        //                 })
-        //                 .catch(error => {
-        //                     console.error('Error:', error);
-        //                     alert('Something went wrong.');
-        //                 });
-        //         }
-        //     });
-        // });
-
-        // document.querySelectorAll('.confirm-status-switch').forEach(switchInput => {
-        //     switchInput.addEventListener('change', function() {
-        //         const orderId = this.dataset.orderId;
-        //         const status = 3;
-
-        //         if (this.checked) {
-        //             if (confirm("คุณต้องการยืนยันสถานะ 'ส่งเอกสารไปยังพัสดุแล้ว' หรือไม่")) {
-        //                 fetch('update_status.php', {
-        //                         method: 'POST',
-        //                         headers: {
-        //                             'Content-Type': 'application/x-www-form-urlencoded'
-        //                         },
-        //                         body: new URLSearchParams({
-        //                             status,
-        //                             order_id: orderId
-        //                         })
-        //                     })
-        //                     .then(response => response.text())
-        //                     .then(data => {
-        //                         alert(data); // Alert with success or error message
-        //                         location.reload(); // Reload page to reflect updated status
-        //                     })
-        //                     .catch(error => {
-        //                         console.error('Error:', error);
-        //                         alert('Something went wrong.');
-        //                     });
-        //             } else {
-        //                 // User canceled, revert the switch state
-        //                 this.checked = false;
-        //             }
-        //         }
-        //     });
-        // });
     </script>
 
     <script>
