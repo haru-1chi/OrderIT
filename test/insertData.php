@@ -99,21 +99,21 @@ if (!isset($_SESSION["admin_log"])) {
                     <!-- Modal -->
                     <div class="modal fade" id="หน่วยงาน" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=5" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=5" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">หน่วยงาน</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
+                                        <label for="floatingPassword">หน่วยงาน</label>
 
                                         <input type="text" class="form-control" name="depart_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">หน่วยงาน</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addDepart" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addDepart" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -158,7 +158,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                         </div>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="submit" id="form-s" name="depart" class="btn btn-primary">บันทึก</button>
+                                                    <button type="submit" name="depart" class="btn btn-primary">บันทึก</button>
                                                     </form>
                                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                                 </div>
@@ -219,7 +219,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <!-- Modal -->
                     <div class="modal fade" id="รูปแบบการทำงาน" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=7" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=7" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">รูปแบบการทำงาน</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -227,12 +227,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="workingName" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">รูปแบบการทำงาน</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addWorkingName" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addWorkingName" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -340,7 +339,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <!-- Modal -->
                     <div class="modal fade" id="ปัญหาที่พบ" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=8" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=8" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">ปัญหาที่พบ</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -348,16 +347,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="problemName" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">ปัญหาที่พบ</label>
-                                        
-                                    </div>
-                                    <div class="form-floating mb-3">
-                                        <input type="text" class="form-control" name="problemDetail" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">รายละเอียด</label>
+
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addproblemName" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addproblemName" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -465,7 +459,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <!-- Modal -->
                     <div class="modal fade" id="SLAModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=9" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=9" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">ปัญหาใน SLA</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -473,12 +467,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="sla_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">ปัญหาใน SLA</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addSLA" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addSLA" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -580,7 +573,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <!-- Modal -->
                     <div class="modal fade" id="addKPI" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=10" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=10" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">ตัวชี้วัด</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -588,12 +581,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="kpi_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">ตัวชี้วัด</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addKPI" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addKPI" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -702,7 +694,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <!-- Modal -->
                     <div class="modal fade" id="ประเภทการเบิก" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=1" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=1" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">ประเภทการเบิก</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -710,12 +702,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="withdraw_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">ประเภทการเบิก</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addWithdraw" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addWithdraw" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -819,7 +810,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <!-- Modal -->
                     <div class="modal fade" id="ประเภทงาน" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=2" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=2" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">ประเภทงาน</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -827,12 +818,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="work_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">ประเภทงาน</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addListWork" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addListWork" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -914,7 +904,7 @@ if (!isset($_SESSION["admin_log"])) {
                     </table>
                     <hr>
                 </div>
-                <div class="" id="page-column" data-pageId="3"> <!-- รายการเบิก -->
+                <div class="" id="page-column" data-pageId="4"> <!-- รายการเบิก -->
                     <h1>รายการเบิก</h1>
                     <hr>
 
@@ -938,7 +928,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <!-- Modal -->
                     <div class="modal fade" id="รายการเบิก" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=4" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=4" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">รายการเบิก</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -972,7 +962,7 @@ if (!isset($_SESSION["admin_log"])) {
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addmodels" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addmodels" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -1076,7 +1066,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <hr>
 
                 </div>
-                <div class="" id="page-column" data-pageId="4"> <!-- ร้านค้า -->
+                <div class="" id="page-column" data-pageId="6"> <!-- ร้านค้า -->
                     <h1>ร้านค้า</h1>
                     <hr>
                     <div>
@@ -1099,7 +1089,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <!-- Modal -->
                     <div class="modal fade" id="ร้านค้า" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=6"  id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=6" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">ร้านค้า</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1107,12 +1097,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="offer_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">ร้านค้า</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addOffer" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addOffer" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -1198,7 +1187,7 @@ if (!isset($_SESSION["admin_log"])) {
 
                 </div>
 
-                <div class="" id="page-column" data-pageId="5"> <!-- รายการอุปกรณ์ -->
+                <div class="" id="page-column" data-pageId="3"> <!-- รายการอุปกรณ์ -->
                     <h1>รายการอุปกรณ์</h1>
                     <hr>
                     <div>
@@ -1221,7 +1210,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <!-- Modal -->
                     <div class="modal fade" id="รายการอุปกรณ์" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=3" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=3" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">รายการอุปกรณ์</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1229,12 +1218,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="device_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">รายการอุปกรณ์</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addDevice" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addDevice" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -1322,7 +1310,7 @@ if (!isset($_SESSION["admin_log"])) {
                 <div class="col-sm-6" id="page-column" data-pageId="1"> <!-- มอบหมายตัวชี้วัด -->
                     <h1>มอบหมายตัวชี้วัด</h1>
                     <hr>
-                    <form action="system/insert.php" method="post" id="page-form" class="modal-content">
+                    <form action="system/insert.php" method="post">
                         <select class="form-select" name="kpi" aria-label="Default select example">
                             <?php
                             $sql = "SELECT * FROM kpi";
@@ -1348,7 +1336,7 @@ if (!isset($_SESSION["admin_log"])) {
                         </div>
 
                         <div class="d-flex justify-content-center my-3">
-                            <button type="submit" id="form-submit" name="assignKPI" class="btn btn-primary">มอบหมายงาน</button>
+                            <button type="submit" name="assignKPI" class="btn btn-primary">มอบหมายงาน</button>
                         </div>
 
                         <script>
@@ -1395,7 +1383,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <!-- Modal -->
                     <div class="modal fade" id="addUsers" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=11" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=11" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">เพิ่มผู้ใช้งาน</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1419,7 +1407,7 @@ if (!isset($_SESSION["admin_log"])) {
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addUsers" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addUsers" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -1501,7 +1489,7 @@ if (!isset($_SESSION["admin_log"])) {
             }
         }
     </script>
-    
+
     <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>

@@ -10,6 +10,21 @@ require_once '../config/db.php';
 // echo '</pre>';
 // exit;
 
+function backToInsertPage($data = [])
+{
+    $mainPageId = $_GET["mainPage"];
+    $pageId = $_GET["page"];
+    $link = "location: ../insertData.php?mainPage=$mainPageId&page=$pageId";
+
+    foreach ($data as $key => $value) {
+        $link .= "&" . urldecode($key) . "=" . urldecode($value);
+    }
+
+
+    // echo $link;
+    header($link);
+}
+
 if (isset($_POST['addUsers'])) { // เพิ่ม Admin
     $username = $_POST['username'];
     $password = $_POST['password'];
@@ -29,7 +44,7 @@ if (isset($_POST['addUsers'])) { // เพิ่ม Admin
             }
         } else if (!isset($_SESSION['error'])) {
             $passwordhash = password_hash($password, PASSWORD_DEFAULT);
-            $sql = "INSERT INTO admin (username, password, fname, lname) VALUES(:username,:password,:fname,:lname)";
+            $sql = "INSERT INTO admin(username, password, fname, lname) VALUES(:username,:password,:fname,:lname)";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(":username", $username);
             $stmt->bindParam(":password", $passwordhash);
@@ -38,13 +53,15 @@ if (isset($_POST['addUsers'])) { // เพิ่ม Admin
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
         echo '' . $e->getMessage() . '';
     }
 }
+
+
 
 if (isset($_POST['addWithdraw'])) { // เพิ่ม ประเภทการเบิก
     $withdraw_name = $_POST['withdraw_name'];
@@ -67,7 +84,7 @@ if (isset($_POST['addWithdraw'])) { // เพิ่ม ประเภทกา�
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -106,7 +123,10 @@ if (isset($_POST['assignKPI'])) {
     }
 
     $_SESSION["success"] = "มอบหมาย KPI สำเร็จ";
-    header("Location: ../insertData.php?kpi=" . $kpi_id);
+    backToInsertPage([
+        "kpi" => $kpi_id
+    ]);
+    // header("Location: ../insertData.php?kpi=" . $kpi_id);
     exit();
 }
 
@@ -131,7 +151,7 @@ if (isset($_POST['addListWork'])) { // เพิ่ม ประเภทงา�
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -159,7 +179,7 @@ if (isset($_POST['addDevice'])) { // เพิ่ม รายการอุป
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -193,7 +213,7 @@ if (isset($_POST['addmodels'])) { // เพิ่ม รายการอุป
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -221,7 +241,7 @@ if (isset($_POST['addDepart'])) { // เพิ่ม ประเภทงาน
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -249,7 +269,7 @@ if (isset($_POST['addOffer'])) { // เพิ่ม ร้านที่เส�
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -277,7 +297,7 @@ if (isset($_POST['addWorkingName'])) { // เพิ่ม ร้านที่�
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -287,29 +307,34 @@ if (isset($_POST['addWorkingName'])) { // เพิ่ม ร้านที่�
 if (isset($_POST['addproblemName'])) { // เพิ่ม ร้านที่เสนอราคา
     $problemName = $_POST['problemName'];
     $problemDetail = $_POST['problemDetail'];
+
     try {
         $sql = "SELECT * FROM problemlist WHERE problemName = :problemName";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":problemName", $problemName);
         $stmt->execute();
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
+        echo 1;
         if ($stmt->rowCount() > 0) {
             if ($result['problemName'] == $problemName) {
                 $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
                 header('location: ../insertData.php');
             }
         } else if (!isset($_SESSION['error'])) {
-            $sql = "INSERT INTO problemlist(problemName, problemDetail) VALUES(:problemName, problemDetail)";
+            echo 2;
+
+            $sql = "INSERT INTO problemlist(problemName, problemsDetail) VALUES(:problemName, :problemsDetail)";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(":problemName", $problemName);
-            $stmt->bindParam(":problemDetail", $problemDetail);
+            $stmt->bindParam(":problemsDetail", $problemDetail);
             if ($stmt->execute()) {
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
+        echo 3;
+
         echo '' . $e->getMessage() . '';
     }
 }
@@ -334,7 +359,7 @@ if (isset($_POST['addSLA'])) { // เพิ่ม ปัญหาใน SLA
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -362,7 +387,7 @@ if (isset($_POST['addKPI'])) { // เพิ่ม ตัวชี้วัด
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -1664,6 +1689,9 @@ if (isset($_POST['CheckAll'])) {
     if ($_POST['update_status']) {
         $update_status = array_map('intval', $_POST['update_status']);
     }
+    // $receiptDate = $_POST["dateWithdraw"];
+    // $deliveryDate = $_POST["dateWithdraw"];
+    // $closeDate = $_POST["dateWithdraw"];
     $note = "-";
     $status = 3;
     date_default_timezone_set('Asia/Bangkok');
