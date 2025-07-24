@@ -1546,7 +1546,6 @@ if (!isset($_SESSION["admin_log"])) {
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 
     <script>
-        import init from "Client/InsertDataPage/Main.js"
         $(document).ready(function() {
             $('#withdraw').DataTable();
             $('#work').DataTable();
