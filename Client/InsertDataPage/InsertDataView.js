@@ -4,7 +4,7 @@ export default class InsertDataView {
     this.mainContainer = document.getElementById("main-container");
 
     this.selectPageButton = document.querySelectorAll("#select-page-button");
-
+    this.allUpdateFormButton = document.querySelectorAll("#update-form-submit")
     this.allMainPages = document.querySelectorAll("#main-page");
     this.selectMainPageButton = document.querySelectorAll(
       "#select-main-page-button"
@@ -124,6 +124,19 @@ export default class InsertDataView {
     });
   }
 
+  bindUpdateFormSubmit(callback) {
+    this.allUpdateFormButton.forEach(updateButtonElement => {
+      const formId = updateButtonElement.dataset.target
+
+      const form = document.querySelector(`#${formId}`)
+      
+      updateButtonElement.addEventListener("click", event => {
+
+        callback(form, updateButtonElement, event)
+      })
+    })
+  }
+
   bindSelectMainPageButtonClicked(callback) {
     this.selectMainPageButton.forEach((mainPageButton) => {
       mainPageButton.addEventListener("click", callback);
@@ -131,11 +144,10 @@ export default class InsertDataView {
   }
 
   bindFormSubmit(callback) {
-    console.log("all forms:", this.allForms)
+    // console.log("all forms:", this.allForms)
 
     this.allForms.forEach(form => {
         const submitButton = form.querySelector("#form-submit")
-        console.log("Form submit button:", submitButton, "form:", form)
         submitButton.addEventListener("click", event => {
           callback(form, submitButton, event)
         })

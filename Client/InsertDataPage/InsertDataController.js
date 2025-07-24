@@ -45,5 +45,13 @@ export default class InsertDataController {
             form.action = `system/insert.php?mainPage=${this.currentMainPage}&page=${this.currentPage}`
             this.model.submitForm(form, submitButton)
         })
+
+        this.view.bindUpdateFormSubmit((form, submitButton, event) => {
+            event.preventDefault()
+            console.log("Test")
+            
+            form.action = `system/update.php?mainPage=${this.currentMainPage}&page=${this.currentPage}`
+            this.model.submitForm(form, submitButton)
+        })
     }
 }

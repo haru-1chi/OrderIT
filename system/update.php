@@ -2,6 +2,21 @@
 session_start();
 require_once '../config/db.php';
 
+function backToInsertPage($data = [])
+{
+    $mainPageId = $_GET["mainPage"];
+    $pageId = $_GET["page"];
+    $link = "location: ../insertData.php?mainPage=$mainPageId&page=$pageId";
+
+    foreach ($data as $key => $value) {
+        $link .= "&" . urldecode($key) . "=" . urldecode($value);
+    }
+    // echo $link;
+    header($link);
+}
+
+print_r($_GET);
+
 if (isset($_POST['withdraw'])) {
     $withdraw_name = $_POST['withdraw_name'];
     $withdraw_id = $_POST['withdraw_id'];
@@ -15,7 +30,7 @@ if (isset($_POST['withdraw'])) {
         if ($stmt->rowCount() > 0) {
             if ($result['withdraw_name'] == $withdraw_name) {
                 $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
-                header('location: ../insertData.php');
+                backToInsertPage();
             }
         } else if (!isset($_SESSION['error'])) {
             $sql = "UPDATE withdraw SET withdraw_name = :withdraw_name WHERE withdraw_id = :withdraw_id";
@@ -25,7 +40,7 @@ if (isset($_POST['withdraw'])) {
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -45,7 +60,7 @@ if (isset($_POST['work'])) {
         if ($stmt->rowCount() > 0) {
             if ($result['work_name'] == $work_name) {
                 $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
-                header('location: ../insertData.php');
+                backToInsertPage();
             }
         } else if (!isset($_SESSION['error'])) {
             $sql = "UPDATE listwork SET work_name = :work_name WHERE work_id = :work_id";
@@ -55,7 +70,7 @@ if (isset($_POST['work'])) {
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -75,7 +90,7 @@ if (isset($_POST['device'])) {
         if ($stmt->rowCount() > 0) {
             if ($result['device_name'] == $device_name) {
                 $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
-                header('location: ../insertData.php');
+                backToInsertPage();
             }
         } else if (!isset($_SESSION['error'])) {
             $sql = "UPDATE device SET device_name = :device_name WHERE device_id = :device_id";
@@ -85,7 +100,7 @@ if (isset($_POST['device'])) {
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -111,7 +126,7 @@ if (isset($_POST['models'])) {
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -131,7 +146,7 @@ if (isset($_POST['depart'])) {
         if ($stmt->rowCount() > 0) {
             if ($result['depart_name'] == $depart_name) {
                 $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
-                header('location: ../insertData.php');
+                backToInsertPage();
             }
         } else if (!isset($_SESSION['error'])) {
             $sql = "UPDATE depart SET depart_name = :depart_name WHERE depart_id = :depart_id";
@@ -141,7 +156,7 @@ if (isset($_POST['depart'])) {
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -161,7 +176,7 @@ if (isset($_POST['offer'])) {
         if ($stmt->rowCount() > 0) {
             if ($result['offer_name'] == $offer_name) {
                 $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
-                header('location: ../insertData.php');
+                backToInsertPage();
             }
         } else if (!isset($_SESSION['error'])) {
             $sql = "UPDATE offer SET offer_name = :offer_name WHERE offer_id = :offer_id";
@@ -171,7 +186,7 @@ if (isset($_POST['offer'])) {
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -191,7 +206,7 @@ if (isset($_POST['working'])) {
         if ($stmt->rowCount() > 0) {
             if ($result['workingName'] == $workingName) {
                 $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
-                header('location: ../insertData.php');
+                backToInsertPage();
             }
         } else if (!isset($_SESSION['error'])) {
             $sql = "UPDATE workinglist SET workingName = :workingName WHERE id = :id";
@@ -201,7 +216,7 @@ if (isset($_POST['working'])) {
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -212,27 +227,66 @@ if (isset($_POST['problemL'])) {
     $problemName = $_POST['problemName'];
     $problemDetail = $_POST['problemDetail'];
     $id = $_POST['id'];
-    try {
-        $sql = "SELECT * FROM problemlist WHERE problemName = :problemName";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(":problemName", $problemName);
-        $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($stmt->rowCount() > 0) {
-            if ($result['problemName'] == $problemName) {
-                $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
-                header('location: ../insertData.php');
+    function isProblemNameChanged()
+    {
+        global $conn, $problemName, $id;
+
+        try {
+   
+
+            $statement = $conn->prepare("SELECT * FROM  problemlist WHERE id = :id");
+            $statement->bindParam(":id", $id);
+            $statement->execute();
+            $data = $statement->fetch(PDO::FETCH_ASSOC);
+            if ($statement->rowCount() === 0) {
+                
+                return false;
             }
-        } else if (!isset($_SESSION['error'])) {
-            $sql = "UPDATE problemlist SET problemName = :problemName, problemDetail = :problemDetail  WHERE id = :id";
+        
+            if ($data["problemName"] !== $problemName) {
+       
+                return true;
+            }
+
+       
+
+            return false;
+        } catch (PDOException $error) {
+            echo $error->getMessage();
+            return false;
+        }
+    }
+
+    try {
+        $isChanged = isProblemNameChanged();
+     
+        echo $isChanged;
+    
+        if ($isChanged) {
+            $sql = "SELECT * FROM problemlist WHERE problemName = :problemName";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(":problemName", $problemName);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($stmt->rowCount() > 0) {
+                if ($result['problemName'] == $problemName) {
+                    $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
+                    backToInsertPage();
+                }
+            }
+        }
+
+        if (!isset($_SESSION['error'])) {
+            $sql = "UPDATE problemlist SET problemName = :problemName, problemsDetail = :problemsDetail  WHERE id = :id";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(":id", $id);
             $stmt->bindParam(":problemName", $problemName);
-            $stmt->bindParam(":problemDetail", $problemDetail);
+            $stmt->bindParam(":problemsDetail", $problemDetail);
             if ($stmt->execute()) {
                 $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -780,7 +834,7 @@ if (isset($_POST['sla'])) {
         if ($stmt->rowCount() > 0) {
             if ($result['sla_name'] == $sla_name) {
                 $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
-                header('location: ../insertData.php');
+                backToInsertPage();
             }
         } else if (!isset($_SESSION['error'])) {
             $sql = "UPDATE sla SET sla_name = :sla_name WHERE sla_id = :sla_id";
@@ -790,7 +844,7 @@ if (isset($_POST['sla'])) {
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {
@@ -810,7 +864,7 @@ if (isset($_POST['kpi'])) {
         if ($stmt->rowCount() > 0) {
             if ($result['kpi_name'] == $kpi_name) {
                 $_SESSION['error'] = 'มีรายการนี้อยู่แล้ว';
-                header('location: ../insertData.php');
+                backToInsertPage();
             }
         } else if (!isset($_SESSION['error'])) {
             $sql = "UPDATE kpi SET kpi_name = :kpi_name WHERE kpi_id = :kpi_id";
@@ -820,7 +874,7 @@ if (isset($_POST['kpi'])) {
 
             if ($stmt->execute()) {
                 $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
-                header("location: ../insertData.php");
+                backToInsertPage();
             }
         }
     } catch (PDOException $e) {

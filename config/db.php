@@ -4,8 +4,12 @@
 // $password = "msh10723@maesot";
 $servername = "localhost";
 // $servername = "172.16.190.17";
-$username = "AchirayaJ";
-$password = "Haru1chi_KzhsLov3r";
+// $username = "AchirayaJ";
+// $password = "Haru1chi_KzhsLov3r";
+
+$username = "root";
+$password = "";
+
 //อย่าลืมเปลี่ยน data connect เป็น http://172.16.190.6/ จากไฟล์ Itdata
 
 try {

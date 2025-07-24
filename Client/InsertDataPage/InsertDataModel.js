@@ -8,6 +8,8 @@ export default class InsertDataModel {
   submitForm(form, submitButton) {
     console.log("Form:", form)
     form.requestSubmit(submitButton)
+
+    
   }
 
   getMainPageGETData() {
