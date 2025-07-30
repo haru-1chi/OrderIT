@@ -15,6 +15,7 @@ export default class InsertDataController {
 
     #setupPages() {
         this.view.loadMainPage(this.initMainPage, this.initPage)
+        this.view.setMainPageActiveButton(this.initMainPage)
     }
     
     #setupEvents() {
@@ -34,6 +35,7 @@ export default class InsertDataController {
             this.currentPage = "1"
 
             this.view.loadMainPage(mainPageId, "1")
+            this.view.setMainPageActiveButton(mainPageId)
             console.log(mainPageId)
             this.model.setMainPageUrl(mainPageId, "1")
         })

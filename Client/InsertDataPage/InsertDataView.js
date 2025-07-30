@@ -4,16 +4,17 @@ export default class InsertDataView {
     this.mainContainer = document.getElementById("main-container");
 
     this.selectPageButton = document.querySelectorAll("#select-page-button");
-    this.allUpdateFormButton = document.querySelectorAll("#update-form-submit")
+    this.allUpdateFormButton = document.querySelectorAll("#update-form-submit");
     this.allMainPages = document.querySelectorAll("#main-page");
     this.selectMainPageButton = document.querySelectorAll(
       "#select-main-page-button"
     );
 
-    this.allForms = document.querySelectorAll("#page-form")
+    this.allForms = document.querySelectorAll("#page-form");
 
     this.currentPageElement;
     this.currentMainPageElement;
+    this.currentActiveMainPage;
 
     console.log("init view");
     console.log(this.selectPageButton);
@@ -59,7 +60,6 @@ export default class InsertDataView {
 
   #setupPages() {
     this.#disableAllMainPages();
-
   }
 
   loadPage(pageId) {
@@ -80,7 +80,32 @@ export default class InsertDataView {
     pageElement.style.display = "block";
 
     this.currentPageElement = pageElement;
+  }
 
+  getSelectMainPageButton(mainPageId) {
+    for (const selectButton of this.selectMainPageButton) {
+      if (selectButton.dataset.selectmainpage == mainPageId) {
+        return selectButton;
+      }
+    }
+  }
+
+  setMainPageActiveButton(mainPageId) {
+    const selectButton = this.getSelectMainPageButton(mainPageId)
+
+    if (!selectButton) {
+      console.error("Cannot get select main page button.")
+      return false
+    }
+
+    if (this.currentActiveMainPage) {
+      this.currentActiveMainPage.className = "default-main-page-button"
+    }
+
+    selectButton.className = "active-main-page-button"
+    this.currentActiveMainPage = selectButton
+
+    console.log("select button:", selectButton)
   }
 
   loadMainPage(mainPageId, pageId) {
@@ -94,47 +119,46 @@ export default class InsertDataView {
     mainPageElement.style.display = "block";
 
     this.#disableAllPages();
-    this.loadPage(pageId)
-    
-    
+    this.loadPage(pageId);
   }
 
   bindSelectPageButtonClicked(callback) {
     this.selectPageButton.forEach((selectPageElement) => {
-      const defaultId = selectPageElement.value
-      selectPageElement.addEventListener("change", event => {
-        callback(event)
-        selectPageElement.value = defaultId
-        
-        const selectedOption = selectPageElement.querySelector(`option[selected]`)
+      const defaultId = selectPageElement.value;
+      selectPageElement.addEventListener("change", (event) => {
+        callback(event);
+        selectPageElement.value = defaultId;
+
+        const selectedOption =
+          selectPageElement.querySelector(`option[selected]`);
 
         if (!selectedOption.value == defaultId) {
-          selectedOption.selected = false
+          selectedOption.selected = false;
         }
-          
-        const mainOption = selectPageElement.querySelector(`option[value="${defaultId}"]`)
-        console.log("Main option:")
+
+        const mainOption = selectPageElement.querySelector(
+          `option[value="${defaultId}"]`
+        );
+        console.log("Main option:");
         if (!mainOption) {
-          console.log("Cannot get main option.")
-          return false
+          console.log("Cannot get main option.");
+          return false;
         }
-        mainOption.selected = true
-        
+        mainOption.selected = true;
       });
     });
   }
 
   bindUpdateFormSubmit(callback) {
-    this.allUpdateFormButton.forEach(updateButtonElement => {
-      const formId = updateButtonElement.dataset.target
+    this.allUpdateFormButton.forEach((updateButtonElement) => {
+      const formId = updateButtonElement.dataset.target;
 
-      const form = document.querySelector(`#${formId}`)
-      
-      updateButtonElement.addEventListener("click", event => {
+      const form = document.querySelector(`#${formId}`);
 
-        callback(form, updateButtonElement, event)
-      })
-    })
+      updateButtonElement.addEventListener("click", (event) => {
+        callback(form, updateButtonElement, event);
+      });
+    });
   }
 
   bindSelectMainPageButtonClicked(callback) {
@@ -146,11 +170,11 @@ export default class InsertDataView {
   bindFormSubmit(callback) {
     // console.log("all forms:", this.allForms)
 
-    this.allForms.forEach(form => {
-        const submitButton = form.querySelector("#form-submit")
-        submitButton.addEventListener("click", event => {
-          callback(form, submitButton, event)
-        })
-    })
+    this.allForms.forEach((form) => {
+      const submitButton = form.querySelector("#form-submit");
+      submitButton.addEventListener("click", (event) => {
+        callback(form, submitButton, event);
+      });
+    });
   }
 }
