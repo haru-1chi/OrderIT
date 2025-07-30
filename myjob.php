@@ -751,8 +751,10 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 $assignedTask = array_filter($allAdmins, fn($admin) => $admin['username'] !== $currentAdmin);
 
                                                                 $reportName = $row['report'];
-                                                                $checkAssignedStmt = $conn->prepare("SELECT username FROM data_report WHERE report = :report");
+                                                                $checkAssignedStmt = $conn->prepare("SELECT username FROM data_report WHERE report = :report AND date_report = :date_report AND time_report = :time_report");
                                                                 $checkAssignedStmt->bindParam(":report", $reportName);
+                                                                $checkAssignedStmt->bindParam(":date_report", $row['date_report']);
+                                                                $checkAssignedStmt->bindParam(":time_report", $row['time_report']);
                                                                 $checkAssignedStmt->execute();
                                                                 $alreadyAssigned = $checkAssignedStmt->fetchAll(PDO::FETCH_COLUMN);
                                                                 ?>
@@ -2372,8 +2374,10 @@ ORDER BY id DESC;
                                                                 $assignedTask = array_filter($allAdmins, fn($admin) => $admin['username'] !== $currentAdmin);
 
                                                                 $reportName = $row['report'];
-                                                                $checkAssignedStmt = $conn->prepare("SELECT username FROM data_report WHERE report = :report");
+                                                                $checkAssignedStmt = $conn->prepare("SELECT username FROM data_report WHERE report = :report AND date_report = :date_report AND time_report = :time_report");
                                                                 $checkAssignedStmt->bindParam(":report", $reportName);
+                                                                $checkAssignedStmt->bindParam(":date_report", $row['date_report']);
+                                                                $checkAssignedStmt->bindParam(":time_report", $row['time_report']);
                                                                 $checkAssignedStmt->execute();
                                                                 $alreadyAssigned = $checkAssignedStmt->fetchAll(PDO::FETCH_COLUMN);
                                                                 ?>
@@ -3343,13 +3347,26 @@ ORDER BY id DESC;
 </script>
 <script>
     $(function() {
-        function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
+        function setupAutocomplete({
+            type,
+            inputSelector,
+            hiddenInputSelector,
+            sourceUrl,
+            confirmMessage = "คุณต้องการเพิ่มรายการนี้หรือไม่?",
+            resetValue = "",
+            defaultHiddenId = ""
+        }) {
             let inputChanged = false;
+            let alertShown = false; // Flag to track if the alert has been shown already
 
-            $(inputId).autocomplete({
+            const $input = $(inputSelector);
+            const $hiddenInput = $(hiddenInputSelector);
+
+            $input.autocomplete({
                     source: function(request, response) {
                         $.ajax({
-                            url: url,
+                            url: sourceUrl,
+                            method: "GET",
                             dataType: "json",
                             data: {
                                 term: request.term,
@@ -3357,15 +3374,24 @@ ORDER BY id DESC;
                             },
                             success: function(data) {
                                 response(data); // Show suggestions
+                            },
+                            error: function() {
+                                response([]);
                             }
                         });
                     },
                     minLength: 1,
                     autoFocus: true,
                     select: function(event, ui) {
-                        $(inputId).val(ui.item.label); // Fill input with label
-                        $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
-                        return false; // Prevent default behavior
+                        if (ui.item && ui.item.value !== "") {
+                            $input.val(ui.item.label);
+                            $hiddenInput.val(ui.item.value);
+                        } else {
+                            $input.val('');
+                            $hiddenInput.val('');
+                        }
+                        inputChanged = false;
+                        return false;
                     }
                 })
                 .data("ui-autocomplete")._renderItem = function(ul, item) {
@@ -3374,79 +3400,60 @@ ORDER BY id DESC;
                         .appendTo(ul);
                 };
 
-            $(inputId).on("autocompletefocus", function(event, ui) {
-                // You can log or do something here but won't change the input value
-                // console.log("Item highlighted: ", ui.item.label);
-                return false;
-            });
-
-            $(inputId).on("keyup", function() {
+            $input.on("input", function() {
                 inputChanged = true;
             });
 
-            $(inputId).on("blur", function() {
-                if (inputChanged) {
-                    const userInput = $(this).val().trim();
-                    if (userInput !== "") {
-                        inputChanged = false;
-                        return;
-                    }
-                    if (userInput === "") return;
+            $input.on("blur", function() {
+                if (!inputChanged) return;
 
-
-                    let found = false;
-                    $(this).autocomplete("instance").menu.element.find("div").each(function() {
-                        if ($(this).text() === userInput) {
-                            found = true;
-                            return false;
-                        }
-                    });
-
-                    if (!found) {
-                        Swal.fire({
-                            title: confirmMessage,
-                            icon: "info",
-                            showCancelButton: true,
-                            confirmButtonText: "ใช่",
-                            cancelButtonText: "ไม่"
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                $.ajax({
-                                    url: addDataUrl,
-                                    method: "POST",
-                                    data: {
-                                        dataToInsert: userInput
-                                    },
-                                    success: function(response) {
-                                        console.log("Data inserted successfully!");
-                                        $(hiddenInputId).val(response); // Set inserted ID
-                                    },
-                                    error: function(xhr, status, error) {
-                                        console.error("Error inserting data:", error);
-                                    }
-                                });
-                            } else {
-                                $(inputId).val(""); // Clear input
-                                $(hiddenInputId).val("");
-                            }
-                        });
-                    }
+                const enteredValue = $input.val().trim();
+                if (!enteredValue) {
+                    $hiddenInput.val('');
+                    return;
                 }
+
+                $.ajax({
+                    url: sourceUrl,
+                    method: "GET",
+                    dataType: "json",
+                    data: {
+                        term: enteredValue,
+                        type: type
+                    },
+                    success: function(data) {
+                        const found = data.some(item => item.label === enteredValue);
+                        if (!found) {
+                            alertShown = true;
+                            Swal.fire({
+                                icon: 'warning',
+                                title: confirmMessage,
+                                text: 'หากต้องการเพิ่ม กรุณาติดต่อแอดมิน',
+                                confirmButtonText: 'ตกลง'
+                            }).then(() => {
+                                $input.val(resetValue);
+                                $hiddenInput.val(defaultHiddenId);
+                                alertShown = false;
+                            });
+                        }
+                    }
+                });
                 inputChanged = false; // Reset the flag
             });
         }
 
         // Initialize autocomplete for all dynamically generated inputs
         $("input[id^='deviceInput']").each(function() {
-            const i = $(this).attr("id").replace("deviceInput", ""); // Extract index
-            setupAutocomplete(
-                "device",
-                `#deviceInput${i}`,
-                `#deviceId${i}`,
-                "autocomplete.php",
-                "insertDevice.php",
-                "คุณต้องการเพิ่มข้อมูลอุปกรณ์นี้หรือไม่?"
-            );
+            const index = $(this).attr("id").replace("deviceInput", "");
+            setupAutocomplete({
+                type: "device",
+                inputSelector: `#deviceInput${index}`,
+                hiddenInputSelector: `#deviceId${index}`,
+                sourceUrl: "autocomplete.php",
+                confirmMessage: "ไม่พบหน่วยงานนี้ในระบบ",
+                resetValue: "-",
+                defaultHiddenId: "105"
+            });
         });
     });
 </script>

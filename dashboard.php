@@ -356,6 +356,24 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                 </form>
             </td>
         `,
+                        over_due: (row, admin) => `
+            <td>${row.id}</td>
+            <td>${row.date_report}</td>
+            <td>${row.time_report}</td>
+            <td>${row.deviceName}</td>
+            <td>${row.report}</td>
+            <td>${row.reporter}</td>
+            <td>${row.depart_name}</td>
+            <td>${row.tel}</td>
+            <td>${row.create_by}</td>
+            <td>
+                <form action="system/insert.php" method="post">
+                    <input type="hidden" name="username" value="${admin}">
+                    <input type="hidden" name="id" value="${row.id}">
+                    <button type="submit" name="takeaway" class="btn btn-primary">รับงาน</button>
+                </form>
+            </td>
+        `,
                         in_progress: row => `
             <td>${row.id}</td>
             <td>${row.fname} ${row.lname}</td>

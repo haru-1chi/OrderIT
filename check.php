@@ -188,55 +188,7 @@ ORDER BY nd.id, oi.id
     $devices = [];
     $items = [];
   }
-
-  function toMonthThai($m)
-  {
-    $monthNamesThai = array(
-      "",
-      "มกราคม",
-      "กุมภาพันธ์",
-      "มีนาคม",
-      "เมษายน",
-      "พฤษภาคม",
-      "มิถุนายน",
-      "กรกฎาคม",
-      "สิงหาคม",
-      "กันยายน",
-      "ตุลาคม",
-      "พฤศจิกายน",
-      "ธันวาคม"
-    );
-    return $monthNamesThai[$m];
-  }
-
-  function formatDateThai($date)
-  {
-    if ($date == null || $date == "") {
-      return ""; // ถ้าวันที่เป็นค่าว่างให้คืนค่าว่างเปล่า
-    }
-
-    // แปลงวันที่ในรูปแบบ Y-m-d เป็น timestamp
-    $timestamp = strtotime($date);
-
-    // ดึงปีไทย
-    $yearThai = date('Y', $timestamp);
-
-    // ดึงเดือน
-    $monthNumber = date('n', $timestamp);
-
-    // แปลงเดือนเป็นภาษาไทย
-    $monthThai = toMonthThai($monthNumber);
-
-    // ดึงวันที่
-    $day = date('d', $timestamp);
-
-    // สร้างรูปแบบวันที่ใหม่
-    $formattedDate = "$day $monthThai $yearThai";
-
-    return $formattedDate;
-  }
   ?>
-
 
   <div class="container-custom mt-3">
     <div class="mt-3">
@@ -307,7 +259,6 @@ ORDER BY nd.id, oi.id
 
                   <?php
 
-                  $numberWork = $_GET['numberWork'] ?? null;
                   $statusField = $_GET['statusField'] ?? '';
                   $validWorkNumbers = array_column($d, 'numberWork');
 
@@ -796,7 +747,7 @@ ORDER BY nd.id, oi.id
 
                           Swal.fire({
                             title: 'คุณแน่ใจหรือไม่?',
-                            text: `คุณต้องการอัพเดตสถานะ "${selectedStatusText}" ใช่หรือไม่`,
+                            text: `คุณต้องการอัพเดตสถานะอ "${selectedStatusText}" ใช่หรือไม่`,
                             icon: 'warning',
                             showCancelButton: true,
                             confirmButtonText: 'ใช่',
@@ -1235,126 +1186,9 @@ ORDER BY nd.id, oi.id
               <div class="col-sm-6">
                 <div class="mb-3">
                   <label for="departInput">หน่วยงาน</label>
-                  <input type="text" class="form-control" id="departInput" name="ref_depart">
-                  <input type="hidden" id="departId" name="depart_id">
+                  <input type="text" class="form-control" id="departInput-create" name="ref_depart">
+                  <input type="hidden" id="departId-create" name="depart_id">
                 </div>
-
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
-
-                <!-- Add SweetAlert2 JS -->
-                <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
-
-                <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-                <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-                <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-                <script>
-                  $(function() {
-                    function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
-                      let inputChanged = false;
-                      let alertShown = false; // Flag to track if the alert has been shown already
-
-                      $(inputId).autocomplete({
-                          source: function(request, response) {
-                            $.ajax({
-                              url: url,
-                              dataType: "json",
-                              data: {
-                                term: request.term,
-                                type: type
-                              },
-                              success: function(data) {
-                                response(data); // Show suggestions
-                              }
-                            });
-                          },
-                          minLength: 1,
-                          autoFocus: true,
-                          select: function(event, ui) {
-                            $(inputId).val(ui.item.label); // Fill input with label
-                            $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
-                            return false; // Prevent default behavior
-                          }
-                        })
-                        .data("ui-autocomplete")._renderItem = function(ul, item) {
-                          return $("<li>")
-                            .append("<div>" + item.label + "</div>")
-                            .appendTo(ul);
-                        };
-
-                      $(inputId).on("autocompletefocus", function(event, ui) {
-                        console.log("Item highlighted: ", ui.item.label);
-                        return false;
-                      });
-
-                      $(inputId).on("keyup", function() {
-                        inputChanged = true;
-                      });
-
-                      $(inputId).on("blur", function() {
-                        if (inputChanged && !alertShown) {
-                          const userInput = $(this).val().trim();
-                          const hiddenValue = $(hiddenInputId).val();
-                          if (userInput === "") return;
-                          if (hiddenValue !== "") {
-                            inputChanged = false;
-                            return;
-                          }
-                          let found = false;
-                          $(this).autocomplete("instance").menu.element.find("div").each(function() {
-                            if ($(this).text() === userInput) {
-                              found = true;
-                              return false;
-                            }
-                          });
-
-                          if (!found) {
-                            alertShown = true; // Prevent the alert from firing again
-                            // Show SweetAlert to confirm insert data
-                            Swal.fire({
-                              title: confirmMessage,
-                              icon: "info",
-                              showCancelButton: true,
-                              confirmButtonText: "ใช่",
-                              cancelButtonText: "ไม่"
-                            }).then((result) => {
-                              if (result.isConfirmed) {
-                                $.ajax({
-                                  url: addDataUrl,
-                                  method: "POST",
-                                  data: {
-                                    dataToInsert: userInput
-                                  },
-                                  success: function(response) {
-                                    console.log("Data inserted successfully!");
-                                    $(hiddenInputId).val(response); // Set inserted ID
-                                  },
-                                  error: function(xhr, status, error) {
-                                    console.error("Error inserting data:", error);
-                                  }
-                                });
-                              } else {
-                                $(inputId).val(""); // Clear input if canceled
-                                $(hiddenInputId).val("");
-                              }
-                              alertShown = false; // Reset the flag after the action
-                            });
-                          }
-                        }
-                        inputChanged = false; // Reset the flag
-                      });
-                    }
-
-                    setupAutocomplete(
-                      "depart",
-                      "#departInput",
-                      "#departId",
-                      "autocomplete.php",
-                      "insertDepart.php",
-                      "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
-                    );
-                  });
-                </script>
               </div>
 
               <div class="col-sm-6">
@@ -1495,92 +1329,6 @@ ORDER BY nd.id, oi.id
             </div>
 
             <!-- -------------------------------overlayModal------------------------------------- -->
-            <div id="overlayModalTask-modal" class="modal modal-container" style="display: none;">
-              <div class="p-5 d-flex justify-content-center gap-4">
-                <div class="modal-content overlay-modal">
-                  <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">พบรายการที่เคยเบิกไปแล้ว</h1>
-                    <button type="button" class="btn-close"
-                      onclick="toggleModal('#overlayModalTask-modal')">
-                    </button>
-
-                  </div>
-                  <div class="modal-body">
-                    <div class="row">
-                      <h5>หมายเลขครุภัณฑ์ <strong class="text-danger" id="duplicateAssetNumber"></strong> เคยเบิกไปแล้ว</h5>
-
-                      <div class="col-sm-12">
-                        <div class="btn-group my-2" role="group" aria-label="Order toggle button group" id="orderRadioGroup"></div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-3">
-                          <label id="basic-addon1">วันที่ออกใบเบิก</label>
-                          <input type="date" name="dateWithdraw" class="form-control" disabled>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-2">
-                          <label id="basic-addon1">หมายเลขครุภัณฑ์</label>
-
-                          <div class="d-flex device-number-row">
-                            <input type="text" class="form-control" disabled>
-                          </div>
-
-                        </div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-2">
-                          <label for="inputGroupSelect01">รายการอุปกรณ์</label>
-                          <input type="text" class="form-control" name="device_name" disabled>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-2">
-                          <label for="departInput">หน่วยงาน</label>
-                          <input type="text" class="form-control" name="depart_name" disabled>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-12">
-                        <div class="mb-2">
-                          <label for="inputGroupSelect01">หมายเหตุ
-                          </label>
-                          <input type="text" name="note" class="form-control" disabled>
-                        </div>
-                      </div>
-
-                      <div class="d-flex justify-content-end align-items-center mb-2">
-                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-sub" class="fs-4 fw-bold text-primary">0</span> บาท</p>
-                      </div>
-                      <table id="pdf" style="width: 100%;" class="table mb-4">
-                        <thead class="table-primary">
-                          <tr class="text-center">
-                            <th scope="col" style="text-align:center;">ลำดับ</th>
-                            <th scope="col" style="text-align:center;">รายการ</th>
-                            <th scope="col" style="text-align:center;">จำนวน</th>
-                            <th scope="col" style="text-align:center;">ราคา</th>
-                            <th scope="col" style="text-align:center;">รวม</th>
-                          </tr>
-                        </thead>
-
-                        <tbody id="table-body-sub">
-                        </tbody>
-                      </table>
-                      <div class="col-sm-6">
-                        <button type="button" class="w-100 btn btn-secondary" onclick="toggleModal('#overlayModalTask-modal')">ย้อนกลับ</button>
-                      </div>
-                      <div class="col-sm-6">
-                        <button type="submit" class="w-100 btn btn-success">ยืนยันที่จะเบิก</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </form>
         </div>
       </div>
@@ -1723,126 +1471,9 @@ ORDER BY nd.id, oi.id
                     $stmt->execute([$rowData['refDepart']]);
                     $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
                     ?>
-                    <input type="text" class="form-control" id="departInput1" name="ref_depart" value="<?= $departRow['depart_name'] ?>">
-                    <input type="hidden" name="depart_id" id="departId1" value="<?= $rowData['refDepart'] ?>">
+                    <input type="text" class="form-control" id="departInput-copied" name="ref_depart" value="<?= $departRow['depart_name'] ?>">
+                    <input type="hidden" name="depart_id" id="departId-copied" value="<?= $rowData['refDepart'] ?>">
                   </div>
-
-                  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
-
-                  <!-- Add SweetAlert2 JS -->
-                  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
-
-                  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-                  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-                  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-                  <script>
-                    $(function() {
-                      function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
-                        let inputChanged = false;
-                        let alertShown = false; // Flag to track if the alert has been shown already
-
-                        $(inputId).autocomplete({
-                            source: function(request, response) {
-                              $.ajax({
-                                url: url,
-                                dataType: "json",
-                                data: {
-                                  term: request.term,
-                                  type: type
-                                },
-                                success: function(data) {
-                                  response(data); // Show suggestions
-                                }
-                              });
-                            },
-                            minLength: 1,
-                            autoFocus: true,
-                            select: function(event, ui) {
-                              $(inputId).val(ui.item.label); // Fill input with label
-                              $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
-                              return false; // Prevent default behavior
-                            }
-                          })
-                          .data("ui-autocomplete")._renderItem = function(ul, item) {
-                            return $("<li>")
-                              .append("<div>" + item.label + "</div>")
-                              .appendTo(ul);
-                          };
-
-                        $(inputId).on("autocompletefocus", function(event, ui) {
-                          console.log("Item highlighted: ", ui.item.label);
-                          return false;
-                        });
-
-                        $(inputId).on("keyup", function() {
-                          inputChanged = true;
-                        });
-
-                        $(inputId).on("blur", function() {
-                          if (inputChanged && !alertShown) {
-                            const userInput = $(this).val().trim();
-                            const hiddenValue = $(hiddenInputId).val();
-                            if (userInput === "") return;
-                            if (hiddenValue !== "") {
-                              inputChanged = false;
-                              return;
-                            }
-                            let found = false;
-                            $(this).autocomplete("instance").menu.element.find("div").each(function() {
-                              if ($(this).text() === userInput) {
-                                found = true;
-                                return false;
-                              }
-                            });
-
-                            if (!found) {
-                              alertShown = true; // Prevent the alert from firing again
-                              // Show SweetAlert to confirm insert data
-                              Swal.fire({
-                                title: confirmMessage,
-                                icon: "info",
-                                showCancelButton: true,
-                                confirmButtonText: "ใช่",
-                                cancelButtonText: "ไม่"
-                              }).then((result) => {
-                                if (result.isConfirmed) {
-                                  $.ajax({
-                                    url: addDataUrl,
-                                    method: "POST",
-                                    data: {
-                                      dataToInsert: userInput
-                                    },
-                                    success: function(response) {
-                                      console.log("Data inserted successfully!");
-                                      $(hiddenInputId).val(response); // Set inserted ID
-                                    },
-                                    error: function(xhr, status, error) {
-                                      console.error("Error inserting data:", error);
-                                    }
-                                  });
-                                } else {
-                                  $(inputId).val(""); // Clear input if canceled
-                                  $(hiddenInputId).val("");
-                                }
-                                alertShown = false; // Reset the flag after the action
-                              });
-                            }
-                          }
-                          inputChanged = false; // Reset the flag
-                        });
-                      }
-
-                      setupAutocomplete(
-                        "depart",
-                        "#departInput1",
-                        "#departId1",
-                        "autocomplete.php",
-                        "insertDepart.php",
-                        "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
-                      );
-                    });
-                  </script>
                 </div>
 
                 <div class="col-sm-6">
@@ -1988,113 +1619,100 @@ ORDER BY nd.id, oi.id
                 </div>
               <?php } ?>
             </div>
-            <!-- -------------------------------overlayModal------------------------------------- -->
-            <div id="overlayModalTask-copied" class="modal modal-container" style="display: none;">
-              <div class="p-5 d-flex justify-content-center gap-4">
-                <div class="modal-content overlay-modal">
-                  <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">พบรายการที่เคยเบิกไปแล้ว</h1>
-                    <button type="button" class="btn-close"
-                      onclick="toggleModal('#overlayModalTask-copied')">
-                    </button>
-
-                  </div>
-                  <div class="modal-body">
-                    <div class="row">
-                      <h5>หมายเลขครุภัณฑ์ <strong class="text-danger" id="duplicateAssetNumber"></strong> เคยเบิกไปแล้ว</h5>
-
-                      <div class="col-sm-12">
-                        <div class="btn-group my-2" role="group" aria-label="Order toggle button group" id="orderRadioGroup"></div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-3">
-                          <label id="basic-addon1">วันที่ออกใบเบิก</label>
-                          <input type="date" name="dateWithdraw" class="form-control" disabled>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-2">
-                          <label id="basic-addon1">หมายเลขครุภัณฑ์</label>
-
-                          <div class="d-flex device-number-row">
-                            <input type="text" class="form-control" disabled>
-                          </div>
-
-                        </div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-2">
-                          <label for="inputGroupSelect01">รายการอุปกรณ์</label>
-                          <input type="text" class="form-control" name="device_name" disabled>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-6">
-                        <div class="mb-2">
-                          <label for="departInput">หน่วยงาน</label>
-                          <input type="text" class="form-control" name="depart_name" disabled>
-                        </div>
-                      </div>
-
-                      <div class="col-sm-12">
-                        <div class="mb-2">
-                          <label for="inputGroupSelect01">หมายเหตุ
-                          </label>
-                          <input type="text" name="note" class="form-control" disabled>
-                        </div>
-                      </div>
-
-                      <div class="d-flex justify-content-end align-items-center mb-2">
-                        <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-sub" class="fs-4 fw-bold text-primary">0</span> บาท</p>
-                      </div>
-                      <table id="pdf" style="width: 100%;" class="table mb-4">
-                        <thead class="table-primary">
-                          <tr class="text-center">
-                            <th scope="col" style="text-align:center;">ลำดับ</th>
-                            <th scope="col" style="text-align:center;">รายการ</th>
-                            <th scope="col" style="text-align:center;">จำนวน</th>
-                            <th scope="col" style="text-align:center;">ราคา</th>
-                            <th scope="col" style="text-align:center;">รวม</th>
-                          </tr>
-                        </thead>
-
-                        <tbody id="table-body-sub">
-                        </tbody>
-                      </table>
-                      <div class="col-sm-6">
-                        <button type="button" class="w-100 btn btn-secondary" onclick="toggleModal('#overlayModalTask-copied')">ย้อนกลับ</button>
-                      </div>
-                      <div class="col-sm-6">
-                        <button type="submit" class="w-100 btn btn-success">ยืนยันที่จะเบิก</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </form>
         </div>
       </div>
     </div>
   </div>
 
+  <div id="overlayModalTask" class="modal modal-container" style="display: none;">
+    <div class="p-5 d-flex justify-content-center gap-4">
+      <div class="modal-content overlay-modal">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="staticBackdropLabel">พบรายการที่เคยเบิกไปแล้ว</h1>
+          <button type="button" class="btn-close"
+            onclick="toggleModal('#overlayModalTask')">
+          </button>
 
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <h5>หมายเลขครุภัณฑ์ <strong class="text-danger" id="duplicateAssetNumber"></strong> เคยเบิกไปแล้ว</h5>
+
+            <div class="col-sm-12">
+              <div class="btn-group my-2" role="group" aria-label="Order toggle button group" id="radioGroup"></div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="mb-3">
+                <label id="basic-addon1">วันที่ออกใบเบิก</label>
+                <input type="date" name="dateWithdraw" class="form-control" disabled>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="mb-2">
+                <label id="basic-addon1">หมายเลขครุภัณฑ์</label>
+
+                <div class="d-flex device-number-row">
+                  <input type="text" class="form-control" disabled>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="mb-2">
+                <label for="inputGroupSelect01">รายการอุปกรณ์</label>
+                <input type="text" class="form-control" name="device_name" disabled>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="mb-2">
+                <label for="departInput">หน่วยงาน</label>
+                <input type="text" class="form-control" name="depart_name" disabled>
+              </div>
+            </div>
+
+            <div class="col-sm-12">
+              <div class="mb-2">
+                <label for="inputGroupSelect01">หมายเหตุ
+                </label>
+                <input type="text" name="note" class="form-control" disabled>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end align-items-center mb-2">
+              <p class="m-0 fs-5">รวมทั้งหมด <span id="total-amount-sub" class="fs-4 fw-bold text-primary">0</span> บาท</p>
+            </div>
+            <table id="pdf" style="width: 100%;" class="table mb-4">
+              <thead class="table-primary">
+                <tr class="text-center">
+                  <th scope="col" style="text-align:center;">ลำดับ</th>
+                  <th scope="col" style="text-align:center;">รายการ</th>
+                  <th scope="col" style="text-align:center;">จำนวน</th>
+                  <th scope="col" style="text-align:center;">ราคา</th>
+                  <th scope="col" style="text-align:center;">รวม</th>
+                </tr>
+              </thead>
+
+              <tbody id="table-body-sub">
+              </tbody>
+            </table>
+            <div class="col-sm-6">
+              <button type="button" class="w-100 btn btn-secondary" onclick="toggleModal('#overlayModalTask')">ย้อนกลับ</button>
+            </div>
+            <div class="col-sm-6">
+              <button id="confirmSubmit" type="button" class="w-100 btn btn-success">ยืนยันที่จะเบิก</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
-    //ฟังก์ชั่น sumTotal ที่ทำงานเฉพาะ main
-    // function calculateSumTotal() {
-    //   let total = 0;
-    //   const sumInputs = document.querySelectorAll('input.no-toggle'); //กำหนดได้ว่าเป็น sumTotal ของ field ไหน
-    //   sumInputs.forEach(input => {
-    //     total += parseFloat(input.value) || 0; // Make sure to handle NaN if value is empty
-    //   });
-    //   // Update the total display
-    //   document.getElementById('total-amount').textContent = total.toLocaleString(); //กำหนดได้ว่าเป็น sumTotal ของ field ไหน
-    // }
-
     function calculateSumTotal(tableBodyId) {
       let total = 0;
       const sumInputs = document.querySelectorAll(`#${tableBodyId} input.no-toggle`);
@@ -2362,66 +1980,6 @@ ORDER BY nd.id, oi.id
     }
     bindAutoList();
   </script>
-
-  <script>
-    document.addEventListener('input', function(event) {
-      if (event.target && event.target.classList.contains('limitedTextarea')) {
-        const lines = event.target.value.split('\n');
-        const maxRows = 2; // จำนวนแถวสูงสุดที่ต้องการ
-        if (lines.length > maxRows) {
-          event.target.value = lines.slice(0, maxRows).join('\n');
-        }
-      }
-    });
-  </script>
-
-
-
-  <script>
-    // ฟังก์ชันสำหรับแปลงปีคริสต์ศักราชเป็นปีพุทธศักราช
-    function convertToBuddhistYear(englishYear) {
-      return englishYear;
-    }
-
-    // ชื่อเดือนภาษาไทย
-    const thaiMonthNames = [
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ];
-
-    function toggleDateInput(inputName) {
-      const checkbox = document.querySelector(`[name="show_${inputName}"]`);
-      const input = document.querySelector(`[name="${inputName}"]`);
-      const thaiDateElement = input.parentElement.querySelector('.thaiDATE');
-
-      if (checkbox.checked) {
-        // ดึงอินพุทธศักราชปัจจุบัน
-        const currentGregorianYear = new Date().getFullYear();
-        const currentBuddhistYear = convertToBuddhistYear(currentGregorianYear);
-
-        // แปลงปีปัจจุบันเป็นปีพุทธศักราชแล้วกำหนดค่าให้กับ input
-        const currentDate = new Date();
-        const thaiDate = currentBuddhistYear + '-' +
-          ('0' + (currentDate.getMonth() + 1)).slice(-2) + '-' +
-          ('0' + currentDate.getDate()).slice(-2);
-        input.value = thaiDate; // เพิ่มบรรทัดนี้เพื่อกำหนดค่าลงใน input
-        // แปลงชื่อเดือนเป็นภาษาไทย
-        const thaiMonth = thaiMonthNames[currentDate.getMonth()];
-
-        // แสดงค่าวันที่และปีพุทธศักราชใน element p
-        const formattedDate = currentDate.toLocaleDateString('th-TH', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
-        });
-        thaiDateElement.textContent = formattedDate;
-      } else {
-        input.value = '';
-        thaiDateElement.textContent = '';
-      }
-    }
-  </script>
-
   <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -2465,68 +2023,79 @@ ORDER BY nd.id, oi.id
   </script>
 
   <script>
-    const confirmActions = document.querySelectorAll('.confirm-btn, .cancel-btn');
-    confirmActions.forEach(button => {
-      button.addEventListener('click', () => {
-        const status = button.dataset.status;
-        const orderId = button.dataset.orderId;
-        const statusName = button.closest('.next-status')?.querySelector('p')?.textContent.trim() || '';
+    const attachListeners = () => {
+      document.querySelectorAll('.confirm-btn, .cancel-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          const status = button.dataset.status;
+          const orderId = button.dataset.orderId;
+          const statusName = button.closest('.next-status')?.querySelector('p')?.textContent.trim() || 'สถานะใหม่';
 
-        Swal.fire({
-          title: 'คุณแน่ใจหรือไม่?',
-          text: `คุณต้องการอัพเดตสถานะ "${statusName}" ใช่หรือไม่`,
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonText: 'ใช่',
-          cancelButtonText: 'ไม่'
-        }).then(result => {
-          if (result.isConfirmed) {
-            updateStatus({
-              status,
-              order_id: orderId
-            });
-          }
+          Swal.fire({
+            title: 'คุณแน่ใจหรือไม่?',
+            text: `คุณต้องการอัพเดตสถานะ "${statusName}" ใช่หรือไม่`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'ใช่',
+            cancelButtonText: 'ไม่'
+          }).then(result => {
+            if (result.isConfirmed) {
+              updateStatus({
+                status,
+                order_id: orderId
+              });
+            }
+          });
         });
       });
-    });
 
-    const undoActions = document.querySelectorAll('.undo-btn');
-    undoActions.forEach(button => {
-      button.addEventListener('click', () => {
-        const id = button.dataset.id;
+      document.querySelectorAll('.undo-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          const id = button.dataset.id;
 
-        Swal.fire({
-          title: 'ยืนยันการย้อนสถานะ',
-          text: 'คุณต้องการย้อนสถานะ ใช่หรือไม่',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonText: 'ยืนยัน',
-          cancelButtonText: 'ยกเลิก'
-        }).then(result => {
-          if (result.isConfirmed) {
-            updateStatus({
-              id
-            });
-          }
+          Swal.fire({
+            title: 'ยืนยันการย้อนสถานะ',
+            text: 'คุณต้องการย้อนสถานะ ใช่หรือไม่',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'ยืนยัน',
+            cancelButtonText: 'ยกเลิก'
+          }).then(result => {
+            if (result.isConfirmed) {
+              updateStatus({
+                undo: true,
+                id
+              });
+            }
+          });
         });
       });
-    });
+    };
 
     function updateStatus(data) {
+      const params = new URLSearchParams(data);
       fetch('update_status.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           },
-          body: new URLSearchParams(data)
+          body: params
         })
-        .then(res => res.text())
+        .then(res => {
+          if (!res.ok) throw new Error('เกิดข้อผิดพลาดในการส่งคำขอ');
+          return res.text();
+        })
         .then(msg => {
           Swal.fire('สำเร็จ', msg, 'success').then(() => location.reload());
+        })
+        .catch(err => {
+          Swal.fire('ผิดพลาด', err.message, 'error');
         });
     }
+    attachListeners();
   </script>
   <script>
+    let activeForm = null;
+
     function toggleModal(modalId) {
       const modal = document.querySelector(modalId);
       if (modal) {
@@ -2537,140 +2106,110 @@ ORDER BY nd.id, oi.id
     }
 
     document.addEventListener('click', async function(event) {
-      if (event.target.matches('[name="submitWithdraw"]')) {
-        event.preventDefault();
+      if (!event.target.matches('[name="submitWithdraw"]')) return;
 
-        // Get the form and device number inputs
-        const button = event.target;
-        const form = button.closest('form');
-        console.log(form)
-        const deviceNumberInputs = form.querySelectorAll('input[name^="device_numbers"]');
+      event.preventDefault();
+      const button = event.target;
+      const form = button.closest('form');
+      activeForm = form;
 
-        let duplicateFound = false;
-        let deviceNumbers = [];
+      const deviceNumberInputs = form.querySelectorAll('input[name^="device_numbers"]');
+      const deviceNumbers = [...deviceNumberInputs]
+        .map(input => input.value.trim())
+        .filter(val => val && val !== '-');
 
-        deviceNumberInputs.forEach(input => {
-          const deviceNumber = input.value.trim();
-          if (deviceNumber && deviceNumber !== '-') {
-            deviceNumbers.push(deviceNumber);
-          }
+      try {
+        const response = await fetch('check_duplicate.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: `number_device=${encodeURIComponent(JSON.stringify(deviceNumbers))}`
         });
 
-        try {
-          // AJAX request to fetch duplicate data
-          const response = await fetch('check_duplicate.php', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `number_device=${encodeURIComponent(JSON.stringify(deviceNumbers))}`
-          });
+        const result = await response.json();
 
-          const result = await response.json();
-          console.log(result)
-          if (result.found) {
-            duplicateFound = true;
-
-            const getModalId = event.target.getAttribute('data-id');
-            const status = getModalId.split('-')[1];
-            // Show modal and populate fields dynamically
-            const modal = document.querySelector(`#overlayModalTask-${status}`);
-            modal.style.display = 'block';
-            console.log('modal', modal)
-            const cardModal = modal.querySelector('.modal-content.overlay-modal');
-            cardModal.classList.add('giggle');
-            setTimeout(() => {
-              cardModal.classList.remove('giggle');
-            }, 300);
-
-            modal.querySelector('#duplicateAssetNumber').textContent = deviceNumbers.join(', ');
-            // Extract and group orders by numberWork
-            const ordersByNumberWork = {};
-
-            Object.keys(result.orders).forEach(orderId => {
-              const order = result.orders[orderId]; // Get the order object
-              const numberWork = order.numberWork;
-
-              if (!ordersByNumberWork[numberWork]) {
-                ordersByNumberWork[numberWork] = {
-                  order: order,
-                  items: []
-                };
-              }
-
-              // Add items from this order to the grouped structure
-              Object.keys(order.items).forEach(itemId => {
-                ordersByNumberWork[numberWork].items.push(order.items[itemId]);
-              });
-            });
-
-
-            // Populate the radio button group
-            const orderRadioGroup = modal.querySelector('#orderRadioGroup');
-            orderRadioGroup.innerHTML = ''; // Clear existing buttons
-
-            console.log('Modal:', modal);
-            console.log('Order Radio Group:', orderRadioGroup);
-
-
-            const orderCount = Object.keys(ordersByNumberWork).length;
-            orderRadioGroup.classList.remove('w-25', 'w-50', 'w-100', 'btn-group-vertical', 'btn-group'); // Remove old classes
-
-            if (orderCount === 1) {
-              orderRadioGroup.classList.add('btn-group', 'w-25');
-            } else if (orderCount === 2) {
-              orderRadioGroup.classList.add('btn-group', 'w-50');
-            } else if (orderCount > 8) {
-              orderRadioGroup.classList.add('btn-group-vertical', 'w-100');
-            } else {
-              orderRadioGroup.classList.add('btn-group', 'w-100');
-            }
-
-            console.log('ordersByNumberWork', ordersByNumberWork);
-
-            Object.keys(ordersByNumberWork).forEach((numberWork, index) => {
-
-              const radioButton = document.createElement('input');
-              radioButton.type = 'radio';
-              radioButton.classList.add('btn-check');
-              radioButton.name = 'orderRadio';
-              radioButton.id = `orderRadio-${numberWork}`;
-              radioButton.value = numberWork;
-              radioButton.checked = index === 0; // Select the first by default
-
-              const label = document.createElement('label');
-              label.classList.add('btn', 'btn-outline-danger');
-              label.setAttribute('for', `orderRadio-${numberWork}`);
-              label.textContent = `ใบเบิก ${numberWork}`;
-
-              orderRadioGroup.appendChild(radioButton);
-              orderRadioGroup.appendChild(label);
-
-              console.log('radioButton', radioButton);
-              console.log('label', label);
-
-              // Add event listener for radio change
-              radioButton.addEventListener('change', () => {
-                displayOrderDetails(modal, ordersByNumberWork[numberWork]);
-              });
-
-              // Display first order by default
-              if (index === 0) {
-                displayOrderDetails(modal, ordersByNumberWork[numberWork]);
-              }
-            });
-          }
-        } catch (error) {
-          console.error('Error checking device number:', error);
-        }
-
-        if (!duplicateFound) {
-          // If no duplicate is found, you can submit the form if needed
+        if (result.found) {
+          showDuplicateModal(result.orders, deviceNumbers);
+        } else {
           form.submit();
         }
+      } catch (error) {
+        console.error('Error checking device number:', error);
       }
     });
 
+    // Function to display order details
+    function showDuplicateModal(orders, deviceNumbers) {
+      const modal = document.querySelector(`#overlayModalTask`);
+      modal.style.display = 'block';
+
+      const cardModal = modal.querySelector('.modal-content.overlay-modal');
+      cardModal.classList.add('giggle');
+      setTimeout(() => cardModal.classList.remove('giggle'), 300);
+
+      const duplicateDisplay = modal.querySelector('#duplicateAssetNumber');
+      if (duplicateDisplay) {
+        duplicateDisplay.textContent = deviceNumbers.join(', ');
+      }
+
+      const ordersByWork = {};
+
+      Object.entries(orders).forEach(([orderId, order]) => {
+        const numberWork = order.numberWork;
+        if (!ordersByWork[numberWork]) ordersByWork[numberWork] = {
+          order,
+          items: []
+        };
+        Object.values(order.items).forEach(item => ordersByWork[numberWork].items.push(item));
+      });
+
+      // Populate the radio button group
+      const radioGroup = modal.querySelector('#radioGroup');
+      if (!radioGroup) return;
+
+      radioGroup.innerHTML = ''; // Clear existing buttons
+      radioGroup.className = '';
+
+      const workCount = Object.keys(ordersByWork).length;
+      if (workCount === 1) radioGroup.classList.add('btn-group', 'w-25');
+      else if (workCount === 2) radioGroup.classList.add('btn-group', 'w-50');
+      else if (workCount > 8) radioGroup.classList.add('btn-group-vertical', 'w-100');
+      else radioGroup.classList.add('btn-group', 'w-100');
+
+      Object.keys(ordersByWork).forEach((numberWork, index) => {
+
+        const radioButton = document.createElement('input');
+        radioButton.type = 'radio';
+        radioButton.classList.add('btn-check');
+        radioButton.name = 'orderRadio';
+        radioButton.id = `orderRadio-${numberWork}`;
+        radioButton.value = numberWork;
+        radioButton.checked = index === 0; // Select the first by default
+
+        const label = document.createElement('label');
+        label.classList.add('btn', 'btn-outline-danger');
+        label.setAttribute('for', `orderRadio-${numberWork}`);
+        label.textContent = `ใบเบิก ${numberWork}`;
+
+        radioGroup.appendChild(radioButton);
+        radioGroup.appendChild(label);
+
+        console.log('radioButton', radioButton);
+        console.log('label', label);
+
+        // Add event listener for radio change
+        radioButton.addEventListener('change', () => {
+          displayOrderDetails(modal, ordersByWork[numberWork]);
+        });
+
+        // Display first order by default
+        if (index === 0) {
+          displayOrderDetails(modal, ordersByWork[numberWork]);
+        }
+      });
+    }
+    // Function to display order details
     // Function to display order details
     function displayOrderDetails(modal, orderData) {
       // Populate order info
@@ -2700,10 +2239,135 @@ ORDER BY nd.id, oi.id
         tableBody.innerHTML += row;
       });
 
-      // console.log('#total-amount-sub-' + modal.id.split('-')[1] + '-' + modal.id.split('-')[2])
-      // Update total amount
       modal.querySelector('#total-amount-sub').textContent = totalAmount;
     }
+
+    document.getElementById('confirmSubmit').addEventListener('click', () => {
+      if (activeForm) {
+        activeForm.submit();
+      } else {
+        console.error("No form is active for submission.");
+      }
+    });
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
+
+  <!-- Add SweetAlert2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
+
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+  <script>
+    $(function() {
+      function setupAutocomplete({
+        type,
+        inputSelector,
+        hiddenInputSelector,
+        sourceUrl,
+        confirmMessage = "คุณต้องการเพิ่มรายการนี้หรือไม่?",
+        resetValue = "",
+        defaultHiddenId = ""
+      }) {
+        let inputChanged = false;
+        let alertShown = false; // Flag to track if the alert has been shown already
+
+        const $input = $(inputSelector);
+        const $hiddenInput = $(hiddenInputSelector);
+
+        $input.autocomplete({
+            source: function(request, response) {
+              $.ajax({
+                url: sourceUrl,
+                method: "GET",
+                dataType: "json",
+                data: {
+                  term: request.term,
+                  type: type
+                },
+                success: function(data) {
+                  response(data); // Show suggestions
+                },
+                error: function() {
+                  response([]);
+                }
+              });
+            },
+            minLength: 1,
+            autoFocus: true,
+            select: function(event, ui) {
+              if (ui.item && ui.item.value !== "") {
+                $input.val(ui.item.label);
+                $hiddenInput.val(ui.item.value);
+              } else {
+                $input.val('');
+                $hiddenInput.val('');
+              }
+              inputChanged = false;
+              return false;
+            }
+          })
+          .data("ui-autocomplete")._renderItem = function(ul, item) {
+            return $("<li>")
+              .append("<div>" + item.label + "</div>")
+              .appendTo(ul);
+          };
+
+        $input.on("input", function() {
+          inputChanged = true;
+        });
+
+        $input.on("blur", function() {
+          if (!inputChanged) return;
+
+          const enteredValue = $input.val().trim();
+          if (!enteredValue) {
+            $hiddenInput.val('');
+            return;
+          }
+
+          $.ajax({
+            url: sourceUrl,
+            method: "GET",
+            dataType: "json",
+            data: {
+              term: enteredValue,
+              type: type
+            },
+            success: function(data) {
+              const found = data.some(item => item.label === enteredValue);
+              if (!found) {
+                alertShown = true;
+                Swal.fire({
+                  icon: 'warning',
+                  title: confirmMessage,
+                  text: 'หากต้องการเพิ่ม กรุณาติดต่อแอดมิน',
+                  confirmButtonText: 'ตกลง'
+                }).then(() => {
+                  $input.val(resetValue);
+                  $hiddenInput.val(defaultHiddenId);
+                  alertShown = false;
+                });
+              }
+            }
+          });
+          inputChanged = false; // Reset the flag
+        });
+      }
+      $("input[id^='departInput']").each(function() {
+        const index = $(this).attr("id").replace("departInput", "");
+        setupAutocomplete({
+          type: "depart",
+          inputSelector: `#departInput${index}`,
+          hiddenInputSelector: `#departId${index}`,
+          sourceUrl: "autocomplete.php",
+          notFoundMessage: "ไม่พบหน่วยงานนี้ในระบบ",
+          resetValue: "-",
+          defaultHiddenId: "222"
+        });
+      });
+    });
   </script>
   <?php SC5() ?>
 </body>
