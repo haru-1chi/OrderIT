@@ -1,5 +1,5 @@
 <?php
-require_once 'config/db.php';
+require_once '../config/db.php';
 
 $term = $_GET['term']; // Search term entered by the user
 

@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'config/db.php'; // Include your DB connection file
+require_once '../config/db.php'; // Include your DB connection file
 
 $sql = "SELECT COUNT(*) as count FROM data_report WHERE `status` = 0";
 $stmt = $conn->prepare($sql);

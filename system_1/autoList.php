@@ -2,7 +2,7 @@
 // autocomplete.php
 
 // Include your database connection file here
-require_once 'config/db.php';
+require_once '../config/db.php';
 
 if (isset($_POST['models_id'])) {
     $models_id = $_POST['models_id'];

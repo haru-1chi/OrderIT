@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'config/db.php';
+require_once '../config/db.php';
 require_once 'template/navbar.php';
 
 if (isset($_SESSION['admin_log'])) {

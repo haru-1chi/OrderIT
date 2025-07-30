@@ -1,5 +1,5 @@
 <?php
-require_once 'config/db.php';
+require_once '../config/db.php';
 
 // Execute the query
 $kpiId = $_GET['kpi'] ?? null;

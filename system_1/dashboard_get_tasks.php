@@ -1,5 +1,5 @@
 <?php
-require_once 'config/db.php'; // Ensure you include your database connection
+require_once '../config/db.php'; // Ensure you include your database connection
 
 header('Content-Type: application/json');
 

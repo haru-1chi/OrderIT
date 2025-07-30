@@ -1,15 +1,15 @@
 <?php
-require_once 'config/db.php';
+require_once '../config/db.php';
 
 // Execute the query
 $sql = "
     SELECT 
-        issue_resolved, 
+        service_channel, 
         ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM rating), 2) AS percentage
     FROM 
         rating
     GROUP BY 
-        issue_resolved";
+        service_channel";
 $stmt = $conn->prepare($sql);
 $stmt->execute();
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -18,7 +18,7 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $labels = [];
 $data = [];
 foreach ($result as $row) {
-    $labels[] = $row['issue_resolved'];
+    $labels[] = $row['service_channel'];
     $data[] = $row['percentage'];
 }
 

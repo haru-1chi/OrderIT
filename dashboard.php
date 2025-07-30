@@ -121,7 +121,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
                     const checkNewReports = async () => {
                         try {
-                            const response = await fetch('check_new_reports.php', {
+                            const response = await fetch('system_1/check_new_reports.php', {
                                 method: 'GET',
                                 headers: {
                                     'Content-Type': 'application/json'
@@ -285,7 +285,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                 <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
                     <div class="table-responsive">
                         <h1>งานที่เสร็จ</h1>
-                        <form method="post" action="export.php">
+                        <form method="post" action="system_1/export.php">
                             <button name="actAll" class="btn btn-primary" type="submit">Export->Excel</button>
                         </form>
                         <hr>
@@ -407,7 +407,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
                     const fetchCards = async (type) => {
                         try {
-                            const res = await fetch(`dashboard_get_tasks.php?type=${type}`);
+                            const res = await fetch(`system_1/dashboard_get_tasks.php?type=${type}`);
                             const data = await res.json();
                             const container = document.querySelector('.row.d-flex.justify-content-center');
                             container.innerHTML = '';
@@ -454,7 +454,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
                     const fetchTasks = async (type, tableId) => {
                         try {
-                            const res = await fetch(`dashboard_get_tasks.php?type=${type}`);
+                            const res = await fetch(`system_1/dashboard_get_tasks.php?type=${type}`);
                             const data = await res.json();
 
                             const tableSelector = `#${tableId}`;
@@ -593,7 +593,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                         // Clear previous color mapping while keeping the same object reference
                         Object.keys(colorMap).forEach(key => delete colorMap[key]);
 
-                        const url = new URL("fetch_data.php", window.location.href);
+                        const url = new URL("system_1/fetch_data.php", window.location.href);
                         if (date) url.searchParams.append("date", date);
                         if (filter) url.searchParams.append("filter", filter);
 
