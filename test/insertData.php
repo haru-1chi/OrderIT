@@ -30,31 +30,6 @@ if (!isset($_SESSION["admin_log"])) {
     <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <title>เพิ่มข้อมูล | IT ORDER PRO</title>
     <link rel="stylesheet" href="css/style.css">
-
-    <style>
-        .active-main-page-button {
-            background-color: #3191FF;
-            padding-bottom: 0.5rem;
-            padding-top: 0.5rem;
-            padding: 0.50rem 2.5rem;
-            color: white;
-            border: none;
-            border-top-left-radius: 0.40rem;
-            border-top-right-radius: 0.40rem;
-        }
-
-        .default-main-page-button {
-            background-color: #BABABA;
-            padding-bottom: 0.5rem;
-            padding-top: 0.5rem;
-            padding: 0.50rem 2.5rem;
-            color: white;
-            border: none;
-            border-top-left-radius: 0.40rem;
-            border-top-right-radius: 0.40rem;
-        }
-    </style>
-
 </head>
 
 <body>
@@ -91,18 +66,21 @@ if (!isset($_SESSION["admin_log"])) {
             </div>
         <?php } ?>
 
-        <div class="row justify-content-center">
-            <div class="p-0">
-                <button class="default-main-page-button" data-selectMainPage="1" id="select-main-page-button">ใบเบิก</button>
-                <button class="default-main-page-button" data-selectMainPage="2" id="select-main-page-button">ใบงาน</button>
-                <button class="default-main-page-button" data-selectMainPage="3" id="select-main-page-button">ตัวชี้วัด</button>
-                <button class="default-main-page-button" data-selectMainPage="4" id="select-main-page-button">เจ้าหน้าที่</button>
+        <div class="row">
+
+            <div class="">
+                <button class="btn btn-primary" data-selectMainPage="1" id="select-main-page-button">first page</button>
+                <button class="btn btn-primary" data-selectMainPage="2" id="select-main-page-button">second page</button>
+                <button class="btn btn-primary" data-selectMainPage="3" id="select-main-page-button">third page</button>
+                <button class="btn btn-primary" data-selectMainPage="4" id="select-main-page-button">fourth page</button>
             </div>
 
-            <div class="row justify-content-center shadow rounded-4" data-mainPageId="1" id="main-page">
+            <div class="row justify-content-center card" data-mainPageId="1" id="main-page">
                 <div class="" id="page-column" data-pageId="1"> <!-- หน่วยงาน -->
-                    <h1 class="pt-3">หน่วยงาน</h1>
+                    <h1>หน่วยงาน</h1>
+                    <hr>
                     <div>
+
                         <div class="d-flex justify-content-between my-2">
                             <div class="">
                                 <select name="" class="form-select form-select-md px-12" id="select-page-button">
@@ -113,27 +91,29 @@ if (!isset($_SESSION["admin_log"])) {
                                     <option value="5" data-selectPageId="5">ตัวชี้วัด</option>
                                 </select>
                             </div>
-                            <button type="button" class="btn btn-primary border-0 px-4 py-2" style="background-color: #4ACA84;" data-bs-toggle="modal" data-bs-target="#หน่วยงาน">เพิ่มข้อมูล</button>
+
+
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#หน่วยงาน">เพิ่มข้อมูล</button>
                         </div>
                     </div>
                     <!-- Modal -->
                     <div class="modal fade" id="หน่วยงาน" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=5" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=5" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">หน่วยงาน</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
+                                        <label for="floatingPassword">หน่วยงาน</label>
 
                                         <input type="text" class="form-control" name="depart_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">หน่วยงาน</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addDepart" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addDepart" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -147,7 +127,7 @@ if (!isset($_SESSION["admin_log"])) {
                     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                     <table id="depart" class="table table-hover">
-                        <thead class="table-primary">
+                        <thead>
                             <tr>
                                 <th scope="col">ชื่อรายการ</th>
                                 <th scope="col">แก้ไข</th>
@@ -159,39 +139,36 @@ if (!isset($_SESSION["admin_log"])) {
                                 <tr>
                                     <th scope="row"><?= $row['depart_name'] ?></th>
                                     <td>
-                                        <button type="button" class="btn btn-warning text-white" style="background-color: #FFAE2C;" data-bs-toggle="modal" data-bs-target="#Depart<?= $row['depart_id'] ?>">แก้ไข</button>
+                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#Depart<?= $row['depart_id'] ?>">แก้ไข</button>
                                     </td>
 
                                     <div class="modal fade" id="Depart<?= $row['depart_id'] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                         <div class="modal-dialog">
-                                            <form action="system/update.php" id="form-Depart<?= $row['depart_id'] ?>" method="post">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">หน่วยงาน</h1>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">หน่วยงาน</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="system/update.php" method="post">
                                                         <div class="form-floating mb-3">
                                                             <input type="text" class="form-control" value="<?= $row['depart_name'] ?>" name="depart_name" placeholder="Password">
                                                             <input type="hidden" class="form-control" value="<?= $row['depart_id'] ?>" name="depart_id" placeholder="Password">
                                                             <label for="floatingPassword">หน่วยงาน</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" data-target="form-Depart<?= $row['depart_id'] ?>" id="update-form-submit" name="depart" class="btn btn-primary">บันทึก</button>
-
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                                                    </div>
                                                 </div>
-                                            </form>
+                                                <div class="modal-footer">
+                                                    <button type="submit" name="depart" class="btn btn-primary">บันทึก</button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                                </div>
+                                            </div>
                                         </div>
-
                                     </div>
                                     <td>
 
 
-                                        <a href="#" class="btn btn-danger" style="background-color: #FF5757; border: none; border: none;" data-bs-toggle="modal" data-bs-target="#dp<?= $row['depart_id'] ?>">ลบ</a>
+                                        <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#dp<?= $row['depart_id'] ?>">ลบ</a>
 
                                         <div class="modal fade" id="dp<?= $row['depart_id'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
                                             <div class="modal-dialog">
@@ -205,7 +182,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?depart=<?= $row['depart_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?depart=<?= $row['depart_id'] ?>" class="btn btn-danger">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -220,7 +197,8 @@ if (!isset($_SESSION["admin_log"])) {
 
                 </div>
                 <div class="" id="page-column" data-pageId="2"> <!-- รูปแบบการทำงาน -->
-                    <h1 class="pt-3">รูปแบบการทำงาน</h1>
+                    <h1>รูปแบบการทำงาน</h1>
+                    <hr>
                     <div>
 
                         <div class="d-flex justify-content-between my-2">
@@ -235,13 +213,13 @@ if (!isset($_SESSION["admin_log"])) {
                             </div>
 
 
-                            <button type="button" class="btn btn-primary border-0 px-4 py-2" style="background-color: #4ACA84;" data-bs-toggle="modal" data-bs-target="#รูปแบบการทำงาน">เพิ่มข้อมูล</button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#รูปแบบการทำงาน">เพิ่มข้อมูล</button>
                         </div>
                     </div>
                     <!-- Modal -->
                     <div class="modal fade" id="รูปแบบการทำงาน" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=7" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=7" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">รูปแบบการทำงาน</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -249,12 +227,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="workingName" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">รูปแบบการทำงาน</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addWorkingName" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addWorkingName" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -267,7 +244,7 @@ if (!isset($_SESSION["admin_log"])) {
                     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                     <table id="working" class="table table-hover">
-                        <thead class="table-primary">
+                        <thead>
                             <tr>
                                 <th scope="col">ชื่อรายการ</th>
                                 <th scope="col">แก้ไข</th>
@@ -279,34 +256,31 @@ if (!isset($_SESSION["admin_log"])) {
                                 <tr>
                                     <th scope="row"><?= $row['workingName'] ?></th>
                                     <td>
-                                        <button type="button" class="btn btn-warning text-white" style="background-color: #FFAE2C;" data-bs-toggle="modal" data-bs-target="#Offer<?= $row['id'] ?>">แก้ไข</button>
+                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#Offer<?= $row['id'] ?>">แก้ไข</button>
                                     </td>
 
                                     <div class="modal fade" id="Offer<?= $row['id'] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                         <div class="modal-dialog">
-                                            <form action="system/update.php" id="form-Offer<?= $row['id'] ?>" method="post">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">ร้านที่เสนอราคา</h1>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">ร้านที่เสนอราคา</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="system/update.php" method="post">
                                                         <div class="form-floating mb-3">
                                                             <input type="text" class="form-control" value="<?= $row['workingName'] ?>" name="workingName" placeholder="Password">
                                                             <input type="hidden" class="form-control" value="<?= $row['id'] ?>" name="id" placeholder="Password">
                                                             <label for="floatingPassword">ร้านที่เสนอราคา</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" data-target="form-Offer<?= $row['id'] ?>" id="update-form-submit" name="working" class="btn btn-primary">บันทึก</button>
-
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                                                    </div>
                                                 </div>
-                                            </form>
+                                                <div class="modal-footer">
+                                                    <button type="submit" name="working" class="btn btn-primary">บันทึก</button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                                </div>
+                                            </div>
                                         </div>
-
                                     </div>
 
                                     <td>
@@ -314,7 +288,7 @@ if (!isset($_SESSION["admin_log"])) {
 
 
 
-                                        <a href="#" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal" data-bs-target="#workingList<?= $row['id'] ?>">ลบ</a>
+                                        <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#workingList<?= $row['id'] ?>">ลบ</a>
 
                                         <div class="modal fade" id="workingList<?= $row['id'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
                                             <div class="modal-dialog">
@@ -328,7 +302,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?working=<?= $row['id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?working=<?= $row['id'] ?>" class="btn btn-danger">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -343,7 +317,8 @@ if (!isset($_SESSION["admin_log"])) {
 
                 </div>
                 <div class="" id="page-column" data-pageId="3"> <!-- ปัญหาที่พบ -->
-                    <h1 class="pt-3">ปัญหาที่พบ</h1>
+                    <h1>ปัญหาที่พบ</h1>
+                    <hr>
                     <div>
 
                         <div class="d-flex justify-content-between my-2">
@@ -358,13 +333,13 @@ if (!isset($_SESSION["admin_log"])) {
                             </div>
 
 
-                            <button type="button" class="btn btn-primary border-0 px-4 py-2" style="background-color: #4ACA84;" data-bs-toggle="modal" data-bs-target="#ปัญหาที่พบ">เพิ่มข้อมูล</button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ปัญหาที่พบ">เพิ่มข้อมูล</button>
                         </div>
                     </div>
                     <!-- Modal -->
                     <div class="modal fade" id="ปัญหาที่พบ" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=8" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=8" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">ปัญหาที่พบ</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -372,16 +347,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="problemName" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">ปัญหาที่พบ</label>
 
-                                    </div>
-                                    <div class="form-floating mb-3">
-                                        <input type="text" class="form-control" name="problemDetail" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">รายละเอียด</label>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addproblemName" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addproblemName" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -394,7 +364,7 @@ if (!isset($_SESSION["admin_log"])) {
                     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                     <table id="problem" class="table table-hover">
-                        <thead class="table-primary">
+                        <thead>
                             <tr>
                                 <th scope="col">ชื่อรายการ</th>
                                 <th scope="col">แก้ไข</th>
@@ -403,46 +373,34 @@ if (!isset($_SESSION["admin_log"])) {
                         </thead>
                         <tbody>
                             <?php foreach ($result as $row) { ?>
-
                                 <tr>
                                     <th scope="row"><?= $row['problemName'] ?></th>
                                     <td>
-                                        <button type="button" class="btn btn-warning text-white" style="background-color: #FFAE2C;" data-bs-toggle="modal" data-bs-target="#problemT<?= $row['id'] ?>">แก้ไข</button>
+                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#problemT<?= $row['id'] ?>">แก้ไข</button>
                                     </td>
 
                                     <div class="modal fade" id="problemT<?= $row['id'] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                         <div class="modal-dialog">
-                                            <form action="system/update.php" id="form-problemT<?= $row['id'] ?>" method="post" class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">ปัญหาที่พบ</h1>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div>
-                                                            <div class="form-floating mb-3">
-                                                                <input type="text" class="form-control" value="<?= $row['problemName'] ?>" name="problemName" placeholder="Password">
-
-                                                                <input type="hidden" class="form-control" value="<?= $row['id'] ?>" name="id" placeholder="Password">
-                                                                <label for="floatingPassword">ปัญหาที่พบ</label>
-                                                            </div>
-
-                                                            <div class="form-floating mb-3">
-                                                                <input type="text" class="form-control" value="<?= $row['problemsDetail'] ?>" name="problemDetail" placeholder="Password">
-
-                                                                <label for="floatingPassword">รายละเอียด</label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" data-target="form-problemT<?= $row['id'] ?>" id="update-form-submit" name="problemL" class="btn btn-primary">บันทึก</button>
-
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                                                    </div>
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">ร้านที่เสนอราคา</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
-                                            </form>
+                                                <div class="modal-body">
+                                                    <form action="system/update.php" method="post">
+                                                        <div class="form-floating mb-3">
+                                                            <input type="text" class="form-control" value="<?= $row['problemName'] ?>" name="problemName" placeholder="Password">
+                                                            <input type="hidden" class="form-control" value="<?= $row['id'] ?>" name="id" placeholder="Password">
+                                                            <label for="floatingPassword">ร้านที่เสนอราคา</label>
+                                                        </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="submit" name="problemL" class="btn btn-primary">บันทึก</button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                                </div>
+                                            </div>
                                         </div>
-
                                     </div>
 
                                     <td>
@@ -450,7 +408,7 @@ if (!isset($_SESSION["admin_log"])) {
 
 
 
-                                        <a href="#" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal" data-bs-toggle="modal" data-bs-target="#problemLT<?= $row['id'] ?>">ลบ</a>
+                                        <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#problemLT<?= $row['id'] ?>">ลบ</a>
 
                                         <div class="modal fade" id="problemLT<?= $row['id'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
                                             <div class="modal-dialog">
@@ -464,7 +422,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?problemL=<?= $row['id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?problemL=<?= $row['id'] ?>" class="btn btn-danger">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -479,7 +437,8 @@ if (!isset($_SESSION["admin_log"])) {
 
                 </div>
                 <div class="" id="page-column" data-pageId="4"> <!-- ปัญหาใน SLA -->
-                    <h1 class="pt-3">ปัญหาใน SLA</h1>
+                    <h1>ปัญหาใน SLA</h1>
+                    <hr>
                     <div>
 
                         <div class="d-flex justify-content-between my-2">
@@ -494,13 +453,13 @@ if (!isset($_SESSION["admin_log"])) {
                             </div>
 
 
-                            <button type="button" class="btn btn-primary border-0 px-4 py-2" style="background-color: #4ACA84;" data-bs-toggle="modal" data-bs-target="#SLAModal">เพิ่มข้อมูล</button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#SLAModal">เพิ่มข้อมูล</button>
                         </div>
                     </div>
                     <!-- Modal -->
                     <div class="modal fade" id="SLAModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=9" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=9" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">ปัญหาใน SLA</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -508,12 +467,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="sla_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">ปัญหาใน SLA</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addSLA" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addSLA" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -526,7 +484,7 @@ if (!isset($_SESSION["admin_log"])) {
                     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                     <table id="sla" class="table table-hover">
-                        <thead class="table-primary">
+                        <thead>
                             <tr>
                                 <th scope="col">ชื่อรายการ</th>
                                 <th scope="col">แก้ไข</th>
@@ -538,39 +496,36 @@ if (!isset($_SESSION["admin_log"])) {
                                 <tr>
                                     <th scope="row"><?= $row['sla_name'] ?></th>
                                     <td>
-                                        <button type="button" class="btn btn-warning text-white" style="background-color: #FFAE2C;" data-bs-toggle="modal" data-bs-target="#sla<?= $row['sla_id'] ?>">แก้ไข</button>
+                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#sla<?= $row['sla_id'] ?>">แก้ไข</button>
                                     </td>
 
                                     <div class="modal fade" id="sla<?= $row['sla_id'] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                         <div class="modal-dialog">
-                                            <form action="system/update.php" id="form-sla<?= $row['sla_id'] ?>" method="post">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">ปัญหาใน SLA</h1>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">ปัญหาใน SLA</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="system/update.php" method="post">
                                                         <div class="form-floating mb-3">
                                                             <input type="text" class="form-control" value="<?= $row['sla_name'] ?>" name="sla_name" placeholder="Password">
                                                             <input type="hidden" class="form-control" value="<?= $row['sla_id'] ?>" name="sla_id" placeholder="Password">
                                                             <label for="floatingPassword">ปัญหาใน SLA</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" id="update-form-submit" data-target="form-sla<?= $row['sla_id'] ?>" name="sla" class="btn btn-primary">บันทึก</button>
-
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                                                    </div>
                                                 </div>
-                                            </form>
+                                                <div class="modal-footer">
+                                                    <button type="submit" name="sla" class="btn btn-primary">บันทึก</button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                                </div>
+                                            </div>
                                         </div>
-
                                     </div>
                                     <td>
 
 
-                                        <a href="#" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal" data-bs-toggle="modal" data-bs-target="#w<?= $row['sla_id'] ?>">ลบ</a>
+                                        <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#w<?= $row['sla_id'] ?>">ลบ</a>
 
                                         <div class="modal fade" id="w<?= $row['sla_id'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
                                             <div class="modal-dialog">
@@ -584,7 +539,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?sla=<?= $row['sla_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?sla=<?= $row['sla_id'] ?>" class="btn btn-danger">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -597,7 +552,8 @@ if (!isset($_SESSION["admin_log"])) {
                     <hr>
                 </div>
                 <div class="" id="page-column" data-pageId="5"> <!-- ตัวชี้วัด -->
-                    <h1 class="pt-3">ตัวชี้วัด</h1>
+                    <h1>ตัวชี้วัด</h1>
+                    <hr>
                     <div>
                         <div class="d-flex justify-content-between my-2">
                             <div class="">
@@ -611,13 +567,13 @@ if (!isset($_SESSION["admin_log"])) {
                             </div>
 
 
-                            <button type="button" class="btn btn-primary border-0 px-4 py-2" style="background-color: #4ACA84;" data-bs-toggle="modal" data-bs-target="#addKPI">เพิ่มข้อมูล</button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addKPI">เพิ่มข้อมูล</button>
                         </div>
                     </div>
                     <!-- Modal -->
                     <div class="modal fade" id="addKPI" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=10" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=10" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">ตัวชี้วัด</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -625,12 +581,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="kpi_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">ตัวชี้วัด</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addKPI" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addKPI" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -643,7 +598,7 @@ if (!isset($_SESSION["admin_log"])) {
                     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                     <table id="kpi" class="table table-hover">
-                        <thead class="table-primary">
+                        <thead>
                             <tr>
                                 <th scope="col">ชื่อรายการ</th>
                                 <th scope="col">แก้ไข</th>
@@ -655,39 +610,36 @@ if (!isset($_SESSION["admin_log"])) {
                                 <tr>
                                     <th scope="row"><?= $row['kpi_name'] ?></th>
                                     <td>
-                                        <button type="button" class="btn btn-warning text-white" style="background-color: #FFAE2C;" data-bs-toggle="modal" data-bs-target="#kpi<?= $row['kpi_id'] ?>">แก้ไข</button>
+                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#kpi<?= $row['kpi_id'] ?>">แก้ไข</button>
                                     </td>
 
                                     <div class="modal fade" id="kpi<?= $row['kpi_id'] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                         <div class="modal-dialog">
-                                            <form class="modal-dialog" action="system/update.php" id="form-kpi<?= $row['kpi_id'] ?>" method="post">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">ตัวชี้วัด</h1>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">ตัวชี้วัด</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="system/update.php" method="post">
                                                         <div class="form-floating mb-3">
                                                             <input type="text" class="form-control" value="<?= $row['kpi_name'] ?>" name="kpi_name" placeholder="Password">
                                                             <input type="hidden" class="form-control" value="<?= $row['kpi_id'] ?>" name="kpi_id" placeholder="Password">
                                                             <label for="floatingPassword">ตัวชี้วัด</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" id="update-form-submit" data-target="form-kpi<?= $row['kpi_id'] ?>" name="kpi" class="btn btn-primary">บันทึก</button>
-
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                                                    </div>
                                                 </div>
-                                            </form>
+                                                <div class="modal-footer">
+                                                    <button type="submit" name="kpi" class="btn btn-primary">บันทึก</button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                                </div>
+                                            </div>
                                         </div>
-
                                     </div>
                                     <td>
 
 
-                                        <a href="#" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal" data-bs-toggle="modal" data-bs-target="#w<?= $row['kpi_id'] ?>">ลบ</a>
+                                        <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#w<?= $row['kpi_id'] ?>">ลบ</a>
 
                                         <div class="modal fade" id="w<?= $row['kpi_id'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
                                             <div class="modal-dialog">
@@ -701,7 +653,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?kpi=<?= $row['kpi_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?kpi=<?= $row['kpi_id'] ?>" class="btn btn-danger">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -715,12 +667,14 @@ if (!isset($_SESSION["admin_log"])) {
                 </div>
             </div>
 
-            <div class="row justify-content-center shadow rounded-4" data-mainPageId="2" id="main-page">
+            <div class="row justify-content-center card" data-mainPageId="2" id="main-page">
                 <div class="col-sm-12" id="page-column" data-pageId="1"> <!-- ประเภทการเบิก -->
-                    <h1 class="pt-3">ประเภทการเบิก</h1>
+                    <h1>ประเภทการเบิก</h1>
+                    <hr>
+
                     <div>
 
-                        <div class="d-flex justify-content-between my-2">
+                        <div class="d-flex justify-contt-between my-2">
                             <div class="">
                                 <select name="" class="form-select form-select-md px-12" id="select-page-button">
                                     <option selected value="1">ประเภทการเบิก</option>
@@ -732,7 +686,7 @@ if (!isset($_SESSION["admin_log"])) {
                             </div>
 
 
-                            <button type="button" class="btn btn-primary border-0 px-4 py-2" style="background-color: #4ACA84;" data-bs-toggle="modal" data-bs-target="#ประเภทการเบิก">เพิ่มข้อมูล</button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ประเภทการเบิก">เพิ่มข้อมูล</button>
                         </div>
                     </div>
 
@@ -740,7 +694,7 @@ if (!isset($_SESSION["admin_log"])) {
                     <!-- Modal -->
                     <div class="modal fade" id="ประเภทการเบิก" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=1" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=1" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">ประเภทการเบิก</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -748,12 +702,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="withdraw_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">ประเภทการเบิก</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addWithdraw" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addWithdraw" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -766,7 +719,7 @@ if (!isset($_SESSION["admin_log"])) {
                     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                     <table id="withdraw" class="table table-hover">
-                        <thead class="table-primary">
+                        <thead>
                             <tr>
                                 <th scope="col">ชื่อรายการ</th>
                                 <th scope="col">แก้ไข</th>
@@ -778,39 +731,36 @@ if (!isset($_SESSION["admin_log"])) {
                                 <tr>
                                     <th scope="row"><?= $row['withdraw_name'] ?></th>
                                     <td>
-                                        <button type="button" class="btn btn-warning text-white" style="background-color: #FFAE2C;" data-bs-toggle="modal" data-bs-target="#withdraw<?= $row['withdraw_id'] ?>">แก้ไข</button>
+                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#withdraw<?= $row['withdraw_id'] ?>">แก้ไข</button>
                                     </td>
 
                                     <div class="modal fade" id="withdraw<?= $row['withdraw_id'] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                         <div class="modal-dialog">
-                                            <form class="" action="system/update.php" id="form-withdraw<?= $row['withdraw_id'] ?>" method="post">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">รายการอุปกรณ์</h1>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">รายการอุปกรณ์</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="system/update.php" method="post">
                                                         <div class="form-floating mb-3">
                                                             <input type="text" class="form-control" value="<?= $row['withdraw_name'] ?>" name="withdraw_name" placeholder="Password">
                                                             <input type="hidden" class="form-control" value="<?= $row['withdraw_id'] ?>" name="withdraw_id" placeholder="Password">
                                                             <label for="floatingPassword">รายการอุปกรณ์</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" data-target="form-withdraw<?= $row['withdraw_id'] ?>" id="update-form-submit" name="withdraw" class="btn btn-primary">บันทึก</button>
-
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                                                    </div>
                                                 </div>
-                                            </form>
+                                                <div class="modal-footer">
+                                                    <button type="submit" name="withdraw" class="btn btn-primary">บันทึก</button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                                </div>
+                                            </div>
                                         </div>
-
                                     </div>
                                     <td>
 
 
-                                        <a href="#" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal" data-bs-toggle="modal" data-bs-target="#w<?= $row['withdraw_id'] ?>">ลบ</a>
+                                        <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#w<?= $row['withdraw_id'] ?>">ลบ</a>
 
                                         <div class="modal fade" id="w<?= $row['withdraw_id'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
                                             <div class="modal-dialog">
@@ -824,7 +774,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?withdraw=<?= $row['withdraw_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?withdraw=<?= $row['withdraw_id'] ?>" class="btn btn-danger">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -838,7 +788,8 @@ if (!isset($_SESSION["admin_log"])) {
                 </div>
 
                 <div class="" id="page-column" data-pageId="2"> <!-- ประเภทงาน -->
-                    <h1 class="pt-3">ประเภทงาน</h1>
+                    <h1>ประเภทงาน</h1>
+                    <hr>
                     <div>
 
                         <div class="d-flex justify-content-between my-2">
@@ -853,13 +804,13 @@ if (!isset($_SESSION["admin_log"])) {
                             </div>
 
 
-                            <button type="button" class="btn btn-primary border-0 px-4 py-2" style="background-color: #4ACA84;" data-bs-toggle="modal" data-bs-target="#ประเภทงาน">เพิ่มข้อมูล</button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ประเภทงาน">เพิ่มข้อมูล</button>
                         </div>
                     </div>
                     <!-- Modal -->
                     <div class="modal fade" id="ประเภทงาน" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=2" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=2" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">ประเภทงาน</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -867,12 +818,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="work_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">ประเภทงาน</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addListWork" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addListWork" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -885,7 +835,7 @@ if (!isset($_SESSION["admin_log"])) {
                     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                     <table id="work" class="table table-hover">
-                        <thead class="table-primary">
+                        <thead>
                             <tr>
                                 <th scope="col">ชื่อรายการ</th>
                                 <th scope="col">แก้ไข</th>
@@ -897,38 +847,35 @@ if (!isset($_SESSION["admin_log"])) {
                                 <tr>
                                     <th scope="row"><?= $row['work_name'] ?></th>
                                     <td>
-                                        <button type="button" class="btn btn-warning text-white" style="background-color: #FFAE2C;" data-bs-toggle="modal" data-bs-target="#work<?= $row['work_id'] ?>">แก้ไข</button>
+                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#work<?= $row['work_id'] ?>">แก้ไข</button>
                                     </td>
 
                                     <div class="modal fade" id="work<?= $row['work_id'] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                         <div class="modal-dialog">
-                                            <form class="" action="system/update.php" id="form-work<?= $row['work_id'] ?>" method="post">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">รายการอุปกรณ์</h1>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">รายการอุปกรณ์</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="system/update.php" method="post">
                                                         <div class="form-floating mb-3">
                                                             <input type="text" class="form-control" value="<?= $row['work_name'] ?>" name="work_name" placeholder="Password">
                                                             <input type="hidden" class="form-control" value="<?= $row['work_id'] ?>" name="work_id" placeholder="Password">
                                                             <label for="floatingPassword">รายการอุปกรณ์</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" id="update-form-submit" data-target="form-work<?= $row['work_id'] ?>" name="work" class="btn btn-primary">บันทึก</button>
-
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                                                    </div>
                                                 </div>
-                                            </form>
+                                                <div class="modal-footer">
+                                                    <button type="submit" name="work" class="btn btn-primary">บันทึก</button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                                </div>
+                                            </div>
                                         </div>
-
                                     </div>
                                     <td>
 
-                                        <a href="#" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal" data-bs-toggle="modal" data-bs-target="#t<?= $row['work_id'] ?>">ลบ</a>
+                                        <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#t<?= $row['work_id'] ?>">ลบ</a>
 
                                         <div class="modal fade" id="t<?= $row['work_id'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
                                             <div class="modal-dialog">
@@ -942,7 +889,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?work=<?= $row['work_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?work=<?= $row['work_id'] ?>" class="btn btn-danger">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -957,8 +904,10 @@ if (!isset($_SESSION["admin_log"])) {
                     </table>
                     <hr>
                 </div>
-                <div class="" id="page-column" data-pageId="3"> <!-- รายการเบิก -->
-                    <h1 class="pt-3">รายการเบิก</h1>
+                <div class="" id="page-column" data-pageId="4"> <!-- รายการเบิก -->
+                    <h1>รายการเบิก</h1>
+                    <hr>
+
                     <div>
 
                         <div class="d-flex justify-content-between my-2">
@@ -973,13 +922,13 @@ if (!isset($_SESSION["admin_log"])) {
                             </div>
 
 
-                            <button type="button" class="btn btn-primary border-0 px-4 py-2" style="background-color: #4ACA84;" data-bs-toggle="modal" data-bs-target="#รายการเบิก">เพิ่มข้อมูล</button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#รายการเบิก">เพิ่มข้อมูล</button>
                         </div>
                     </div>
                     <!-- Modal -->
                     <div class="modal fade" id="รายการเบิก" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=4" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=4" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">รายการเบิก</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1013,7 +962,7 @@ if (!isset($_SESSION["admin_log"])) {
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addmodels" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addmodels" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -1027,7 +976,7 @@ if (!isset($_SESSION["admin_log"])) {
                     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                     <table id="models" class="table table-hover">
-                        <thead class="table-primary">
+                        <thead>
                             <tr>
                                 <th scope="col">ชื่อรายการ</th>
                                 <th scope="col">แก้ไข</th>
@@ -1039,19 +988,18 @@ if (!isset($_SESSION["admin_log"])) {
                                 <tr>
                                     <th scope="row"><?= $row['models_name'] ?></th>
                                     <td>
-                                        <button type="button" class="btn btn-warning text-white" style="background-color: #FFAE2C;" data-bs-toggle="modal" data-bs-target="#model<?= $row['models_id'] ?>">แก้ไข</button>
+                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#model<?= $row['models_id'] ?>">แก้ไข</button>
                                     </td>
 
                                     <div class="modal fade" id="model<?= $row['models_id'] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                         <div class="modal-dialog">
-                                            <form class="modal-dialog" action="system/update.php" id="form-model<?= $row['models_id'] ?>" method="post">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">รายการอุปกรณ์</h1>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">รายการอุปกรณ์</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="system/update.php" method="post">
                                                         <div class="form-floating mb-3">
 
                                                             <input type="text" class="form-control" value="<?= $row['models_name'] ?>" name="models_name" placeholder="Password">
@@ -1080,20 +1028,18 @@ if (!isset($_SESSION["admin_log"])) {
 
 
                                                         </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" name="models" id="update-form-submit" data-target="model<?= $row['models_id'] ?>" class="btn btn-primary">บันทึก</button>
-
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                                                    </div>
                                                 </div>
-                                            </form>
+                                                <div class="modal-footer">
+                                                    <button type="submit" name="models" class="btn btn-primary">บันทึก</button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                                </div>
+                                            </div>
                                         </div>
-
                                     </div>
                                     <td>
 
-                                        <a href="#" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal" data-bs-toggle="modal" data-bs-target="#md<?= $row['models_id'] ?>">ลบ</a>
+                                        <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#md<?= $row['models_id'] ?>">ลบ</a>
 
                                         <div class="modal fade" id="md<?= $row['models_id'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
                                             <div class="modal-dialog">
@@ -1107,7 +1053,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?models=<?= $row['models_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?models=<?= $row['models_id'] ?>" class="btn btn-danger">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1120,8 +1066,9 @@ if (!isset($_SESSION["admin_log"])) {
                     <hr>
 
                 </div>
-                <div class="" id="page-column" data-pageId="4"> <!-- ร้านค้า -->
-                    <h1 class="pt-3">ร้านค้า</h1>
+                <div class="" id="page-column" data-pageId="6"> <!-- ร้านค้า -->
+                    <h1>ร้านค้า</h1>
+                    <hr>
                     <div>
 
                         <div class="d-flex justify-content-between my-2">
@@ -1136,13 +1083,13 @@ if (!isset($_SESSION["admin_log"])) {
                             </div>
 
 
-                            <button type="button" class="btn btn-primary border-0 px-4 py-2" style="background-color: #4ACA84;" data-bs-toggle="modal" data-bs-target="#ร้านค้า">เพิ่มข้อมูล</button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ร้านค้า">เพิ่มข้อมูล</button>
                         </div>
                     </div>
                     <!-- Modal -->
                     <div class="modal fade" id="ร้านค้า" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=6" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=6" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">ร้านค้า</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1150,12 +1097,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="offer_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">ร้านค้า</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addOffer" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addOffer" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -1168,7 +1114,7 @@ if (!isset($_SESSION["admin_log"])) {
                     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                     <table id="offer" class="table table-hover">
-                        <thead class="table-primary">
+                        <thead>
                             <tr>
                                 <th scope="col">ชื่อรายการ</th>
                                 <th scope="col">แก้ไข</th>
@@ -1180,34 +1126,31 @@ if (!isset($_SESSION["admin_log"])) {
                                 <tr>
                                     <th scope="row"><?= $row['offer_name'] ?></th>
                                     <td>
-                                        <button type="button" class="btn btn-warning text-white" style="background-color: #FFAE2C;" data-bs-toggle="modal" data-bs-target="#Offer<?= $row['offer_id'] ?>">แก้ไข</button>
+                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#Offer<?= $row['offer_id'] ?>">แก้ไข</button>
                                     </td>
 
                                     <div class="modal fade" id="Offer<?= $row['offer_id'] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                         <div class="modal-dialog">
-                                            <form class="modal-dialog" action="system/update.php" id="form-Offer<?= $row['offer_id'] ?>" method="post">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">ร้านที่เสนอราคา</h1>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">ร้านที่เสนอราคา</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="system/update.php" method="post">
                                                         <div class="form-floating mb-3">
                                                             <input type="text" class="form-control" value="<?= $row['offer_name'] ?>" name="offer_name" placeholder="Password">
                                                             <input type="hidden" class="form-control" value="<?= $row['offer_id'] ?>" name="offer_id" placeholder="Password">
                                                             <label for="floatingPassword">ร้านที่เสนอราคา</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" id="update-form-submit" data-target="form-Offer<?= $row['offer_id'] ?>" name="offer" class="btn btn-primary">บันทึก</button>
-
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                                                    </div>
                                                 </div>
-                                            </form>
+                                                <div class="modal-footer">
+                                                    <button type="submit" name="offer" class="btn btn-primary">บันทึก</button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                                </div>
+                                            </div>
                                         </div>
-
                                     </div>
 
                                     <td>
@@ -1215,7 +1158,7 @@ if (!isset($_SESSION["admin_log"])) {
 
 
 
-                                        <a href="#" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal" data-bs-toggle="modal" data-bs-target="#of<?= $row['offer_id'] ?>">ลบ</a>
+                                        <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#of<?= $row['offer_id'] ?>">ลบ</a>
 
                                         <div class="modal fade" id="of<?= $row['offer_id'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
                                             <div class="modal-dialog">
@@ -1229,7 +1172,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?offer=<?= $row['offer_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?offer=<?= $row['offer_id'] ?>" class="btn btn-danger">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1244,8 +1187,9 @@ if (!isset($_SESSION["admin_log"])) {
 
                 </div>
 
-                <div class="" id="page-column" data-pageId="5"> <!-- รายการอุปกรณ์ -->
-                    <h1 class="pt-3">รายการอุปกรณ์</h1>
+                <div class="" id="page-column" data-pageId="3"> <!-- รายการอุปกรณ์ -->
+                    <h1>รายการอุปกรณ์</h1>
+                    <hr>
                     <div>
 
                         <div class="d-flex justify-content-between my-2">
@@ -1260,13 +1204,13 @@ if (!isset($_SESSION["admin_log"])) {
                             </div>
 
 
-                            <button type="button" class="btn btn-primary border-0 px-4 py-2" style="background-color: #4ACA84;" data-bs-toggle="modal" data-bs-target="#รายการอุปกรณ์">เพิ่มข้อมูล</button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#รายการอุปกรณ์">เพิ่มข้อมูล</button>
                         </div>
                     </div>
                     <!-- Modal -->
                     <div class="modal fade" id="รายการอุปกรณ์" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=3" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=3" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">รายการอุปกรณ์</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1274,12 +1218,11 @@ if (!isset($_SESSION["admin_log"])) {
                                 <div class="modal-body">
                                     <div class="form-floating mb-3">
                                         <input type="text" class="form-control" name="device_name" id="floatingPassword" placeholder="Password">
-                                        <label for="floatingPassword">รายการอุปกรณ์</label>
 
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addDevice" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addDevice" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -1294,7 +1237,7 @@ if (!isset($_SESSION["admin_log"])) {
                     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                     <table id="device" class="table table-hover">
-                        <thead class="table-primary">
+                        <thead>
                             <tr>
                                 <th scope="col">ชื่อรายการ</th>
                                 <th scope="col">แก้ไข</th>
@@ -1306,38 +1249,35 @@ if (!isset($_SESSION["admin_log"])) {
                                 <tr>
                                     <th scope="row"><?= $row['device_name'] ?></th>
                                     <td>
-                                        <button type="button" class="btn btn-warning text-white" style="background-color: #FFAE2C;" data-bs-toggle="modal" data-bs-target="#device<?= $row['device_id'] ?>">แก้ไข</button>
+                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#device<?= $row['device_id'] ?>">แก้ไข</button>
                                     </td>
 
                                     <div class="modal fade" id="device<?= $row['device_id'] ?>" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                                         <div class="modal-dialog">
-                                            <form class="modal-dialog" action="system/update.php" id="form-device<?= $row['device_id'] ?>" method="post">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h1 class="modal-title fs-5" id="staticBackdropLabel">รายการอุปกรณ์</h1>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">รายการอุปกรณ์</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="system/update.php" method="post">
                                                         <div class="form-floating mb-3">
                                                             <input type="text" class="form-control" value="<?= $row['device_name'] ?>" name="device_name" placeholder="Password">
                                                             <input type="hidden" class="form-control" value="<?= $row['device_id'] ?>" name="device_id" placeholder="Password">
                                                             <label for="floatingPassword">รายการอุปกรณ์</label>
                                                         </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" id="update-form-submit" data-target="form-device<?= $row['device_id'] ?>" name="device" class="btn btn-primary">บันทึก</button>
-
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
-                                                    </div>
                                                 </div>
-                                            </form>
+                                                <div class="modal-footer">
+                                                    <button type="submit" name="device" class="btn btn-primary">บันทึก</button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                                                </div>
+                                            </div>
                                         </div>
-
                                     </div>
                                     <td>
 
-                                        <a href="#" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal" data-bs-toggle="modal" data-bs-target="#dv<?= $row['device_id'] ?>">ลบ</a>
+                                        <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#dv<?= $row['device_id'] ?>">ลบ</a>
 
                                         <div class="modal fade" id="dv<?= $row['device_id'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
                                             <div class="modal-dialog">
@@ -1351,7 +1291,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?device=<?= $row['device_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?device=<?= $row['device_id'] ?>" class="btn btn-danger">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1366,11 +1306,11 @@ if (!isset($_SESSION["admin_log"])) {
                 </div>
             </div>
 
-            <div class="row justify-content-center shadow rounded-4" data-mainPageId="3" id="main-page">
+            <div class="row justify-content-center card" data-mainPageId="3" id="main-page">
                 <div class="col-sm-6" id="page-column" data-pageId="1"> <!-- มอบหมายตัวชี้วัด -->
-                    <h1 class="pt-3">มอบหมายตัวชี้วัด</h1>
-
-                    <form action="system/insert.php" method="post" id="page-form" class="modal-content">
+                    <h1>มอบหมายตัวชี้วัด</h1>
+                    <hr>
+                    <form action="system/insert.php" method="post">
                         <select class="form-select" name="kpi" aria-label="Default select example">
                             <?php
                             $sql = "SELECT * FROM kpi";
@@ -1396,7 +1336,7 @@ if (!isset($_SESSION["admin_log"])) {
                         </div>
 
                         <div class="d-flex justify-content-center my-3">
-                            <button type="submit" id="form-submit" name="assignKPI" class="btn btn-primary w-100">มอบหมายงาน</button>
+                            <button type="submit" name="assignKPI" class="btn btn-primary">มอบหมายงาน</button>
                         </div>
 
                         <script>
@@ -1429,21 +1369,21 @@ if (!isset($_SESSION["admin_log"])) {
                 </div>
             </div>
 
-            <div class="row justify-content-center shadow rounded-4" data-mainPageId="4" id="main-page">
+            <div class="row justify-content-center card" data-mainPageId="4" id="main-page">
                 <div class="col-sm-12" id="page-column" data-pageId="1"> <!-- เพิ่มผู้ใช้งาน -->
+                    <h1>เพิ่มผู้ใช้งาน</h1>
+                    <hr>
 
+                    <div>
 
-                    <div class="my-3 d-flex justify-content-between h-25">
-                        <h1 class="d-flex">เพิ่มผู้ใช้งาน</h1>
-                        
-                        <div class="d-flex text-center">
-                            <button type="button" class="btn btn-primary border-0 px-4" style="background-color: #4ACA84;" data-bs-toggle="modal" data-bs-target="#addUsers">เพิ่มข้อมูล</button>
+                        <div class="d-flex justify-content-between my-12">
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUsers">เพิ่มข้อมูล</button>
                         </div>
                     </div>
                     <!-- Modal -->
                     <div class="modal fade" id="addUsers" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
-                            <form method="post" action="system/insert.php?page=11" id="page-form" class="modal-content">
+                            <form method="post" action="system/insert.php?page=11" class="modal-content">
                                 <div class="modal-header">
                                     <h1 class="modal-title fs-5" id="exampleModalLabel">เพิ่มผู้ใช้งาน</h1>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1467,7 +1407,7 @@ if (!isset($_SESSION["admin_log"])) {
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="submit" id="form-submit" name="addUsers" class="btn btn-primary">เพิ่มข้อมูล</button>
+                                    <button type="submit" name="addUsers" class="btn btn-primary">เพิ่มข้อมูล</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                 </div>
                             </form>
@@ -1481,10 +1421,10 @@ if (!isset($_SESSION["admin_log"])) {
                     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     ?>
                     <table id="admin" class="table table-hover">
-                        <thead class="table-primary">
+                        <thead>
                             <tr>
                                 <th scope="col">ชื่อ</th>
-                                <th class="d-flex justify-content-end " scope="col">ลบ</th>
+                                <th scope="col">ลบ</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1494,29 +1434,28 @@ if (!isset($_SESSION["admin_log"])) {
                                     <tr>
                                         <td><?= $row['username'] ?></td>
 
-                                        <td class="justify-content-end d-flex">
+                                        <td>
 
-                                            <a href="#" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal" data-bs-toggle="modal" data-bs-target="#user<?= $row['username'] ?>">ลบ</a>
+                                            <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#user<?= $row['username'] ?>">ลบ</a>
 
-
-                                        </td>
-                                        <div class="modal fade" id="user<?= $row['username'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="confirmationModalLabel">ยืนยันการลบ</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        คุณแน่ใจหรือไม่ที่ต้องการลบรายการนี้?
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?deleteuser=<?= $row['username'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;" data-bs-toggle="modal">ลบ</a>
+                                            <div class="modal fade" id="user<?= $row['username'] ?>" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="confirmationModalLabel">ยืนยันการลบ</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            คุณแน่ใจหรือไม่ที่ต้องการลบรายการนี้?
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                                                            <a id="confirmDelete" href="system/delete.php?deleteuser=<?= $row['username'] ?>" class="btn btn-danger">ลบ</a>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </td>
                                     </tr>
                             <?php }
                             } ?>
@@ -1526,6 +1465,11 @@ if (!isset($_SESSION["admin_log"])) {
 
                 </div>
             </div>
+
+            <div class="row justify-content-center card" id="all-pages">
+
+            </div>
+
 
         </div>
 
@@ -1562,15 +1506,13 @@ if (!isset($_SESSION["admin_log"])) {
             $('#working').DataTable();
             $('#problem').DataTable();
 
-
         });
     </script>
 
 
-
-    <?php SC5() ?>
     <script src="Client/InsertDataPage/Main.js" type="module"></script>
 
+    <?php SC5() ?>
 </body>
 
 </html>
