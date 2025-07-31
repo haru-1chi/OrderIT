@@ -1,5 +1,5 @@
 <?php
-require_once 'config/db.php';
+require_once '../config/db.php';
 
 $postData = json_decode(file_get_contents('php://input'), true);
 $filter = $postData['filter'] ?? 'day';

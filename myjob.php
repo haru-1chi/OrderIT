@@ -199,7 +199,7 @@ if (!isset($_SESSION["admin_log"])) {
                 ?>
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <form method="post" action="export.php">
+                        <form method="post" action="system_1/export.php">
                             <button name="act" class="btn btn-primary" type="submit">Export->Excel</button>
                         </form>
                     </div>
@@ -516,8 +516,8 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                     "depart",
                                                                                     `#departInputTask${i}`,
                                                                                     `#departIdTask${i}`,
-                                                                                    "autocomplete.php",
-                                                                                    "insertDepart.php",
+                                                                                    "system_1/autocomplete.php",
+                                                                                    "system_1/insertDepart.php",
                                                                                     "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
                                                                                 );
                                                                             });
@@ -1070,8 +1070,8 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                         "depart",
                                                                                         `#departInput${i}`,
                                                                                         `#departId${i}`,
-                                                                                        "autocomplete.php",
-                                                                                        "insertDepart.php",
+                                                                                        "system_1/autocomplete.php",
+                                                                                        "system_1/insertDepart.php",
                                                                                         "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
                                                                                     );
                                                                                 });
@@ -1460,8 +1460,8 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                     "depart",
                                                                                     `#departInput${i}`,
                                                                                     `#departId${i}`,
-                                                                                    "autocomplete.php",
-                                                                                    "insertDepart.php",
+                                                                                    "system_1/autocomplete.php",
+                                                                                    "system_1/insertDepart.php",
                                                                                     "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
                                                                                 );
                                                                             });
@@ -1802,7 +1802,7 @@ ORDER BY id DESC;
             <div class="table-responsive">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <form method="post" action="export.php">
+                        <form method="post" action="system_1/export.php">
                             <button name="actUncomplete" class="btn btn-primary" type="submit">Export->Excel</button>
                         </form>
                     </div>
@@ -2113,8 +2113,8 @@ ORDER BY id DESC;
                                                                                     "depart",
                                                                                     `#departInputTask${i}`,
                                                                                     `#departIdTask${i}`,
-                                                                                    "autocomplete.php",
-                                                                                    "insertDepart.php",
+                                                                                    "system_1/autocomplete.php",
+                                                                                    "system_1/insertDepart.php",
                                                                                     "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
                                                                                 );
                                                                             });
@@ -2686,8 +2686,8 @@ ORDER BY id DESC;
                                                                                         "depart",
                                                                                         `#departInput${i}`,
                                                                                         `#departId${i}`,
-                                                                                        "autocomplete.php",
-                                                                                        "insertDepart.php",
+                                                                                        "system_1/autocomplete.php",
+                                                                                        "system_1/insertDepart.php",
                                                                                         "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
                                                                                     );
                                                                                 });
@@ -3074,8 +3074,8 @@ ORDER BY id DESC;
                                                                                     "depart",
                                                                                     `#departInput${i}`,
                                                                                     `#departId${i}`,
-                                                                                    "autocomplete.php",
-                                                                                    "insertDepart.php",
+                                                                                    "system_1/autocomplete.php",
+                                                                                    "system_1/insertDepart.php",
                                                                                     "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
                                                                                 );
                                                                             });
@@ -3449,7 +3449,7 @@ ORDER BY id DESC;
                 type: "device",
                 inputSelector: `#deviceInput${index}`,
                 hiddenInputSelector: `#deviceId${index}`,
-                sourceUrl: "autocomplete.php",
+                sourceUrl: "system_1/autocomplete.php",
                 confirmMessage: "ไม่พบหน่วยงานนี้ในระบบ",
                 resetValue: "-",
                 defaultHiddenId: "105"
@@ -3611,7 +3611,7 @@ ORDER BY id DESC;
 
         if (models_id) {
             $.ajax({
-                url: 'autoList.php',
+                url: 'system_1/autoList.php',
                 type: 'POST',
                 data: {
                     models_id: models_id
@@ -3746,7 +3746,7 @@ ORDER BY id DESC;
 
             try {
                 // AJAX request to fetch duplicate data
-                const response = await fetch('check_duplicate.php', {
+                const response = await fetch('system_1/check_duplicate.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'

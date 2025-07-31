@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 
 // Database connection
-require_once 'config/db.php';
+require_once '../config/db.php';
 
 // Get device number from POST request
 if (isset($_POST['number_device'])) {

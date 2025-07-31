@@ -258,7 +258,7 @@ if (!isset($_SESSION["admin_log"])) {
             <div class="row">
                 <div class="col ">
                     <h5 class="mb-3">Export รายงานการปฏิบัติงานรายวัน</h5>
-                    <form method="POST" action="export.php">
+                    <form method="POST" action="system_1/export.php">
                         <div class="d-flex mb-2">
                             <input class="form-control me-2" type="date" name="date" value="<?= date('Y-m-d') ?>" />
                             <select name="filter" class="form-control">
@@ -275,7 +275,7 @@ if (!isset($_SESSION["admin_log"])) {
                 </div>
                 <div class="col pb-3">
                     <h5 class="mb-3">Export รายงานการปฏิบัติงานรายบุคคลตามช่วงเวลา</h5>
-                    <form method="POST" action="export.php">
+                    <form method="POST" action="system_1/export.php">
                         <div class="row mb-2">
                             <div class="col">
                                 <label><input class="form-check-input me-2" type="radio" name="date_filter_type" value="period" checked onclick="toggleDateInputs()"> ตามช่วงเวลา</label>
@@ -337,7 +337,7 @@ if (!isset($_SESSION["admin_log"])) {
                 <div class="col"></div>
                 <div class="col">
                     <h5 class="mb-3">Export รายงานสรุปการปฏิบัติงาน</h5>
-                    <form method="POST" action="export.php">
+                    <form method="POST" action="system_1/export.php">
                         <div class="row mb-2">
                             <!-- <div class="col">
                                 <label><input class="form-check-input me-2" type="radio" name="date_filter_type" value="period" checked onclick="toggleDateInputs()">รายเดือน</label>
@@ -419,7 +419,7 @@ if (!isset($_SESSION["admin_log"])) {
 
             // Fetch data from backend
             async function fetchChartData(date, filter) {
-                const response = await fetch(`fetch_data.php?date=${date}&filter=${filter}`);
+                const response = await fetch(`system_1/fetch_data.php?date=${date}&filter=${filter}`);
                 const data = await response.json();
                 return data;
             }
@@ -673,7 +673,7 @@ if (!isset($_SESSION["admin_log"])) {
                     let horizontalChartInstance;
 
                     function fetchAverageScores() {
-                        return fetch('fetch_total_score.php', {
+                        return fetch('system_1/fetch_total_score.php', {
                                 method: 'GET',
                             })
                             .then((response) => {
@@ -743,8 +743,8 @@ if (!isset($_SESSION["admin_log"])) {
             <script>
                 document.addEventListener('DOMContentLoaded', () => {
                     const endpoints = {
-                        service: 'fetch_service_channel.php',
-                        solving: 'fetch_solving.php',
+                        service: 'system_1/fetch_service_channel.php',
+                        solving: 'system_1/fetch_solving.php',
                     };
 
                     const chartConfigs = {
@@ -847,7 +847,7 @@ if (!isset($_SESSION["admin_log"])) {
 
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
-                    const endpoint = "fetch_avg_sla.php"; // Backend endpoint
+                    const endpoint = "system_1/fetch_avg_sla.php"; // Backend endpoint
                     const canvas = document.getElementById("avgSLAChart");
                     const filterDropdown = document.getElementById("avgSLAFilter");
                     let chartInstance;
@@ -948,7 +948,7 @@ if (!isset($_SESSION["admin_log"])) {
                     const charts = [{
                             canvasId: 'pairedChart',
                             dropdownId: 'filterDropdown',
-                            endpoint: 'fetch_staff.php',
+                            endpoint: 'system_1/fetch_staff.php',
                             type: 'bar',
                             datasets: (data) => [{
                                     label: 'จำนวนรับงาน',
@@ -969,7 +969,7 @@ if (!isset($_SESSION["admin_log"])) {
                         {
                             canvasId: 'lineChart',
                             dropdownId: 'filterDropdown1',
-                            endpoint: 'fetch_count_task.php',
+                            endpoint: 'system_1/fetch_count_task.php',
                             type: 'line',
                             datasets: (data) => [{
                                 label: 'จำนวนงาน',
@@ -1071,7 +1071,7 @@ if (!isset($_SESSION["admin_log"])) {
                     let pieChartInstance;
 
                     function fetchPieData(filter, username, period) {
-                        return fetch(`fetch_problem_counts.php?filter=${filter}&username=${username}&period=${period}`)
+                        return fetch(`system_1/fetch_problem_counts.php?filter=${filter}&username=${username}&period=${period}`)
                             .then(response => response.json())
                             .then(data => {
                                 console.log("API Response:", data);
@@ -1160,7 +1160,7 @@ if (!isset($_SESSION["admin_log"])) {
                     let pieChartInstance;
 
                     function fetchPieData(filter) {
-                        return fetch('fetch_percentage_sla.php', {
+                        return fetch('system_1/fetch_percentage_sla.php', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json'
@@ -1224,7 +1224,7 @@ if (!isset($_SESSION["admin_log"])) {
                 document.addEventListener('DOMContentLoaded', function() {
                     const chartData = {
                         canvasId: 'horizontalBarChart',
-                        endpoint: 'fetch_average_scores.php', // API to retrieve the averages
+                        endpoint: 'system_1/fetch_average_scores.php', // API to retrieve the averages
                         type: 'bar',
                         datasets: (data) => [{
                             label: 'คะแนนเฉลี่ย',
@@ -1398,7 +1398,7 @@ if (!isset($_SESSION["admin_log"])) {
 
                     // Function to fetch and update the chart data
                     function fetchDataAndRenderChart(date = null, filter = null) {
-                        const url = new URL('fetch_data.php', window.location.href);
+                        const url = new URL('system_1/fetch_data.php', window.location.href);
                         if (date) url.searchParams.append('date', date);
                         if (filter) url.searchParams.append('filter', filter);
 
@@ -1550,7 +1550,7 @@ if (!isset($_SESSION["admin_log"])) {
                         // Clear previous color mapping while keeping the same object reference
                         Object.keys(colorMap).forEach(key => delete colorMap[key]);
 
-                        const url = new URL("fetch_data.php", window.location.href);
+                        const url = new URL("system_1/fetch_data.php", window.location.href);
                         if (date) url.searchParams.append("date", date);
                         if (filter) url.searchParams.append("filter", filter);
 

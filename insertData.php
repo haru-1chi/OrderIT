@@ -1401,7 +1401,7 @@ if (!isset($_SESSION["admin_log"])) {
 
                         <script>
                             function loadKpiUsers(kpiId) {
-                                fetch('fetch_kpi_users.php?kpi=' + kpiId)
+                                fetch('system_1/fetch_kpi_users.php?kpi=' + kpiId)
                                     .then(response => response.json())
                                     .then(data => {
                                         document.getElementById('checkbox-container').innerHTML = data.html;

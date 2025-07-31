@@ -1,5 +1,5 @@
 <?php
-require_once 'config/db.php';
+require_once '../config/db.php';
 
 // Get query parameters
 $date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');

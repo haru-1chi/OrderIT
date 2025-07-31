@@ -2,8 +2,8 @@
 // Set the file encoding to UTF-8
 header('Content-Type: text/html; charset=utf-8');
 
-require_once 'config/db.php';
-require_once 'config/leave_db.php';
+require_once '../config/db.php';
+require_once '../config/leave_db.php';
 // Start the session if not already started
 session_start();
 

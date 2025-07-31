@@ -203,7 +203,7 @@ if (isset($_GET['withdraw'])) {
                       $("#departInput").autocomplete({
                           source: function(request, response) {
                             $.ajax({
-                              url: "autocomplete.php",
+                              url: "system_1/autocomplete.php",
                               dataType: "json",
                               data: {
                                 term: request.term
@@ -570,7 +570,7 @@ if (isset($_GET['withdraw'])) {
                             $("#departInput").autocomplete({
                                 source: function(request, response) {
                                   $.ajax({
-                                    url: "autocomplete.php",
+                                    url: "system_1/autocomplete.php",
                                     dataType: "json",
                                     data: {
                                       term: request.term
@@ -984,7 +984,7 @@ if (isset($_GET['withdraw'])) {
                                     "depart",
                                     "#departInput",
                                     "#departId",
-                                    "autocomplete.php",
+                                    "system_1/autocomplete.php",
                                     "insertDepart.php",
                                     "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
                                   );
@@ -1181,7 +1181,7 @@ foreach ($result as $d) {
 
                   if (models_id) {
                     $.ajax({
-                      url: 'autoList.php',
+                      url: 'system_1/autoList.php',
                       type: 'POST',
                       data: {
                         models_id: models_id

@@ -665,7 +665,7 @@ $fullname = $result['full_name'] ?? '-';
 
                 if (models_id) {
                     $.ajax({
-                        url: 'autoList.php',
+                        url: 'system_1/autoList.php',
                         type: 'POST',
                         data: {
                             models_id: models_id

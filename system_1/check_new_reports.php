@@ -1,5 +1,5 @@
 <?php
-require_once 'config/db.php';
+require_once '../config/db.php';
 date_default_timezone_set('Asia/Bangkok');
 
 function sendTelegramMessage($message, $chatIds)
@@ -75,14 +75,14 @@ try {
     $stmt3->execute([$dateThai, $timeThai]);
     $notiReports = $stmt3->fetchAll(PDO::FETCH_ASSOC);
 
-    $chatIds = ['6810241495'];
+    $chatIds = ['6810241495', '7542936104', '6684593322', '7551836315', '7929326845', '6221065459'];
     //  $chatIds = ['6810241495', '7542936104', '6684593322', '7551836315', '7929326845', '6221065459'];
 
     foreach ($notiReports as $report) {
         $updateStmt = $conn->prepare("UPDATE data_report SET telegram_notified = 1 WHERE id = ?");
         $updateStmt->execute([$report['id']]);
 
-        $message = "📢<b>New Report</b>\n👤หน่วยงาน: <b>{$report['depart_name']}</b>\n🛠อาการรับแจ้ง: {$report['report']}\n🧑‍💻ผู้คีย์งาน: {$report['create_by']}\n👉🏻รับงาน: http://172.16.190.17/orderit/system/take.php?id={$report['id']}";
+        $message = "📢 <b>New Report</b>\n📌เลขงาน: {$report['id']}\n👤หน่วยงาน: <b>{$report['depart_name']}</b>\n🛠อาการรับแจ้ง: {$report['report']}\n🧑‍💻ผู้คีย์งาน: {$report['create_by']}\n👉🏻รับงาน: http://172.16.190.17/orderit/system/take.php?id={$report['id']}";
 
         sendTelegramMessage($message, $chatIds);
     }
