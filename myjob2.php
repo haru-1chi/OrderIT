@@ -233,7 +233,7 @@ $name = $result['full_name'] ?? '-';
                 type: "depart",
                 inputSelector: "#departInput",
                 hiddenInputSelector: "#departId",
-                sourceUrl: "autocomplete.php",
+                sourceUrl: "system_1/autocomplete.php",
                 notFoundMessage: "ไม่พบหน่วยงานนี้ในระบบ",
                 resetValue: "-",
                 defaultHiddenId: "222"
@@ -244,7 +244,7 @@ $name = $result['full_name'] ?? '-';
                 type: "device",
                 inputSelector: "#deviceInput",
                 hiddenInputSelector: "#deviceId",
-                sourceUrl: "autocomplete.php",
+                sourceUrl: "system_1/autocomplete.php",
                 notFoundMessage: "ไม่พบอุปกรณ์นี้ในระบบ",
                 resetValue: "-",
                 defaultHiddenId: "105"

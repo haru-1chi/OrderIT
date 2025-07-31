@@ -1,5 +1,5 @@
 <?php
-// autocomplete.php
+// system_1/autocomplete.php
 
 // Include your database connection file here
 require_once '../config/db.php';

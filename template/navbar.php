@@ -134,7 +134,7 @@ function navbar($report_count = null)
 
     <script>
     function fetchReportCount() {
-        fetch('badge_navbar.php')
+        fetch('./system_1/badge_navbar.php')
             .then(response => response.json())
             .then(data => {
                 const badge = document.getElementById('report-badge');

@@ -2,13 +2,13 @@
 session_start();
 require_once '../config/db.php';
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
 
-echo '<pre>';
-print_r($_POST);
-echo '</pre>';
-exit;
+// echo '<pre>';
+// print_r($_POST);
+// echo '</pre>';
+// exit;
 
 function backToInsertPage($data = [])
 {

@@ -802,14 +802,14 @@ ORDER BY nd.id, oi.id
                     document.getElementById("exportExcel").addEventListener("click", function() {
                       // Create a new form dynamically
                       const form = document.createElement("form");
-                      form.action = "export.php";
+                      form.action = "system_1/export.php";
                       form.method = "POST";
 
                       // Add input if needed, for example sending same fields:
                       const input = document.createElement("input");
                       input.type = "hidden";
                       input.name = "DataAll";
-                      input.value = "1"; // or whatever export.php expects
+                      input.value = "1"; // or whatever system_1/export.php expects
                       form.appendChild(input);
 
                       // If you want to include data from the main form:
@@ -1950,7 +1950,7 @@ ORDER BY nd.id, oi.id
       }
       if (models_id) {
         $.ajax({
-          url: "autoList.php",
+          url: "system_1/autoList.php",
           type: "POST",
           data: {
             models_id: models_id
@@ -1990,7 +1990,7 @@ ORDER BY nd.id, oi.id
       $("#assetInput").autocomplete({
         source: function(request, response) {
           $.ajax({
-            url: "autoNumberDevice.php",
+            url: "system_1/autoNumberDevice.php",
             dataType: "json",
             data: {
               term: request.term
@@ -2073,7 +2073,7 @@ ORDER BY nd.id, oi.id
 
     function updateStatus(data) {
       const params = new URLSearchParams(data);
-      fetch('update_status.php', {
+      fetch('system_1/update_status.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -2119,7 +2119,7 @@ ORDER BY nd.id, oi.id
         .filter(val => val && val !== '-');
 
       try {
-        const response = await fetch('check_duplicate.php', {
+        const response = await fetch('system_1/check_duplicate.php', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -2361,7 +2361,7 @@ ORDER BY nd.id, oi.id
           type: "depart",
           inputSelector: `#departInput${index}`,
           hiddenInputSelector: `#departId${index}`,
-          sourceUrl: "autocomplete.php",
+          sourceUrl: "system_1/autocomplete.php",
           notFoundMessage: "ไม่พบหน่วยงานนี้ในระบบ",
           resetValue: "-",
           defaultHiddenId: "222"

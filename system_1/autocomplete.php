@@ -1,5 +1,5 @@
 <?php
-// autocomplete.php
+// system_1/autocomplete.php
 
 require_once '../config/db.php';
 
