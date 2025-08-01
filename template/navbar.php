@@ -72,6 +72,10 @@ function navbar($report_count = null)
             <div class="collapse navbar-collapse align-items-center" id="navbarSupportedContent">
 
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="noteList.php">📝โน้ต</a>
+                    </li>
+
                     <div class="dropdown">
                         <button class="btn dropdown-toggle" type="button" id="dropdownMenu2" data-bs-toggle="dropdown" aria-expanded="false" style="color: #fff; margin-top: 1px">
                             Dashboard
@@ -121,9 +125,7 @@ function navbar($report_count = null)
                         </ul>
                     </div>
 
-                    <li class="nav-item">
-                        <a class="nav-link" href="noteList.php">โน้ตที่บันทึกไว้</a>
-                    </li>
+
 
                     <li class="nav-item ms-5">
                         <a class="nav-link" href="system/logout.php">ออกจากระบบ</a>
@@ -134,23 +136,23 @@ function navbar($report_count = null)
     </nav>
 
     <script>
-    function fetchReportCount() {
-        fetch('./system_1/badge_navbar.php')
-            .then(response => response.json())
-            .then(data => {
-                const badge = document.getElementById('report-badge');
-                if (badge) {
-                    badge.textContent = data.report_count;
-                    badge.style.display = data.report_count > 0 ? 'inline-block' : 'none';
-                }
-            })
-            .catch(error => console.error('Error fetching report count:', error));
-    }
+        function fetchReportCount() {
+            fetch('./system_1/badge_navbar.php')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('report-badge');
+                    if (badge) {
+                        badge.textContent = data.report_count;
+                        badge.style.display = data.report_count > 0 ? 'inline-block' : 'none';
+                    }
+                })
+                .catch(error => console.error('Error fetching report count:', error));
+        }
 
-    // Fetch initially and set interval to update every 30 seconds
-    fetchReportCount();
-    setInterval(fetchReportCount, 30000);
-</script>
+        // Fetch initially and set interval to update every 30 seconds
+        fetchReportCount();
+        setInterval(fetchReportCount, 30000);
+    </script>
 <?php }
 function bs5()
 { ?>
