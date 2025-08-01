@@ -644,8 +644,8 @@ ORDER BY nd.id, oi.id
                                 title="<?= date('Y-m-d', strtotime($currentTimestamp)) ?>">
                                 <?= $statusNames[4] ?>
                               </p>
-                              <button type="button" class="btn btn-warning undo-btn"
-                                data-id="<?= $statuses[array_search(4, array_column($statuses, 'status'))]['id'] ?>">↻</button>
+                              <button type="button" class="btn btn-warning undo-btn" data-status='4' data-order-id="<?= $order_id ?>"
+                                data-id="<?= $statuses[array_search(4, array_column($statuses, 'status'))]['id'] ?>">-</button>
 
                             <?php elseif ($currentStatus == 6 && $lastValidStatus): ?>
                               <p class="m-0 me-2"
@@ -654,8 +654,8 @@ ORDER BY nd.id, oi.id
                                 title="<?= date('Y-m-d', strtotime($lastValidStatus['timestamp'])) ?>">
                                 <?= $statusNames[$lastValidStatus['status']] ?>
                               </p>
-                              <button type="button" class="btn btn-warning undo-btn" data-id="<?= $lastValidStatus['id'] ?>">
-                                ↻
+                              <button type="button" class="btn btn-warning undo-btn" data-status='<?= $lastValidStatus['status'] ?>' data-order-id="<?= $order_id ?>" data-id="<?= $lastValidStatus['id'] ?>">
+                                -
                               </button>
 
                             <?php else: ?>
@@ -686,8 +686,8 @@ ORDER BY nd.id, oi.id
                                         data-bs-placement="left" title="<?= date('Y-m-d', strtotime($status['timestamp'])) ?>">
                                         <?= $statusNames[$status['status']] ?>
                                       </p>
-                                      <button type="button" class="btn btn-warning undo-btn" data-id="<?= $status['id'] ?>">
-                                        ↻
+                                      <button type="button" class="btn btn-warning undo-btn" data-status='<?= $status['status'] ?>' data-id="<?= $status['id'] ?>" data-order-id="<?= $order_id ?>">
+                                        -
                                       </button>
                                     </div>
                                   <?php endif; ?>
@@ -700,8 +700,8 @@ ORDER BY nd.id, oi.id
                                       data-bs-placement="left" title="<?= date('Y-m-d', strtotime($status['timestamp'])) ?>">
                                       <?= $statusNames[$status['status']] ?>
                                     </p>
-                                    <button type="button" class="btn btn-warning undo-btn" data-id="<?= $status['id'] ?>">
-                                      ↻
+                                    <button type="button" class="btn btn-warning undo-btn" data-status='<?= $status['status'] ?>' data-id="<?= $status['id'] ?>" data-order-id="<?= $order_id ?>">
+                                      -
                                     </button>
                                   </div>
                                 <?php endif; ?>
@@ -714,16 +714,16 @@ ORDER BY nd.id, oi.id
 
                       <div class="col-6 d-flex justify-content-end align-items-start">
                         <?php if ($hasClosed): ?>
-                          <button type='button' class='btn me-2 btn-outline-success undo-btn' data-id="<?= $closedStatus['id'] ?>" data-bs-toggle="tooltip" data-bs-placement="top"
-                            title="<?= date('Y-m-d', strtotime($closedStatus['timestamp'])) ?>">ปิดงาน ↻</button>
+                          <button type='button' class='btn me-2 btn-outline-success undo-btn' data-status='5' data-id="<?= $closedStatus['id'] ?>" data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="<?= date('Y-m-d', strtotime($closedStatus['timestamp'])) ?>" data-order-id="<?= $order_id ?>">ปิดงาน ↻</button>
                         <?php else: ?>
                           <button type='button' class='btn me-2 btn-success cancel-btn' data-status='5' data-order-id='<?= $order_id ?>' <?= $hasCancelled ? 'disabled' : '' ?>>ปิดงาน</button>
                         <?php endif; ?>
 
                         <?php if ($hasCancelled): ?>
-                          <button type='button' class='btn btn-outline-danger undo-btn' data-id="<?= $cancelledStatus['id'] ?>" data-bs-toggle="tooltip"
+                          <button type='button' class='btn btn-outline-danger undo-btn' data-status='6' data-id="<?= $cancelledStatus['id'] ?>" data-bs-toggle="tooltip"
                             data-bs-placement="top"
-                            title="<?= date('Y-m-d', strtotime($cancelledStatus['timestamp'])) ?>">ยกเลิกใบเบิก ↻</button>
+                            title="<?= date('Y-m-d', strtotime($cancelledStatus['timestamp'])) ?>" data-order-id="<?= $order_id ?>">ยกเลิกใบเบิก ↻</button>
                         <?php else: ?>
                           <button type='button' class='btn btn-danger cancel-btn' data-status='6' data-order-id='<?= $order_id ?>'>ยกเลิกใบเบิก</button>
                         <?php endif; ?>
@@ -2026,9 +2026,9 @@ ORDER BY nd.id, oi.id
     const attachListeners = () => {
       document.querySelectorAll('.confirm-btn, .cancel-btn').forEach(button => {
         button.addEventListener('click', () => {
-          const status = button.dataset.status;
+          const status = Number(button.dataset.status);
           const orderId = button.dataset.orderId;
-          const statusName = button.closest('.next-status')?.querySelector('p')?.textContent.trim() || 'สถานะใหม่';
+          const statusName = status === 5 ? 'ปิดงาน' : 'ยกเลิกใบเบิก';
 
           Swal.fire({
             title: 'คุณแน่ใจหรือไม่?',
@@ -2051,7 +2051,8 @@ ORDER BY nd.id, oi.id
       document.querySelectorAll('.undo-btn').forEach(button => {
         button.addEventListener('click', () => {
           const id = button.dataset.id;
-
+          const status = button.dataset.status;
+          const orderId = button.dataset.orderId;
           Swal.fire({
             title: 'ยืนยันการย้อนสถานะ',
             text: 'คุณต้องการย้อนสถานะ ใช่หรือไม่',
@@ -2062,6 +2063,8 @@ ORDER BY nd.id, oi.id
           }).then(result => {
             if (result.isConfirmed) {
               updateStatus({
+                status,
+                order_id: orderId,
                 undo: true,
                 id
               });

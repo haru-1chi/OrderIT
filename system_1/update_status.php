@@ -10,7 +10,7 @@ try {
     date_default_timezone_set('Asia/Bangkok');
     $timestamp = date('Y-m-d H:i:s');
 
-    if (isset($_POST['order_id'], $_POST['status'])) {
+    if (!isset($_POST['undo']) || $_POST['undo'] !== 'true' && isset($_POST['order_id'], $_POST['status'])) {
         $order_id = $_POST['order_id'];
         $new_status = (int)$_POST['status'];
 
@@ -65,10 +65,15 @@ try {
             ]);
             echo "ยกเลิกใบเบิกแล้ว";
         }
-    } elseif (isset($_POST['id'])) {
+    } elseif (isset($_POST['undo']) && $_POST['undo'] === 'true' && isset($_POST['id'], $_POST['status'], $_POST['order_id'])) {
+        $order_id = $_POST['order_id'];
+        $status = (int)$_POST['status'];
         // DELETE status
-        $stmt = $conn->prepare("DELETE FROM order_status WHERE id = :id");
-        $stmt->execute(['id' => $_POST['id']]);
+        $stmt = $conn->prepare("DELETE FROM order_status WHERE order_id = :order_id AND status >= :status");
+        $stmt->execute([
+            'order_id' => $order_id,
+            'status' => $status
+        ]);
         echo "ย้อนกลับสถานะสำเร็จ";
     } else {
         echo "Invalid request: missing parameters.";

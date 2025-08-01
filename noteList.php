@@ -82,10 +82,10 @@ $name = $result['full_name'] ?? '-';
 
         <h1 class="text-center my-4">โน้ตที่บันทึกไว้</h1>
         <div class="d-flex justify-content-end">
-            <button type="button" class="btn btn-success mb-3 " data-bs-toggle="modal" data-bs-target="#exampleModal">เพิ่มโพสต์</button>
+            <button type="button" class="btn btn-success mb-3 " data-bs-toggle="modal" data-bs-target="#exampleModal">สร้างโน้ต</button>
         </div>
 
-        <input type="text" class="form-control mb-3" id="search-input" placeholder="คำค้นหา">
+        <input type="text" class="form-control mb-3" id="search-input" placeholder="🔍คำค้นหา">
         <div id="note-list"></div>
         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -112,7 +112,7 @@ $name = $result['full_name'] ?? '-';
                         <div class="modal-footer">
                             <input type="checkbox" class="btn-check" id="btn-check-outlined" name="pined" value="1">
                             <label class="btn btn-outline-warning" for="btn-check-outlined">✰ ปักหมุด</label>
-                            <button type="submit" class="btn btn-primary" id="submitBtn" name="save_note">Save</button>
+                            <button type="submit" class="btn btn-primary" id="submitBtn" name="save_note">เพิ่มโน้ต</button>
                         </div>
                     </form>
                 </div>
@@ -207,7 +207,7 @@ $name = $result['full_name'] ?? '-';
 
                         modalLabel.textContent = "แก้ไขโน้ต";
                         submitBtn.name = "update_note";
-                        submitBtn.textContent = "Update";
+                        submitBtn.textContent = "บันทึก";
                         noteForm.action = "system/update.php";
                     });
                 });
