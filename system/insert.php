@@ -25,6 +25,30 @@ function backToInsertPage($data = [])
     header($link);
 }
 
+if (isset($_POST['save_note'])) {
+    $username = $_POST['username']; // Assuming you get it from a hidden field or session
+    $title = $_POST['title'];
+    $description = $_POST['description'];
+    $pined = isset($_POST['pined']) ? 1 : 0; // if checkbox is checked
+
+    try {
+        $sql = "INSERT INTO notelist(username, title, description, pined) 
+                VALUES(:username, :title, :description, :pined)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":username", $username);
+        $stmt->bindParam(":title", $title);
+        $stmt->bindParam(":description", $description);
+        $stmt->bindParam(":pined", $pined);
+
+        if ($stmt->execute()) {
+            $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
+            header("location: ../noteList.php");
+        }
+    } catch (PDOException $e) {
+        echo 'Error: ' . $e->getMessage();
+    }
+}
+
 if (isset($_POST['addUsers'])) { // เพิ่ม Admin
     $username = $_POST['username'];
     $password = $_POST['password'];

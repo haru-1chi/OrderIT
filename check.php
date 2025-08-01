@@ -747,7 +747,7 @@ ORDER BY nd.id, oi.id
 
                           Swal.fire({
                             title: 'คุณแน่ใจหรือไม่?',
-                            text: `คุณต้องการอัพเดตสถานะอ "${selectedStatusText}" ใช่หรือไม่`,
+                            text: `คุณต้องการอัพเดตสถานะ"${selectedStatusText}" ใช่หรือไม่`,
                             icon: 'warning',
                             showCancelButton: true,
                             confirmButtonText: 'ใช่',

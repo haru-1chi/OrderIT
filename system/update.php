@@ -17,6 +17,31 @@ function backToInsertPage($data = [])
 
 print_r($_GET);
 
+if (isset($_POST['update_note'])) {
+    // UPDATE logic
+    $noteId = $_POST['note_id'];
+    $title = $_POST['title'];
+    $description = $_POST['description'];
+    $pined = isset($_POST['pined']) ? 1 : 0;
+
+    try {
+        $sql = "UPDATE notelist SET title = :title, description = :description, pined = :pined WHERE id = :id";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":title", $title);
+        $stmt->bindParam(":description", $description);
+        $stmt->bindParam(":pined", $pined);
+        $stmt->bindParam(":id", $noteId);
+
+        if ($stmt->execute()) {
+            $_SESSION["success"] = "แก้ไขข้อมูลสำเร็จ";
+            header("location: ../noteList.php");
+            exit();
+        }
+    } catch (PDOException $e) {
+        echo 'Error: ' . $e->getMessage();
+    }
+}
+
 if (isset($_POST['withdraw'])) {
     $withdraw_name = $_POST['withdraw_name'];
     $withdraw_id = $_POST['withdraw_id'];

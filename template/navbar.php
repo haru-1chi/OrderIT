@@ -91,10 +91,6 @@ function navbar($report_count = null)
                     <li class="nav-item">
                         <a class="nav-link" href="myjob2.php">สร้างงาน</a>
                     </li>
-                    <!-- 
-                    <li class="nav-item">
-                        <a class="nav-link" href="create.php">สร้างใบเบิก</a>
-                    </li> -->
                     <div class="dropdown">
                         <button class="btn dropdown-toggle" type="button" id="dropdownMenu2" data-bs-toggle="dropdown" aria-expanded="false" style="color: #fff; margin-top: 1px">
                             ใบเบิก
@@ -124,6 +120,11 @@ function navbar($report_count = null)
                             <li><a class="dropdown-item" href="../repair/admin.php">สำหรับเจ้าหน้าที่</a></li>
                         </ul>
                     </div>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="noteList.php">โน้ตที่บันทึกไว้</a>
+                    </li>
+
                     <li class="nav-item ms-5">
                         <a class="nav-link" href="system/logout.php">ออกจากระบบ</a>
                     </li>
