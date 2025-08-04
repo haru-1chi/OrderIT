@@ -12,15 +12,35 @@ try {
     $stmt->execute([':search' => "%$search%"]);
     $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // function makeLinksClickable($text)
+    // {
+    //     $text = htmlspecialchars($text);
+    //     return nl2br(preg_replace_callback(
+    //         '/(https?:\/\/[^\s]+)/i',
+    //         fn($m) => '<a href="' . $m[0] . '" target="_blank" rel="noopener noreferrer">' . $m[0] . '</a>',
+    //         $text
+    //     ));
+    // }
+
     function makeLinksClickable($text)
-    {
-        $text = htmlspecialchars($text);
-        return nl2br(preg_replace_callback(
-            '/(https?:\/\/[^\s]+)/i',
-            fn($m) => '<a href="' . $m[0] . '" target="_blank" rel="noopener noreferrer">' . $m[0] . '</a>',
-            $text
-        ));
-    }
+{
+    $text = htmlspecialchars($text);
+
+    // Regex to match [emoji][link] or just [link]
+    return nl2br(preg_replace_callback(
+        '/(?:(\X)(?=https?:\/\/)|)(https?:\/\/[^\s]+)/u',
+        function ($matches) {
+            $emoji = $matches[1] ?? '';
+            $url = $matches[2];
+
+            // If there's an emoji before the URL, use it as the link text
+            $linkText = $emoji !== '' ? $emoji : $url;
+
+            return '<a class="text-decoration-none" href="' . $url . '" target="_blank" rel="noopener noreferrer">' . $linkText . '</a>';
+        },
+        $text
+    ));
+}
 
 foreach ($notes as $row):
     $descId = "desc-" . $row['id'];
