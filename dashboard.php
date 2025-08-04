@@ -689,10 +689,6 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                     });
                 });
             </script>
-            <!-- <footer class="mt-5 footer mt-auto py-3" style="background: #fff;">
-                <marquee class="font-thai" style="font-weight: bold; font-size: 1rem"><span class="text-muted text-center">Design website by นายอภิชน ประสาทศรี , พุฒิพงศ์ ใหญ่แก้ว &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Coding โดย นายอานุภาพ ศรเทียน &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ควบคุมโดย นนท์ บรรณวัฒน์ นักวิชาการคอมพิวเตอร์ ปฏิบัติการ</span>
-                </marquee>
-            </footer> -->
             <?php SC5() ?>
 
 
