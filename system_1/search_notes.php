@@ -12,16 +12,6 @@ try {
     $stmt->execute([':search' => "%$search%"]);
     $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // function makeLinksClickable($text)
-    // {
-    //     $text = htmlspecialchars($text);
-    //     return nl2br(preg_replace_callback(
-    //         '/(https?:\/\/[^\s]+)/i',
-    //         fn($m) => '<a href="' . $m[0] . '" target="_blank" rel="noopener noreferrer">' . $m[0] . '</a>',
-    //         $text
-    //     ));
-    // }
-
     function makeLinksClickable($text)
 {
     $text = htmlspecialchars($text);

@@ -994,6 +994,56 @@ if (isset($_POST['submit_with_work'])) {
                     }
                 }
 
+                if (!empty($_FILES['images']['name'][0])) {
+                    $uploadDir = __DIR__ . '/../uploads/'; // store outside web root if possible
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0755, true);
+                    }
+
+                    $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
+                    $allowedMime = ['image/jpeg', 'image/png', 'image/gif'];
+
+                    foreach ($_FILES['images']['name'] as $key => $name) {
+                        $tmpName = $_FILES['images']['tmp_name'][$key];
+                        $size = $_FILES['images']['size'][$key];
+                        $error = $_FILES['images']['error'][$key];
+
+                        if ($error === UPLOAD_ERR_OK) {
+                            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+
+                            // Check extension
+                            if (!in_array($ext, $allowedExts)) {
+                                continue; // skip invalid file
+                            }
+
+                            // Check MIME type from file content
+                            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                            $mime = finfo_file($finfo, $tmpName);
+                            finfo_close($finfo);
+
+                            if (!in_array($mime, $allowedMime)) {
+                                continue; // skip invalid file
+                            }
+
+                            // Limit file size (2MB example)
+                            if ($size > 2 * 1024 * 1024) {
+                                continue;
+                            }
+
+                            // Create random filename
+                            $newName = bin2hex(random_bytes(8)) . '.' . $ext;
+
+                            if (move_uploaded_file($tmpName, $uploadDir . $newName)) {
+                                $sql = "INSERT INTO images_table (report_id, filename) VALUES (:report_id, :filename)";
+                                $fileStmt = $conn->prepare($sql);
+                                $fileStmt->bindParam(':report_id', $id_ref, PDO::PARAM_INT);
+                                $fileStmt->bindParam(':filename', $newName, PDO::PARAM_STR);
+                                $fileStmt->execute();
+                            }
+                        }
+                    }
+                }
+
                 $conn->commit();
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จและอัปเดตเรียบร้อย";
                 header("location: ../myjob.php");
@@ -1354,6 +1404,56 @@ if (isset($_POST['save_with_work'])) {
                         $assignStmt->bindParam(":repair_count", $repair_count);
                         $assignStmt->bindParam(":close_time", $close_time);
                         $assignStmt->execute();
+                    }
+                }
+
+                if (!empty($_FILES['images']['name'][0])) {
+                    $uploadDir = __DIR__ . '/../uploads/'; // store outside web root if possible
+                    if (!is_dir($uploadDir)) {
+                        mkdir($uploadDir, 0755, true);
+                    }
+
+                    $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
+                    $allowedMime = ['image/jpeg', 'image/png', 'image/gif'];
+
+                    foreach ($_FILES['images']['name'] as $key => $name) {
+                        $tmpName = $_FILES['images']['tmp_name'][$key];
+                        $size = $_FILES['images']['size'][$key];
+                        $error = $_FILES['images']['error'][$key];
+
+                        if ($error === UPLOAD_ERR_OK) {
+                            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+
+                            // Check extension
+                            if (!in_array($ext, $allowedExts)) {
+                                continue; // skip invalid file
+                            }
+
+                            // Check MIME type from file content
+                            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                            $mime = finfo_file($finfo, $tmpName);
+                            finfo_close($finfo);
+
+                            if (!in_array($mime, $allowedMime)) {
+                                continue; // skip invalid file
+                            }
+
+                            // Limit file size (2MB example)
+                            if ($size > 2 * 1024 * 1024) {
+                                continue;
+                            }
+
+                            // Create random filename
+                            $newName = bin2hex(random_bytes(8)) . '.' . $ext;
+
+                            if (move_uploaded_file($tmpName, $uploadDir . $newName)) {
+                                $sql = "INSERT INTO images_table (report_id, filename) VALUES (:report_id, :filename)";
+                                $fileStmt = $conn->prepare($sql);
+                                $fileStmt->bindParam(':report_id', $id_ref, PDO::PARAM_INT);
+                                $fileStmt->bindParam(':filename', $newName, PDO::PARAM_STR);
+                                $fileStmt->execute();
+                            }
+                        }
                     }
                 }
 
@@ -1767,6 +1867,56 @@ if (isset($_POST['CloseSubmit'])) {
                 }
             }
 
+            if (!empty($_FILES['images']['name'][0])) {
+                $uploadDir = __DIR__ . '/../uploads/'; // store outside web root if possible
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+
+                $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
+                $allowedMime = ['image/jpeg', 'image/png', 'image/gif'];
+
+                foreach ($_FILES['images']['name'] as $key => $name) {
+                    $tmpName = $_FILES['images']['tmp_name'][$key];
+                    $size = $_FILES['images']['size'][$key];
+                    $error = $_FILES['images']['error'][$key];
+
+                    if ($error === UPLOAD_ERR_OK) {
+                        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+
+                        // Check extension
+                        if (!in_array($ext, $allowedExts)) {
+                            continue; // skip invalid file
+                        }
+
+                        // Check MIME type from file content
+                        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                        $mime = finfo_file($finfo, $tmpName);
+                        finfo_close($finfo);
+
+                        if (!in_array($mime, $allowedMime)) {
+                            continue; // skip invalid file
+                        }
+
+                        // Limit file size (2MB example)
+                        if ($size > 2 * 1024 * 1024) {
+                            continue;
+                        }
+
+                        // Create random filename
+                        $newName = bin2hex(random_bytes(8)) . '.' . $ext;
+
+                        if (move_uploaded_file($tmpName, $uploadDir . $newName)) {
+                            $sql = "INSERT INTO images_table (report_id, filename) VALUES (:report_id, :filename)";
+                            $fileStmt = $conn->prepare($sql);
+                            $fileStmt->bindParam(':report_id', $id, PDO::PARAM_INT);
+                            $fileStmt->bindParam(':filename', $newName, PDO::PARAM_STR);
+                            $fileStmt->execute();
+                        }
+                    }
+                }
+            }
+
             $_SESSION["success"] = "เสร็จงานเรียบร้อยแล้ว";
             header("location: ../myjob.php");
         } else {
@@ -1954,6 +2104,56 @@ if (isset($_POST['Bantext'])) {
                     $assignStmt->bindParam(":repair_count", $repair_count);
                     $assignStmt->bindParam(":close_time", $close_time);
                     $assignStmt->execute();
+                }
+            }
+
+            if (!empty($_FILES['images']['name'][0])) {
+                $uploadDir = __DIR__ . '/../uploads/'; // store outside web root if possible
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+
+                $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
+                $allowedMime = ['image/jpeg', 'image/png', 'image/gif'];
+
+                foreach ($_FILES['images']['name'] as $key => $name) {
+                    $tmpName = $_FILES['images']['tmp_name'][$key];
+                    $size = $_FILES['images']['size'][$key];
+                    $error = $_FILES['images']['error'][$key];
+
+                    if ($error === UPLOAD_ERR_OK) {
+                        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+
+                        // Check extension
+                        if (!in_array($ext, $allowedExts)) {
+                            continue; // skip invalid file
+                        }
+
+                        // Check MIME type from file content
+                        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                        $mime = finfo_file($finfo, $tmpName);
+                        finfo_close($finfo);
+
+                        if (!in_array($mime, $allowedMime)) {
+                            continue; // skip invalid file
+                        }
+
+                        // Limit file size (2MB example)
+                        if ($size > 2 * 1024 * 1024) {
+                            continue;
+                        }
+
+                        // Create random filename
+                        $newName = bin2hex(random_bytes(8)) . '.' . $ext;
+
+                        if (move_uploaded_file($tmpName, $uploadDir . $newName)) {
+                            $sql = "INSERT INTO images_table (report_id, filename) VALUES (:report_id, :filename)";
+                            $fileStmt = $conn->prepare($sql);
+                            $fileStmt->bindParam(':report_id', $id, PDO::PARAM_INT);
+                            $fileStmt->bindParam(':filename', $newName, PDO::PARAM_STR);
+                            $fileStmt->execute();
+                        }
+                    }
                 }
             }
 
