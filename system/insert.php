@@ -1026,7 +1026,7 @@ if (isset($_POST['submit_with_work'])) {
                             }
 
                             // Limit file size (2MB example)
-                            if ($size > 2 * 1024 * 1024) {
+                            if ($size > 10 * 1024 * 1024) {
                                 continue;
                             }
 
@@ -1439,7 +1439,7 @@ if (isset($_POST['save_with_work'])) {
                             }
 
                             // Limit file size (2MB example)
-                            if ($size > 2 * 1024 * 1024) {
+                            if ($size > 10 * 1024 * 1024) {
                                 continue;
                             }
 
@@ -1899,7 +1899,7 @@ if (isset($_POST['CloseSubmit'])) {
                         }
 
                         // Limit file size (2MB example)
-                        if ($size > 2 * 1024 * 1024) {
+                        if ($size > 10 * 1024 * 1024) {
                             continue;
                         }
 
@@ -2139,7 +2139,7 @@ if (isset($_POST['Bantext'])) {
                         }
 
                         // Limit file size (2MB example)
-                        if ($size > 2 * 1024 * 1024) {
+                        if ($size > 10 * 1024 * 1024) {
                             continue;
                         }
 

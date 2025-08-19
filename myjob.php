@@ -633,7 +633,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                                                             <div class="d-flex justify-content-center">
                                                                                                                 <img src="uploads/<?= htmlspecialchars($img['filename']) ?>" class="d-block" style="max-height:500px; max-width:100%;">
                                                                                                             </div>
-                                                                                                            <div class="d-flex justify-content-center">
+                                                                                                            <div class="d-flex justify-content-center mt-3">
                                                                                                                 <button type="button" class="btn btn-danger btn-sm delete-image"
                                                                                                                     data-filename="<?= htmlspecialchars($img['filename']) ?>"
                                                                                                                     data-report-id="<?= $row['id'] ?>">
@@ -660,45 +660,75 @@ if (!isset($_SESSION["admin_log"])) {
                                                                             </div>
 
                                                                             <script>
-                                                                                document.addEventListener('DOMContentLoaded', function() {
-                                                                                    document.querySelectorAll('.delete-image').forEach(button => {
-                                                                                        button.addEventListener('click', function() {
-                                                                                            const filename = this.getAttribute('data-filename');
-                                                                                            const reportId = this.getAttribute('data-report-id');
-                                                                                            const buttonElement = this;
+                                                                                document.addEventListener('click', function(e) {
+                                                                                    if (e.target && e.target.classList.contains('delete-image')) {
+                                                                                        const buttonElement = e.target;
+                                                                                        const filename = buttonElement.getAttribute('data-filename');
+                                                                                        const reportId = buttonElement.getAttribute('data-report-id');
 
-                                                                                            Swal.fire({
-                                                                                                title: 'ยืนยันการลบ?',
-                                                                                                text: "คุณต้องการลบรูปภาพนี้หรือไม่",
-                                                                                                icon: 'warning',
-                                                                                                showCancelButton: true,
-                                                                                                confirmButtonColor: '#d33',
-                                                                                                cancelButtonColor: '#3085d6',
-                                                                                                confirmButtonText: 'ใช่, ลบเลย',
-                                                                                                cancelButtonText: 'ยกเลิก'
-                                                                                            }).then((result) => {
-                                                                                                if (result.isConfirmed) {
-                                                                                                    fetch('system_1/delete_image.php', {
-                                                                                                            method: 'POST',
-                                                                                                            headers: {
-                                                                                                                'Content-Type': 'application/x-www-form-urlencoded'
-                                                                                                            },
-                                                                                                            body: `filename=${encodeURIComponent(filename)}&report_id=${encodeURIComponent(reportId)}`
-                                                                                                        })
-                                                                                                        .then(response => response.json())
-                                                                                                        .then(data => {
-                                                                                                            if (data.status === 'success') {
-                                                                                                                Swal.fire('ลบแล้ว!', 'รูปภาพถูกลบเรียบร้อย', 'success');
-                                                                                                                // Remove image from carousel visually
-                                                                                                                buttonElement.closest('.carousel-item').remove();
-                                                                                                            } else {
-                                                                                                                Swal.fire('เกิดข้อผิดพลาด!', 'ไม่สามารถลบรูปภาพได้', 'error');
-                                                                                                            }
-                                                                                                        });
-                                                                                                }
-                                                                                            });
+                                                                                        Swal.fire({
+                                                                                            title: 'ยืนยันการลบ?',
+                                                                                            text: "คุณต้องการลบรูปภาพนี้หรือไม่",
+                                                                                            icon: 'warning',
+                                                                                            showCancelButton: true,
+                                                                                            confirmButtonColor: '#d33',
+                                                                                            cancelButtonColor: '#3085d6',
+                                                                                            confirmButtonText: 'ใช่, ลบเลย',
+                                                                                            cancelButtonText: 'ยกเลิก'
+                                                                                        }).then((result) => {
+                                                                                            if (result.isConfirmed) {
+                                                                                                fetch('system_1/delete_image.php', {
+                                                                                                        method: 'POST',
+                                                                                                        headers: {
+                                                                                                            'Content-Type': 'application/x-www-form-urlencoded'
+                                                                                                        },
+                                                                                                        body: `filename=${encodeURIComponent(filename)}&report_id=${encodeURIComponent(reportId)}`
+                                                                                                    })
+                                                                                                    .then(response => response.json())
+                                                                                                    .then(data => {
+                                                                                                        if (data.status === 'success') {
+                                                                                                            Swal.fire({
+                                                                                                                title: 'ลบแล้ว!',
+                                                                                                                text: 'รูปภาพถูกลบเรียบร้อย',
+                                                                                                                icon: 'success',
+                                                                                                                timer: 1200,
+                                                                                                                showConfirmButton: false
+                                                                                                            }).then(() => {
+                                                                                                                const carouselItem = buttonElement.closest('.carousel-item');
+                                                                                                                const carouselInner = carouselItem.parentElement;
+
+                                                                                                                if (carouselItem.classList.contains('active')) {
+                                                                                                                    let nextItem = carouselItem.nextElementSibling || carouselItem.previousElementSibling;
+                                                                                                                    if (nextItem) {
+                                                                                                                        nextItem.classList.add('active');
+                                                                                                                    }
+                                                                                                                }
+
+                                                                                                                carouselItem.remove();
+
+                                                                                                                // ✅ handle empty case
+                                                                                                                if (carouselInner.children.length === 0) {
+                                                                                                                    const placeholder = document.createElement('div');
+                                                                                                                    placeholder.classList.add('carousel-item', 'active');
+                                                                                                                    placeholder.innerHTML = `
+                                        <div class="d-flex justify-content-center">
+                                            <img src="image/Image-not-found.png" class="d-block" style="max-height:500px; max-width:100%;">
+                                        </div>
+                                    `;
+                                                                                                                    carouselInner.appendChild(placeholder);
+
+                                                                                                                    const modal = buttonElement.closest('.modal');
+                                                                                                                    modal.querySelectorAll('.carousel-control-prev, .carousel-control-next').forEach(btn => btn.style.display = 'none');
+                                                                                                                    modal.querySelectorAll('.delete-image').forEach(btn => btn.style.display = 'none');
+                                                                                                                }
+                                                                                                            });
+                                                                                                        } else {
+                                                                                                            Swal.fire('เกิดข้อผิดพลาด!', 'ไม่สามารถลบรูปภาพได้', 'error');
+                                                                                                        }
+                                                                                                    });
+                                                                                            }
                                                                                         });
-                                                                                    });
+                                                                                    }
                                                                                 });
                                                                             </script>
                                                                         <?php endif; ?>
@@ -2034,7 +2064,7 @@ ORDER BY id DESC;
                                         <?= $statusText ?>
                                     </button>
 
-                                    <form action="system/insert.php" method="post">
+                                    <form action="system/insert.php" method="post" enctype="multipart/form-data">
                                         <input type="hidden" name="id" value="<?= $row['id'] ?>">
 
                                         <!-- modal -->
@@ -2307,8 +2337,144 @@ ORDER BY id DESC;
                                                             </div>
                                                             <div class="row">
                                                                 <div class="col-12">
-                                                                    <label>รายละเอียด<span style="color: red;">*</span></label>
+                                                                    <div class="d-flex justify-content-between align-items-center">
+                                                                        <label>รายละเอียด<span style="color: red;">*</span></label>
+                                                                        <?php
+                                                                        // Fetch images for this report
+                                                                        $sql = "SELECT filename FROM images_table WHERE report_id = :report_id";
+                                                                        $stmt = $conn->prepare($sql);
+                                                                        $stmt->bindParam(':report_id', $row['id'], PDO::PARAM_INT);
+                                                                        $stmt->execute();
+                                                                        $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                                                                        if ($images):
+                                                                        ?>
+                                                                            <!-- Button to open modal -->
+                                                                            <button type="button" class="btn btn-link btn-sm" data-bs-toggle="modal" data-bs-target="#imageModal<?= $row['id'] ?>">
+                                                                                🖼️ดูรูปภาพ
+                                                                            </button>
+
+                                                                            <!-- Modal -->
+                                                                            <div class="modal fade" id="imageModal<?= $row['id'] ?>" tabindex="-1" aria-hidden="true">
+                                                                                <div class="modal-dialog modal-dialog-centered modal-lg">
+                                                                                    <div class="modal-content">
+                                                                                        <div class="modal-body">
+                                                                                            <div id="carouselImages<?= $row['id'] ?>" class="carousel slide carousel-dark">
+                                                                                                <div class="carousel-inner">
+                                                                                                    <?php foreach ($images as $key => $img): ?>
+                                                                                                        <div class="carousel-item <?= $key === 0 ? 'active' : '' ?>">
+                                                                                                            <div class="d-flex justify-content-center">
+                                                                                                                <img src="uploads/<?= htmlspecialchars($img['filename']) ?>" class="d-block" style="max-height:500px; max-width:100%;">
+                                                                                                            </div>
+                                                                                                            <div class="d-flex justify-content-center mt-3">
+                                                                                                                <button type="button" class="btn btn-danger btn-sm delete-image"
+                                                                                                                    data-filename="<?= htmlspecialchars($img['filename']) ?>"
+                                                                                                                    data-report-id="<?= $row['id'] ?>">
+                                                                                                                    ลบรูปภาพนี้
+                                                                                                                </button>
+                                                                                                            </div>
+                                                                                                        </div>
+
+                                                                                                    <?php endforeach; ?>
+                                                                                                </div>
+                                                                                                <?php if (count($images) > 1): ?>
+                                                                                                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselImages<?= $row['id'] ?>" data-bs-slide="prev">
+                                                                                                        <span class="carousel-control-prev-icon"></span>
+                                                                                                    </button>
+                                                                                                    <button class="carousel-control-next" type="button" data-bs-target="#carouselImages<?= $row['id'] ?>" data-bs-slide="next">
+                                                                                                        <span class="carousel-control-next-icon"></span>
+                                                                                                    </button>
+                                                                                                <?php endif; ?>
+
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            <script>
+                                                                                document.addEventListener('click', function(e) {
+                                                                                    if (e.target && e.target.classList.contains('delete-image')) {
+                                                                                        const buttonElement = e.target;
+                                                                                        const filename = buttonElement.getAttribute('data-filename');
+                                                                                        const reportId = buttonElement.getAttribute('data-report-id');
+
+                                                                                        Swal.fire({
+                                                                                            title: 'ยืนยันการลบ?',
+                                                                                            text: "คุณต้องการลบรูปภาพนี้หรือไม่",
+                                                                                            icon: 'warning',
+                                                                                            showCancelButton: true,
+                                                                                            confirmButtonColor: '#d33',
+                                                                                            cancelButtonColor: '#3085d6',
+                                                                                            confirmButtonText: 'ใช่, ลบเลย',
+                                                                                            cancelButtonText: 'ยกเลิก'
+                                                                                        }).then((result) => {
+                                                                                            if (result.isConfirmed) {
+                                                                                                fetch('system_1/delete_image.php', {
+                                                                                                        method: 'POST',
+                                                                                                        headers: {
+                                                                                                            'Content-Type': 'application/x-www-form-urlencoded'
+                                                                                                        },
+                                                                                                        body: `filename=${encodeURIComponent(filename)}&report_id=${encodeURIComponent(reportId)}`
+                                                                                                    })
+                                                                                                    .then(response => response.json())
+                                                                                                    .then(data => {
+                                                                                                        if (data.status === 'success') {
+                                                                                                            Swal.fire({
+                                                                                                                title: 'ลบแล้ว!',
+                                                                                                                text: 'รูปภาพถูกลบเรียบร้อย',
+                                                                                                                icon: 'success',
+                                                                                                                timer: 1200,
+                                                                                                                showConfirmButton: false
+                                                                                                            }).then(() => {
+                                                                                                                const carouselItem = buttonElement.closest('.carousel-item');
+                                                                                                                const carouselInner = carouselItem.parentElement;
+
+                                                                                                                if (carouselItem.classList.contains('active')) {
+                                                                                                                    let nextItem = carouselItem.nextElementSibling || carouselItem.previousElementSibling;
+                                                                                                                    if (nextItem) {
+                                                                                                                        nextItem.classList.add('active');
+                                                                                                                    }
+                                                                                                                }
+
+                                                                                                                carouselItem.remove();
+
+                                                                                                                // ✅ handle empty case
+                                                                                                                if (carouselInner.children.length === 0) {
+                                                                                                                    const placeholder = document.createElement('div');
+                                                                                                                    placeholder.classList.add('carousel-item', 'active');
+                                                                                                                    placeholder.innerHTML = `
+                                        <div class="d-flex justify-content-center">
+                                            <img src="image/Image-not-found.png" class="d-block" style="max-height:500px; max-width:100%;">
+                                        </div>
+                                    `;
+                                                                                                                    carouselInner.appendChild(placeholder);
+
+                                                                                                                    const modal = buttonElement.closest('.modal');
+                                                                                                                    modal.querySelectorAll('.carousel-control-prev, .carousel-control-next').forEach(btn => btn.style.display = 'none');
+                                                                                                                    modal.querySelectorAll('.delete-image').forEach(btn => btn.style.display = 'none');
+                                                                                                                }
+                                                                                                            });
+                                                                                                        } else {
+                                                                                                            Swal.fire('เกิดข้อผิดพลาด!', 'ไม่สามารถลบรูปภาพได้', 'error');
+                                                                                                        }
+                                                                                                    });
+                                                                                            }
+                                                                                        });
+                                                                                    }
+                                                                                });
+                                                                            </script>
+                                                                        <?php endif; ?>
+                                                                    </div>
+
                                                                     <textarea class="form-control " name="description" rows="2" id="descriptionSource-unComplete-<?= $row['id'] ?>"><?= $row['description'] ?></textarea>
+                                                                    <input
+                                                                        class="form-control mt-2"
+                                                                        type="file"
+                                                                        id="formFileMultiple"
+                                                                        name="images[]"
+                                                                        multiple
+                                                                        accept="image/*">
                                                                 </div>
                                                             </div>
                                                             <div class="row">
