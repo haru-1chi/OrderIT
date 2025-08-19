@@ -37,6 +37,43 @@ $name = $result['full_name'] ?? '-';
         body {
             background-color: #F9FDFF;
         }
+
+        .choices {
+            margin-bottom: 0 !important;
+        }
+
+        .choices__inner {
+            border-radius: 0.375rem !important;
+            min-height: 33px !important;
+            border: 1px solid #ced4da;
+            padding: 0 !important;
+            background-color: #fff !important;
+            font-size: 1rem !important;
+            line-height: 1.5;
+        }
+
+        .choices__inner.is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .choices__list--single {
+            padding: 0 !important;
+        }
+
+        .choices__list--dropdown {
+            border-radius: 0.375rem;
+            border: 1px solid #ced4da;
+        }
+
+        .choices__item--selectable {
+            padding: 0.375rem 0.75rem;
+        }
+
+        /* Remove default focus ring from Choices.js */
+        .choices__inner:focus-within {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25);
+        }
     </style>
 </head>
 
@@ -73,9 +110,12 @@ $name = $result['full_name'] ?? '-';
                     </div>
                     <div class="col-4 mb-3">
                         <label class="form-label" for="departInput">หน่วยงาน</label>
-                        <input type="text" class="form-control" id="departInput" name="ref_depart" autocomplete="off" required>
-                        <input type="hidden" id="departId" name="depart_id">
+                        <!-- <input type="text" class="form-control" id="departInput" name="ref_depart" autocomplete="off" required>
+                        <input type="hidden" id="departId" name="depart_id"> -->
+
+                        <select class="form-select" id="departSelect" name="depart_id" required></select>
                     </div>
+
                     <div class="col-4 mb-3">
                         <label class="form-label" for="contactInput">เบอร์โทร</label>
                         <input class="form-control" value="-" type="text" id="contactInput" name="tel" required>
@@ -83,8 +123,10 @@ $name = $result['full_name'] ?? '-';
 
                     <div class="col-4 mb-3">
                         <label class="form-label" for="deviceInput">อุปกรณ์</label>
-                        <input class="form-control" type="text" id="deviceInput" name="deviceName" autocomplete="off" value="-" required>
-                        <input type="hidden" id="deviceId" name="device_id" value="105">
+                        <!-- <input class="form-control" type="text" id="deviceInput" name="deviceName" autocomplete="off" value="-" required>
+                        <input type="hidden" id="deviceId" name="device_id" value="105"> -->
+
+                        <select class="form-select" id="deviceSelect" name="deviceName" required></select>
                     </div>
 
                     <div class="col-4 mb-3">
@@ -136,114 +178,88 @@ $name = $result['full_name'] ?? '-';
             });
         });
     </script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
     <script>
-        $(function() {
-            function setupAutocomplete({
+        document.addEventListener('DOMContentLoaded', function() {
+            function setupChoicesAutocomplete({
                 type,
-                inputSelector,
-                hiddenInputSelector,
+                selectSelector,
                 sourceUrl,
                 notFoundMessage = "ไม่พบข้อมูลในระบบ",
                 resetValue = '',
                 defaultHiddenId = ''
             }) {
-                let userTyped = false;
+                const $select = document.querySelector(selectSelector);
 
-                const $input = $(inputSelector);
-                const $hiddenInput = $(hiddenInputSelector);
-
-                $input.autocomplete({
-                    source: function(request, response) {
-                        $.ajax({
-                            url: sourceUrl,
-                            method: "GET",
-                            dataType: "json",
-                            data: {
-                                term: request.term,
-                                type: type
-                            },
-                            success: function(data) {
-                                response(data);
-                            },
-                            error: function() {
-                                response([]);
-                            }
-                        });
-                    },
-                    minLength: 1,
-                    autoFocus: true,
-                    select: function(event, ui) {
-                        if (ui.item && ui.item.value !== "") {
-                            $input.val(ui.item.label);
-                            $hiddenInput.val(ui.item.value);
-                        } else {
-                            $input.val('');
-                            $hiddenInput.val('');
-                        }
-                        return false;
-                    }
-                }).data("ui-autocomplete")._renderItem = function(ul, item) {
-                    return $("<li>")
-                        .append(`<div>${item.label}</div>`)
-                        .appendTo(ul);
-                };
-
-                $input.on("input", () => {
-                    userTyped = true;
+                const choices = new Choices($select, {
+                    searchEnabled: true,
+                    shouldSort: false,
+                    placeholder: true,
+                    placeholderValue: `กรุณาเลือก...`,
+                    searchPlaceholderValue: 'พิมพ์เพื่อค้นหา...',
+                    removeItemButton: false,
+                    itemSelectText: '',
                 });
 
-                $input.on("blur", function() {
-                    if (!userTyped) return;
+                // Fetch function
+                async function fetchData(term = '') {
+                    try {
+                        const response = await fetch(`${sourceUrl}?term=${encodeURIComponent(term)}&type=${type}`);
+                        const data = await response.json();
 
-                    const enteredValue = $input.val().trim();
-                    if (!enteredValue) {
-                        $hiddenInput.val('');
-                        return;
-                    }
+                        choices.clearChoices();
 
-                    $.ajax({
-                        url: sourceUrl,
-                        method: "GET",
-                        dataType: "json",
-                        data: {
-                            term: enteredValue,
-                            type: type
-                        },
-                        success: function(data) {
-                            const found = data.some(item => item.label === enteredValue);
-                            if (!found) {
-                                Swal.fire({
-                                    icon: 'warning',
-                                    title: notFoundMessage,
-                                    text: 'หากต้องการเพิ่ม กรุณาติดต่อแอดมิน',
-                                    confirmButtonText: 'ตกลง'
-                                }).then(() => {
-                                    $input.val(resetValue);
-                                    $hiddenInput.val(defaultHiddenId);
-                                });
-                            }
+                        if (data.length === 0) {
+                            choices.setChoices([{
+                                value: '',
+                                label: notFoundMessage,
+                                disabled: true
+                            }], 'value', 'label', true);
+                            return;
                         }
-                    });
 
-                    userTyped = false;
-                });
+                        const options = [{
+                                value: '',
+                                label: 'กรุณาเลือก...',
+                                selected: true,
+                                disabled: false
+                            },
+                            ...data.map(item => ({
+                                value: (type === 'device') ? item.label : item.value,
+                                label: item.label
+                            }))
+                        ];
+
+                        choices.setChoices(options, 'value', 'label', true);
+
+                    } catch (error) {
+                        console.error('Error fetching data:', error);
+                    }
+                }
+
+                // Initial load (empty search)
+                fetchData();
             }
 
-            setupAutocomplete({
+            // Example usage for "depart"
+            setupChoicesAutocomplete({
                 type: "depart",
-                inputSelector: "#departInput",
-                hiddenInputSelector: "#departId",
+                selectSelector: "#departSelect",
                 sourceUrl: "system_1/autocomplete.php",
                 notFoundMessage: "ไม่พบหน่วยงานนี้ในระบบ",
                 resetValue: "-",
                 defaultHiddenId: "222"
             });
 
-            // Apply to "อุปกรณ์"
-            setupAutocomplete({
+            // Example usage for "device"
+            setupChoicesAutocomplete({
                 type: "device",
-                inputSelector: "#deviceInput",
-                hiddenInputSelector: "#deviceId",
+                selectSelector: "#deviceSelect",
                 sourceUrl: "system_1/autocomplete.php",
                 notFoundMessage: "ไม่พบอุปกรณ์นี้ในระบบ",
                 resetValue: "-",
@@ -251,8 +267,6 @@ $name = $result['full_name'] ?? '-';
             });
         });
     </script>
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <?php SC5() ?>
 </body>
 
