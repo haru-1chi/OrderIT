@@ -102,6 +102,43 @@ if (!isset($_SESSION["admin_log"])) {
         .giggle {
             animation: shrinkExpand 0.3s ease-in-out;
         }
+
+        .choices {
+            margin-bottom: 0 !important;
+        }
+
+        .choices__inner {
+            border-radius: 0.375rem !important;
+            min-height: 33px !important;
+            border: 1px solid #ced4da;
+            padding: 0 !important;
+            background-color: #fff !important;
+            font-size: 1rem !important;
+            line-height: 1.5;
+        }
+
+        .choices__inner.is-invalid {
+            border-color: #dc3545 !important;
+        }
+
+        .choices__list--single {
+            padding: 0 !important;
+        }
+
+        .choices__list--dropdown {
+            border-radius: 0.375rem;
+            border: 1px solid #ced4da;
+        }
+
+        .choices__item--selectable {
+            padding: 0.375rem 0.75rem;
+        }
+
+        .choices.is-focused .choices__inner,
+        .choices.is-open .choices__inner {
+            border-color: #86b7fe !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25) !important;
+        }
     </style>
 </head>
 
@@ -396,133 +433,9 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     $stmt->execute([$row['department']]);
                                                                     $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
                                                                     ?>
-
-                                                                    <input type="text" class="form-control" id="departInputTask<?= $row['id'] ?>"
-                                                                        value="<?= $departRow['depart_name'] ?>">
-
-                                                                    <input type="hidden" name="department" id="departIdTask<?= $row['id'] ?>"
-                                                                        value="<?= $row['department'] ?>">
-
-                                                                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
-
-                                                                    <!-- Add SweetAlert2 JS -->
-                                                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
-
-                                                                    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-                                                                    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-                                                                    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-                                                                    <script>
-                                                                        $(function() {
-                                                                            function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
-                                                                                let inputChanged = false;
-                                                                                let alertShown = false; // Flag to track if the alert has been shown already
-
-                                                                                $(inputId).autocomplete({
-                                                                                        source: function(request, response) {
-                                                                                            $.ajax({
-                                                                                                url: url,
-                                                                                                dataType: "json",
-                                                                                                data: {
-                                                                                                    term: request.term,
-                                                                                                    type: type
-                                                                                                },
-                                                                                                success: function(data) {
-                                                                                                    response(data); // Show suggestions
-                                                                                                }
-                                                                                            });
-                                                                                        },
-                                                                                        minLength: 1,
-                                                                                        autoFocus: true,
-                                                                                        select: function(event, ui) {
-                                                                                            $(inputId).val(ui.item.label); // Fill input with label
-                                                                                            $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
-                                                                                            return false; // Prevent default behavior
-                                                                                        }
-                                                                                    })
-                                                                                    .data("ui-autocomplete")._renderItem = function(ul, item) {
-                                                                                        return $("<li>")
-                                                                                            .append("<div>" + item.label + "</div>")
-                                                                                            .appendTo(ul);
-                                                                                    };
-
-                                                                                $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                    // console.log("Item highlighted: ", ui.item.label);
-                                                                                    return false;
-                                                                                });
-
-                                                                                $(inputId).on("keyup", function() {
-                                                                                    inputChanged = true;
-                                                                                });
-
-                                                                                $(inputId).on("blur", function() {
-                                                                                    if (inputChanged && !alertShown) {
-                                                                                        const userInput = $(this).val().trim();
-                                                                                        const hiddenValue = $(hiddenInputId).val();
-                                                                                        if (userInput === "") return;
-                                                                                        if (hiddenValue !== "") {
-                                                                                            inputChanged = false;
-                                                                                            return;
-                                                                                        }
-
-                                                                                        let found = false;
-                                                                                        $(this).autocomplete("instance").menu.element.find("div").each(function() {
-                                                                                            if ($(this).text() === userInput) {
-                                                                                                found = true;
-                                                                                                return false;
-                                                                                            }
-                                                                                        });
-
-                                                                                        if (!found) {
-                                                                                            alertShown = true; // Prevent the alert from firing again
-                                                                                            // Show SweetAlert to confirm insert data
-                                                                                            Swal.fire({
-                                                                                                title: confirmMessage,
-                                                                                                icon: "info",
-                                                                                                showCancelButton: true,
-                                                                                                confirmButtonText: "ใช่",
-                                                                                                cancelButtonText: "ไม่"
-                                                                                            }).then((result) => {
-                                                                                                if (result.isConfirmed) {
-                                                                                                    $.ajax({
-                                                                                                        url: addDataUrl,
-                                                                                                        method: "POST",
-                                                                                                        data: {
-                                                                                                            dataToInsert: userInput
-                                                                                                        },
-                                                                                                        success: function(response) {
-                                                                                                            console.log("Data inserted successfully!");
-                                                                                                            $(hiddenInputId).val(response); // Set inserted ID
-                                                                                                        },
-                                                                                                        error: function(xhr, status, error) {
-                                                                                                            console.error("Error inserting data:", error);
-                                                                                                        }
-                                                                                                    });
-                                                                                                } else {
-                                                                                                    $(inputId).val(""); // Clear input if canceled
-                                                                                                    $(hiddenInputId).val("");
-                                                                                                }
-                                                                                                alertShown = false; // Reset the flag after the action
-                                                                                            });
-                                                                                        }
-                                                                                    }
-                                                                                    inputChanged = false; // Reset the flag
-                                                                                });
-                                                                            }
-
-                                                                            $("input[id^='departInput']").each(function() {
-                                                                                const i = $(this).attr("id").replace("departInput", ""); // Extract index
-                                                                                setupAutocomplete(
-                                                                                    "depart",
-                                                                                    `#departInputTask${i}`,
-                                                                                    `#departIdTask${i}`,
-                                                                                    "system_1/autocomplete.php",
-                                                                                    "system_1/insertDepart.php",
-                                                                                    "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
-                                                                                );
-                                                                            });
-                                                                        });
-                                                                    </script>
+                                                                    <select class="form-select" name="department" id="departId<?= $row['id'] ?>" required>
+                                                                        <option value="<?= $row['department'] ?>" selected><?= $departRow['depart_name'] ?></option>
+                                                                    </select>
                                                                 </div>
                                                             </div>
 
@@ -534,9 +447,9 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 </div>
                                                                 <div class="col-6">
                                                                     <label for="deviceInput">อุปกรณ์</label>
-                                                                    <input type="text" class="form-control" id="deviceInput<?= $row['id'] ?>" name="deviceName"
-                                                                        value="<?= $row['deviceName'] ?>">
-                                                                    <input type="hidden" id="deviceId<?= $row['id'] ?>">
+                                                                    <select class="form-select" id="deviceInput<?= $row['id'] ?>" name="deviceName" required>
+                                                                        <option value="<?= $row['deviceName'] ?>" selected><?= $row['deviceName'] ?></option>
+                                                                    </select>
                                                                 </div>
 
                                                             </div>
@@ -1086,133 +999,10 @@ if (!isset($_SESSION["admin_log"])) {
                                                                             $stmt->execute([$rowData['refDepart']]);
                                                                             $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
                                                                             ?>
-
-                                                                            <input type="text" class="form-control" id="departInput<?= $row['id'] ?>" name="ref_depart"
-                                                                                value="<?= $departRow['depart_name'] ?>">
-
-                                                                            <input type="hidden" name="depart_id" id="departId<?= $row['id'] ?>"
-                                                                                value="<?= $rowData['refDepart'] ?>">
+                                                                            <select class="form-select" name="depart_id" id="departId<?= $row['id'] ?>" required>
+                                                                                <option value="<?= $rowData['refDepart'] ?>" selected><?= $departRow['depart_name'] ?></option>
+                                                                            </select>
                                                                         </div>
-
-                                                                        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
-
-                                                                        <!-- Add SweetAlert2 JS -->
-                                                                        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
-
-                                                                        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-                                                                        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-                                                                        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-                                                                        <script>
-                                                                            $(function() {
-                                                                                function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
-                                                                                    let inputChanged = false;
-                                                                                    let alertShown = false; // Flag to track if the alert has been shown already
-
-                                                                                    $(inputId).autocomplete({
-                                                                                            source: function(request, response) {
-                                                                                                $.ajax({
-                                                                                                    url: url,
-                                                                                                    dataType: "json",
-                                                                                                    data: {
-                                                                                                        term: request.term,
-                                                                                                        type: type
-                                                                                                    },
-                                                                                                    success: function(data) {
-                                                                                                        response(data); // Show suggestions
-                                                                                                    }
-                                                                                                });
-                                                                                            },
-                                                                                            minLength: 1,
-                                                                                            autoFocus: true,
-                                                                                            select: function(event, ui) {
-                                                                                                $(inputId).val(ui.item.label); // Fill input with label
-                                                                                                $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
-                                                                                                return false; // Prevent default behavior
-                                                                                            }
-                                                                                        })
-                                                                                        .data("ui-autocomplete")._renderItem = function(ul, item) {
-                                                                                            return $("<li>")
-                                                                                                .append("<div>" + item.label + "</div>")
-                                                                                                .appendTo(ul);
-                                                                                        };
-
-                                                                                    $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                        // console.log("Item highlighted: ", ui.item.label);
-                                                                                        return false;
-                                                                                    });
-
-                                                                                    $(inputId).on("keyup", function() {
-                                                                                        inputChanged = true;
-                                                                                    });
-
-                                                                                    $(inputId).on("blur", function() {
-                                                                                        if (inputChanged && !alertShown) {
-                                                                                            const userInput = $(this).val().trim();
-                                                                                            const hiddenValue = $(hiddenInputId).val();
-                                                                                            if (userInput === "") return;
-                                                                                            if (hiddenValue !== "") {
-                                                                                                inputChanged = false;
-                                                                                                return;
-                                                                                            }
-                                                                                            let found = false;
-                                                                                            $(this).autocomplete("instance").menu.element.find("div").each(function() {
-                                                                                                if ($(this).text() === userInput) {
-                                                                                                    found = true;
-                                                                                                    return false;
-                                                                                                }
-                                                                                            });
-
-                                                                                            if (!found) {
-                                                                                                alertShown = true; // Prevent the alert from firing again
-                                                                                                // Show SweetAlert to confirm insert data
-                                                                                                Swal.fire({
-                                                                                                    title: confirmMessage,
-                                                                                                    icon: "info",
-                                                                                                    showCancelButton: true,
-                                                                                                    confirmButtonText: "ใช่",
-                                                                                                    cancelButtonText: "ไม่"
-                                                                                                }).then((result) => {
-                                                                                                    if (result.isConfirmed) {
-                                                                                                        $.ajax({
-                                                                                                            url: addDataUrl,
-                                                                                                            method: "POST",
-                                                                                                            data: {
-                                                                                                                dataToInsert: userInput
-                                                                                                            },
-                                                                                                            success: function(response) {
-                                                                                                                console.log("Data inserted successfully!");
-                                                                                                                $(hiddenInputId).val(response); // Set inserted ID
-                                                                                                            },
-                                                                                                            error: function(xhr, status, error) {
-                                                                                                                console.error("Error inserting data:", error);
-                                                                                                            }
-                                                                                                        });
-                                                                                                    } else {
-                                                                                                        $(inputId).val(""); // Clear input if canceled
-                                                                                                        $(hiddenInputId).val("");
-                                                                                                    }
-                                                                                                    alertShown = false; // Reset the flag after the action
-                                                                                                });
-                                                                                            }
-                                                                                        }
-                                                                                        inputChanged = false; // Reset the flag
-                                                                                    });
-                                                                                }
-
-                                                                                $("input[id^='departInput']").each(function() {
-                                                                                    const i = $(this).attr("id").replace("departInput", ""); // Extract index
-                                                                                    setupAutocomplete(
-                                                                                        "depart",
-                                                                                        `#departInput${i}`,
-                                                                                        `#departId${i}`,
-                                                                                        "system_1/autocomplete.php",
-                                                                                        "system_1/insertDepart.php",
-                                                                                        "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
-                                                                                    );
-                                                                                });
-                                                                            });
-                                                                        </script>
                                                                     </div>
 
                                                                     <div class="col-sm-6">
@@ -1476,133 +1266,10 @@ if (!isset($_SESSION["admin_log"])) {
                                                                         $stmt->execute([$row['department']]);
                                                                         $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
                                                                         ?>
-
-                                                                        <input type="text" class="form-control" id="departInputTarget<?= $row['id'] ?>" name="ref_depart"
-                                                                            value="<?= $departRow['depart_name'] ?>">
-
-                                                                        <input type="hidden" name="depart_id" id="departIdTarget<?= $row['id'] ?>"
-                                                                            value="<?= $row['department'] ?>">
+                                                                        <select class="form-select" name="depart_id" id="departId<?= $row['id'] ?>" required>
+                                                                            <option value="<?= $row['department'] ?>" selected><?= $departRow['depart_name'] ?></option>
+                                                                        </select>
                                                                     </div>
-
-                                                                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
-
-                                                                    <!-- Add SweetAlert2 JS -->
-                                                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
-
-                                                                    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-                                                                    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-                                                                    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-                                                                    <script>
-                                                                        $(function() {
-                                                                            function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
-                                                                                let inputChanged = false;
-                                                                                let alertShown = false; // Flag to track if the alert has been shown already
-
-                                                                                $(inputId).autocomplete({
-                                                                                        source: function(request, response) {
-                                                                                            $.ajax({
-                                                                                                url: url,
-                                                                                                dataType: "json",
-                                                                                                data: {
-                                                                                                    term: request.term,
-                                                                                                    type: type
-                                                                                                },
-                                                                                                success: function(data) {
-                                                                                                    response(data); // Show suggestions
-                                                                                                }
-                                                                                            });
-                                                                                        },
-                                                                                        minLength: 1,
-                                                                                        autoFocus: true,
-                                                                                        select: function(event, ui) {
-                                                                                            $(inputId).val(ui.item.label); // Fill input with label
-                                                                                            $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
-                                                                                            return false; // Prevent default behavior
-                                                                                        }
-                                                                                    })
-                                                                                    .data("ui-autocomplete")._renderItem = function(ul, item) {
-                                                                                        return $("<li>")
-                                                                                            .append("<div>" + item.label + "</div>")
-                                                                                            .appendTo(ul);
-                                                                                    };
-
-                                                                                $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                    // console.log("Item highlighted: ", ui.item.label);
-                                                                                    return false;
-                                                                                });
-
-                                                                                $(inputId).on("keyup", function() {
-                                                                                    inputChanged = true;
-                                                                                });
-
-                                                                                $(inputId).on("blur", function() {
-                                                                                    if (inputChanged && !alertShown) {
-                                                                                        const userInput = $(this).val().trim();
-                                                                                        const hiddenValue = $(hiddenInputId).val();
-                                                                                        if (userInput === "") return;
-                                                                                        if (hiddenValue !== "") {
-                                                                                            inputChanged = false;
-                                                                                            return;
-                                                                                        }
-                                                                                        let found = false;
-                                                                                        $(this).autocomplete("instance").menu.element.find("div").each(function() {
-                                                                                            if ($(this).text() === userInput) {
-                                                                                                found = true;
-                                                                                                return false;
-                                                                                            }
-                                                                                        });
-
-                                                                                        if (!found) {
-                                                                                            alertShown = true; // Prevent the alert from firing again
-                                                                                            // Show SweetAlert to confirm insert data
-                                                                                            Swal.fire({
-                                                                                                title: confirmMessage,
-                                                                                                icon: "info",
-                                                                                                showCancelButton: true,
-                                                                                                confirmButtonText: "ใช่",
-                                                                                                cancelButtonText: "ไม่"
-                                                                                            }).then((result) => {
-                                                                                                if (result.isConfirmed) {
-                                                                                                    $.ajax({
-                                                                                                        url: addDataUrl,
-                                                                                                        method: "POST",
-                                                                                                        data: {
-                                                                                                            dataToInsert: userInput
-                                                                                                        },
-                                                                                                        success: function(response) {
-                                                                                                            console.log("Data inserted successfully!");
-                                                                                                            $(hiddenInputId).val(response); // Set inserted ID
-                                                                                                        },
-                                                                                                        error: function(xhr, status, error) {
-                                                                                                            console.error("Error inserting data:", error);
-                                                                                                        }
-                                                                                                    });
-                                                                                                } else {
-                                                                                                    $(inputId).val(""); // Clear input if canceled
-                                                                                                    $(hiddenInputId).val("");
-                                                                                                }
-                                                                                                alertShown = false; // Reset the flag after the action
-                                                                                            });
-                                                                                        }
-                                                                                    }
-                                                                                    inputChanged = false; // Reset the flag
-                                                                                });
-                                                                            }
-
-                                                                            $("input[id^='departInput']").each(function() {
-                                                                                const i = $(this).attr("id").replace("departInput", ""); // Extract index
-                                                                                setupAutocomplete(
-                                                                                    "depart",
-                                                                                    `#departInput${i}`,
-                                                                                    `#departId${i}`,
-                                                                                    "system_1/autocomplete.php",
-                                                                                    "system_1/insertDepart.php",
-                                                                                    "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
-                                                                                );
-                                                                            });
-                                                                        });
-                                                                    </script>
                                                                 </div>
 
                                                                 <div class="col-sm-6">
@@ -2130,132 +1797,9 @@ ORDER BY id DESC;
                                                                     $stmt->execute([$row['department']]);
                                                                     $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
                                                                     ?>
-
-                                                                    <input type="text" class="form-control" id="departInputTask<?= $row['id'] ?>"
-                                                                        value="<?= $departRow['depart_name'] ?>">
-
-                                                                    <input type="hidden" name="department" id="departIdTask<?= $row['id'] ?>"
-                                                                        value="<?= $row['department'] ?>">
-
-                                                                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
-
-                                                                    <!-- Add SweetAlert2 JS -->
-                                                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
-
-                                                                    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-                                                                    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-                                                                    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-                                                                    <script>
-                                                                        $(function() {
-                                                                            function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
-                                                                                let inputChanged = false;
-                                                                                let alertShown = false; // Flag to track if the alert has been shown already
-
-                                                                                $(inputId).autocomplete({
-                                                                                        source: function(request, response) {
-                                                                                            $.ajax({
-                                                                                                url: url,
-                                                                                                dataType: "json",
-                                                                                                data: {
-                                                                                                    term: request.term,
-                                                                                                    type: type
-                                                                                                },
-                                                                                                success: function(data) {
-                                                                                                    response(data); // Show suggestions
-                                                                                                }
-                                                                                            });
-                                                                                        },
-                                                                                        minLength: 1,
-                                                                                        autoFocus: true,
-                                                                                        select: function(event, ui) {
-                                                                                            $(inputId).val(ui.item.label); // Fill input with label
-                                                                                            $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
-                                                                                            return false; // Prevent default behavior
-                                                                                        }
-                                                                                    })
-                                                                                    .data("ui-autocomplete")._renderItem = function(ul, item) {
-                                                                                        return $("<li>")
-                                                                                            .append("<div>" + item.label + "</div>")
-                                                                                            .appendTo(ul);
-                                                                                    };
-
-                                                                                $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                    // console.log("Item highlighted: ", ui.item.label);
-                                                                                    return false;
-                                                                                });
-
-                                                                                $(inputId).on("keyup", function() {
-                                                                                    inputChanged = true;
-                                                                                });
-
-                                                                                $(inputId).on("blur", function() {
-                                                                                    if (inputChanged && !alertShown) {
-                                                                                        const userInput = $(this).val().trim();
-                                                                                        const hiddenValue = $(hiddenInputId).val();
-                                                                                        if (userInput === "") return;
-                                                                                        if (hiddenValue !== "") {
-                                                                                            inputChanged = false;
-                                                                                            return;
-                                                                                        }
-                                                                                        let found = false;
-                                                                                        $(this).autocomplete("instance").menu.element.find("div").each(function() {
-                                                                                            if ($(this).text() === userInput) {
-                                                                                                found = true;
-                                                                                                return false;
-                                                                                            }
-                                                                                        });
-
-                                                                                        if (!found) {
-                                                                                            alertShown = true; // Prevent the alert from firing again
-                                                                                            // Show SweetAlert to confirm insert data
-                                                                                            Swal.fire({
-                                                                                                title: confirmMessage,
-                                                                                                icon: "info",
-                                                                                                showCancelButton: true,
-                                                                                                confirmButtonText: "ใช่",
-                                                                                                cancelButtonText: "ไม่"
-                                                                                            }).then((result) => {
-                                                                                                if (result.isConfirmed) {
-                                                                                                    $.ajax({
-                                                                                                        url: addDataUrl,
-                                                                                                        method: "POST",
-                                                                                                        data: {
-                                                                                                            dataToInsert: userInput
-                                                                                                        },
-                                                                                                        success: function(response) {
-                                                                                                            console.log("Data inserted successfully!");
-                                                                                                            $(hiddenInputId).val(response); // Set inserted ID
-                                                                                                        },
-                                                                                                        error: function(xhr, status, error) {
-                                                                                                            console.error("Error inserting data:", error);
-                                                                                                        }
-                                                                                                    });
-                                                                                                } else {
-                                                                                                    $(inputId).val(""); // Clear input if canceled
-                                                                                                    $(hiddenInputId).val("");
-                                                                                                }
-                                                                                                alertShown = false; // Reset the flag after the action
-                                                                                            });
-                                                                                        }
-                                                                                    }
-                                                                                    inputChanged = false; // Reset the flag
-                                                                                });
-                                                                            }
-
-                                                                            $("input[id^='departInput']").each(function() {
-                                                                                const i = $(this).attr("id").replace("departInput", ""); // Extract index
-                                                                                setupAutocomplete(
-                                                                                    "depart",
-                                                                                    `#departInputTask${i}`,
-                                                                                    `#departIdTask${i}`,
-                                                                                    "system_1/autocomplete.php",
-                                                                                    "system_1/insertDepart.php",
-                                                                                    "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
-                                                                                );
-                                                                            });
-                                                                        });
-                                                                    </script>
+                                                                    <select class="form-select" name="department" id="departId<?= $row['id'] ?>" required>
+                                                                        <option value="<?= $row['department'] ?>" selected><?= $departRow['depart_name'] ?></option>
+                                                                    </select>
                                                                 </div>
                                                             </div>
 
@@ -2267,9 +1811,9 @@ ORDER BY id DESC;
                                                                 </div>
                                                                 <div class="col-6">
                                                                     <label for="deviceInput">อุปกรณ์</label>
-                                                                    <input type="text" class="form-control" id="deviceInput<?= $row['id'] ?>" name="deviceName"
-                                                                        value="<?= $row['deviceName'] ?>">
-                                                                    <input type="hidden" id="deviceId<?= $row['id'] ?>">
+                                                                    <select class="form-select" id="deviceInput<?= $row['id'] ?>" name="deviceName" required>
+                                                                        <option value="<?= $row['deviceName'] ?>" selected><?= $row['deviceName'] ?></option>
+                                                                    </select>
                                                                 </div>
 
                                                             </div>
@@ -2846,125 +2390,10 @@ ORDER BY id DESC;
                                                                             $stmt->execute([$rowData['refDepart']]);
                                                                             $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
                                                                             ?>
-
-                                                                            <input type="text" class="form-control" id="departInput<?= $row['id'] ?>" name="ref_depart"
-                                                                                value="<?= $departRow['depart_name'] ?>">
-
-                                                                            <input type="hidden" name="depart_id" id="departId<?= $row['id'] ?>"
-                                                                                value="<?= $rowData['refDepart'] ?>">
+                                                                            <select class="form-select" name="depart_id" id="departId<?= $row['id'] ?>" required>
+                                                                                <option value="<?= $rowData['refDepart'] ?>" selected><?= $departRow['depart_name'] ?></option>
+                                                                            </select>
                                                                         </div>
-
-                                                                        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-                                                                        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-                                                                        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-                                                                        <script>
-                                                                            $(function() {
-                                                                                function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
-                                                                                    let inputChanged = false;
-
-                                                                                    $(inputId).autocomplete({
-                                                                                            source: function(request, response) {
-                                                                                                $.ajax({
-                                                                                                    url: url,
-                                                                                                    dataType: "json",
-                                                                                                    data: {
-                                                                                                        term: request.term,
-                                                                                                        type: type
-                                                                                                    },
-                                                                                                    success: function(data) {
-                                                                                                        response(data); // Show suggestions
-                                                                                                    }
-                                                                                                });
-                                                                                            },
-                                                                                            minLength: 1,
-                                                                                            autoFocus: true,
-                                                                                            select: function(event, ui) {
-                                                                                                $(inputId).val(ui.item.label); // Fill input with label
-                                                                                                $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
-                                                                                                return false; // Prevent default behavior
-                                                                                            }
-                                                                                        })
-                                                                                        .data("ui-autocomplete")._renderItem = function(ul, item) {
-                                                                                            return $("<li>")
-                                                                                                .append("<div>" + item.label + "</div>")
-                                                                                                .appendTo(ul);
-                                                                                        };
-
-                                                                                    $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                        // You can log or do something here but won't change the input value
-                                                                                        // console.log("Item highlighted: ", ui.item.label);
-                                                                                        return false;
-                                                                                    });
-
-                                                                                    $(inputId).on("keyup", function() {
-                                                                                        inputChanged = true;
-                                                                                    });
-
-                                                                                    $(inputId).on("blur", function() {
-                                                                                        if (inputChanged) {
-                                                                                            const userInput = $(this).val().trim();
-                                                                                            const hiddenValue = $(hiddenInputId).val();
-                                                                                            if (userInput === "") return;
-                                                                                            if (hiddenValue !== "") {
-                                                                                                inputChanged = false;
-                                                                                                return;
-                                                                                            }
-                                                                                            let found = false;
-                                                                                            $(this).autocomplete("instance").menu.element.find("div").each(function() {
-                                                                                                if ($(this).text() === userInput) {
-                                                                                                    found = true;
-                                                                                                    return false;
-                                                                                                }
-                                                                                            });
-
-                                                                                            if (!found) {
-                                                                                                Swal.fire({
-                                                                                                    title: confirmMessage,
-                                                                                                    icon: "info",
-                                                                                                    showCancelButton: true,
-                                                                                                    confirmButtonText: "ใช่",
-                                                                                                    cancelButtonText: "ไม่"
-                                                                                                }).then((result) => {
-                                                                                                    if (result.isConfirmed) {
-                                                                                                        $.ajax({
-                                                                                                            url: addDataUrl,
-                                                                                                            method: "POST",
-                                                                                                            data: {
-                                                                                                                dataToInsert: userInput
-                                                                                                            },
-                                                                                                            success: function(response) {
-                                                                                                                console.log("Data inserted successfully!");
-                                                                                                                $(hiddenInputId).val(response); // Set inserted ID
-                                                                                                            },
-                                                                                                            error: function(xhr, status, error) {
-                                                                                                                console.error("Error inserting data:", error);
-                                                                                                            }
-                                                                                                        });
-                                                                                                    } else {
-                                                                                                        $(inputId).val(""); // Clear input
-                                                                                                        $(hiddenInputId).val("");
-                                                                                                    }
-                                                                                                });
-                                                                                            }
-                                                                                        }
-                                                                                        inputChanged = false; // Reset the flag
-                                                                                    });
-                                                                                }
-
-                                                                                $("input[id^='departInput']").each(function() {
-                                                                                    const i = $(this).attr("id").replace("departInput", ""); // Extract index
-                                                                                    setupAutocomplete(
-                                                                                        "depart",
-                                                                                        `#departInput${i}`,
-                                                                                        `#departId${i}`,
-                                                                                        "system_1/autocomplete.php",
-                                                                                        "system_1/insertDepart.php",
-                                                                                        "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
-                                                                                    );
-                                                                                });
-                                                                            });
-                                                                        </script>
                                                                     </div>
 
                                                                     <div class="col-sm-6">
@@ -3229,130 +2658,10 @@ ORDER BY id DESC;
                                                                         $stmt->execute([$row['department']]);
                                                                         $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
                                                                         ?>
-
-                                                                        <input type="text" class="form-control" id="departInput<?= $row['id'] ?>" name="ref_depart"
-                                                                            value="<?= $departRow['depart_name'] ?>">
-
-                                                                        <input type="hidden" name="depart_id" id="departId<?= $row['id'] ?>"
-                                                                            value="<?= $row['department'] ?>">
+                                                                        <select class="form-select" name="depart_id" id="departId<?= $row['id'] ?>" required>
+                                                                            <option value="<?= $row['department'] ?>" selected><?= $departRow['depart_name'] ?></option>
+                                                                        </select>
                                                                     </div>
-
-                                                                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
-
-                                                                    <!-- Add SweetAlert2 JS -->
-                                                                    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
-
-                                                                    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-                                                                    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-                                                                    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-                                                                    <script>
-                                                                        $(function() {
-                                                                            function setupAutocomplete(type, inputId, hiddenInputId, url, addDataUrl, confirmMessage) {
-                                                                                let inputChanged = false;
-
-                                                                                $(inputId).autocomplete({
-                                                                                        source: function(request, response) {
-                                                                                            $.ajax({
-                                                                                                url: url,
-                                                                                                dataType: "json",
-                                                                                                data: {
-                                                                                                    term: request.term,
-                                                                                                    type: type
-                                                                                                },
-                                                                                                success: function(data) {
-                                                                                                    response(data); // Show suggestions
-                                                                                                }
-                                                                                            });
-                                                                                        },
-                                                                                        minLength: 1,
-                                                                                        autoFocus: true,
-                                                                                        select: function(event, ui) {
-                                                                                            $(inputId).val(ui.item.label); // Fill input with label
-                                                                                            $(hiddenInputId).val(ui.item.value); // Fill hidden input with ID
-                                                                                            return false; // Prevent default behavior
-                                                                                        }
-                                                                                    })
-                                                                                    .data("ui-autocomplete")._renderItem = function(ul, item) {
-                                                                                        return $("<li>")
-                                                                                            .append("<div>" + item.label + "</div>")
-                                                                                            .appendTo(ul);
-                                                                                    };
-
-                                                                                $(inputId).on("autocompletefocus", function(event, ui) {
-                                                                                    // You can log or do something here but won't change the input value
-                                                                                    // console.log("Item highlighted: ", ui.item.label);
-                                                                                    return false;
-                                                                                });
-
-                                                                                $(inputId).on("keyup", function() {
-                                                                                    inputChanged = true;
-                                                                                });
-
-                                                                                $(inputId).on("blur", function() {
-                                                                                    if (inputChanged) {
-                                                                                        const userInput = $(this).val().trim();
-                                                                                        const hiddenValue = $(hiddenInputId).val();
-                                                                                        if (userInput === "") return;
-                                                                                        if (hiddenValue !== "") {
-                                                                                            inputChanged = false;
-                                                                                            return;
-                                                                                        }
-                                                                                        let found = false;
-                                                                                        $(this).autocomplete("instance").menu.element.find("div").each(function() {
-                                                                                            if ($(this).text() === userInput) {
-                                                                                                found = true;
-                                                                                                return false;
-                                                                                            }
-                                                                                        });
-
-                                                                                        if (!found) {
-                                                                                            Swal.fire({
-                                                                                                title: confirmMessage,
-                                                                                                icon: "info",
-                                                                                                showCancelButton: true,
-                                                                                                confirmButtonText: "ใช่",
-                                                                                                cancelButtonText: "ไม่"
-                                                                                            }).then((result) => {
-                                                                                                if (result.isConfirmed) {
-                                                                                                    $.ajax({
-                                                                                                        url: addDataUrl,
-                                                                                                        method: "POST",
-                                                                                                        data: {
-                                                                                                            dataToInsert: userInput
-                                                                                                        },
-                                                                                                        success: function(response) {
-                                                                                                            console.log("Data inserted successfully!");
-                                                                                                            $(hiddenInputId).val(response); // Set inserted ID
-                                                                                                        },
-                                                                                                        error: function(xhr, status, error) {
-                                                                                                            console.error("Error inserting data:", error);
-                                                                                                        }
-                                                                                                    });
-                                                                                                } else {
-                                                                                                    $(inputId).val(""); // Clear input
-                                                                                                    $(hiddenInputId).val("");
-                                                                                                }
-                                                                                            });
-                                                                                        }
-                                                                                    }
-                                                                                    inputChanged = false; // Reset the flag
-                                                                                });
-                                                                            }
-
-                                                                            $("input[id^='departInput']").each(function() {
-                                                                                const i = $(this).attr("id").replace("departInput", ""); // Extract index
-                                                                                setupAutocomplete(
-                                                                                    "depart",
-                                                                                    `#departInput${i}`,
-                                                                                    `#departId${i}`,
-                                                                                    "system_1/autocomplete.php",
-                                                                                    "system_1/insertDepart.php",
-                                                                                    "คุณต้องการเพิ่มข้อมูลนี้หรือไม่?"
-                                                                                );
-                                                                            });
-                                                                        });
-                                                                    </script>
                                                                 </div>
 
                                                                 <div class="col-sm-6">
@@ -3607,6 +2916,9 @@ ORDER BY id DESC;
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
 <script>
     const now = new Date();
 
@@ -3618,114 +2930,210 @@ ORDER BY id DESC;
     timeReportInputs.forEach(input => input.value = currentTime);
 </script>
 <script>
-    $(function() {
-        function setupAutocomplete({
+    // $(function() {
+    //     function setupAutocomplete({
+    //         type,
+    //         inputSelector,
+    //         hiddenInputSelector,
+    //         sourceUrl,
+    //         confirmMessage = "คุณต้องการเพิ่มรายการนี้หรือไม่?",
+    //         resetValue = "",
+    //         defaultHiddenId = ""
+    //     }) {
+    //         let inputChanged = false;
+    //         let alertShown = false; // Flag to track if the alert has been shown already
+
+    //         const $input = $(inputSelector);
+    //         const $hiddenInput = $(hiddenInputSelector);
+
+    //         $input.autocomplete({
+    //                 source: function(request, response) {
+    //                     $.ajax({
+    //                         url: sourceUrl,
+    //                         method: "GET",
+    //                         dataType: "json",
+    //                         data: {
+    //                             term: request.term,
+    //                             type: type
+    //                         },
+    //                         success: function(data) {
+    //                             response(data); // Show suggestions
+    //                         },
+    //                         error: function() {
+    //                             response([]);
+    //                         }
+    //                     });
+    //                 },
+    //                 minLength: 1,
+    //                 autoFocus: true,
+    //                 select: function(event, ui) {
+    //                     if (ui.item && ui.item.value !== "") {
+    //                         $input.val(ui.item.label);
+    //                         $hiddenInput.val(ui.item.value);
+    //                     } else {
+    //                         $input.val('');
+    //                         $hiddenInput.val('');
+    //                     }
+    //                     inputChanged = false;
+    //                     return false;
+    //                 }
+    //             })
+    //             .data("ui-autocomplete")._renderItem = function(ul, item) {
+    //                 return $("<li>")
+    //                     .append("<div>" + item.label + "</div>")
+    //                     .appendTo(ul);
+    //             };
+
+    //         $input.on("input", function() {
+    //             inputChanged = true;
+    //         });
+
+    //         $input.on("blur", function() {
+    //             if (!inputChanged) return;
+
+    //             const enteredValue = $input.val().trim();
+    //             if (!enteredValue) {
+    //                 $hiddenInput.val('');
+    //                 return;
+    //             }
+
+    //             $.ajax({
+    //                 url: sourceUrl,
+    //                 method: "GET",
+    //                 dataType: "json",
+    //                 data: {
+    //                     term: enteredValue,
+    //                     type: type
+    //                 },
+    //                 success: function(data) {
+    //                     const found = data.some(item => item.label === enteredValue);
+    //                     if (!found) {
+    //                         alertShown = true;
+    //                         Swal.fire({
+    //                             icon: 'warning',
+    //                             title: confirmMessage,
+    //                             text: 'หากต้องการเพิ่ม กรุณาติดต่อแอดมิน',
+    //                             confirmButtonText: 'ตกลง'
+    //                         }).then(() => {
+    //                             $input.val(resetValue);
+    //                             $hiddenInput.val(defaultHiddenId);
+    //                             alertShown = false;
+    //                         });
+    //                     }
+    //                 }
+    //             });
+    //             inputChanged = false; // Reset the flag
+    //         });
+    //     }
+
+    //     // Initialize autocomplete for all dynamically generated inputs
+    //     $("input[id^='deviceInput']").each(function() {
+    //         const index = $(this).attr("id").replace("deviceInput", "");
+    //         setupAutocomplete({
+    //             type: "device",
+    //             inputSelector: `#deviceInput${index}`,
+    //             hiddenInputSelector: `#deviceId${index}`,
+    //             sourceUrl: "system_1/autocomplete.php",
+    //             confirmMessage: "ไม่พบหน่วยงานนี้ในระบบ",
+    //             resetValue: "-",
+    //             defaultHiddenId: "105"
+    //         });
+    //     });
+    // });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        function setupChoicesAutocomplete({
             type,
-            inputSelector,
-            hiddenInputSelector,
+            selectSelector,
             sourceUrl,
-            confirmMessage = "คุณต้องการเพิ่มรายการนี้หรือไม่?",
-            resetValue = "",
-            defaultHiddenId = ""
+            notFoundMessage = "ไม่พบข้อมูลในระบบ"
         }) {
-            let inputChanged = false;
-            let alertShown = false; // Flag to track if the alert has been shown already
+            const selects = document.querySelectorAll(selectSelector);
 
-            const $input = $(inputSelector);
-            const $hiddenInput = $(hiddenInputSelector);
+            selects.forEach(select => {
+                if (select.dataset.choices === "true") return;
 
-            $input.autocomplete({
-                    source: function(request, response) {
-                        $.ajax({
-                            url: sourceUrl,
-                            method: "GET",
-                            dataType: "json",
-                            data: {
-                                term: request.term,
-                                type: type
-                            },
-                            success: function(data) {
-                                response(data); // Show suggestions
-                            },
-                            error: function() {
-                                response([]);
-                            }
-                        });
-                    },
-                    minLength: 1,
-                    autoFocus: true,
-                    select: function(event, ui) {
-                        if (ui.item && ui.item.value !== "") {
-                            $input.val(ui.item.label);
-                            $hiddenInput.val(ui.item.value);
-                        } else {
-                            $input.val('');
-                            $hiddenInput.val('');
-                        }
-                        inputChanged = false;
-                        return false;
-                    }
-                })
-                .data("ui-autocomplete")._renderItem = function(ul, item) {
-                    return $("<li>")
-                        .append("<div>" + item.label + "</div>")
-                        .appendTo(ul);
-                };
-
-            $input.on("input", function() {
-                inputChanged = true;
-            });
-
-            $input.on("blur", function() {
-                if (!inputChanged) return;
-
-                const enteredValue = $input.val().trim();
-                if (!enteredValue) {
-                    $hiddenInput.val('');
-                    return;
-                }
-
-                $.ajax({
-                    url: sourceUrl,
-                    method: "GET",
-                    dataType: "json",
-                    data: {
-                        term: enteredValue,
-                        type: type
-                    },
-                    success: function(data) {
-                        const found = data.some(item => item.label === enteredValue);
-                        if (!found) {
-                            alertShown = true;
-                            Swal.fire({
-                                icon: 'warning',
-                                title: confirmMessage,
-                                text: 'หากต้องการเพิ่ม กรุณาติดต่อแอดมิน',
-                                confirmButtonText: 'ตกลง'
-                            }).then(() => {
-                                $input.val(resetValue);
-                                $hiddenInput.val(defaultHiddenId);
-                                alertShown = false;
-                            });
-                        }
-                    }
+                const initialValue = select.value;
+                const choices = new Choices(select, {
+                    searchEnabled: true,
+                    shouldSort: false,
+                    placeholder: true,
+                    placeholderValue: `กรุณาเลือก...`,
+                    searchPlaceholderValue: 'พิมพ์เพื่อค้นหา...',
+                    itemSelectText: '',
+                    searchResultLimit: -1,
                 });
-                inputChanged = false; // Reset the flag
+
+                select.dataset.choices = "true";
+
+                async function fetchData(term = '') {
+                    try {
+                        const response = await fetch(`${sourceUrl}?term=${encodeURIComponent(term)}&type=${type}`);
+                        const data = await response.json();
+
+                        choices.clearChoices();
+
+                        if (!data.length) {
+                            choices.setChoices([{
+                                value: '',
+                                label: notFoundMessage,
+                                disabled: true
+                            }], 'value', 'label', true);
+                            return;
+                        }
+
+                        const options = data.map(item => ({
+                            value: (type === 'device') ? item.label : item.value,
+                            label: item.label,
+                            selected: item.value == initialValue // ✅ mark the DB value as selected
+                        }));
+
+                        // Add a placeholder option at the top
+                        options.unshift({
+                            value: '',
+                            label: 'กรุณาเลือก...',
+                            selected: !initialValue,
+                            disabled: false
+                        });
+
+                        choices.setChoices(options, 'value', 'label', true);
+                    } catch (error) {
+                        console.error('Error fetching data:', error);
+                    }
+                }
+                // Load data initially
+                fetchData();
             });
         }
 
-        // Initialize autocomplete for all dynamically generated inputs
-        $("input[id^='deviceInput']").each(function() {
-            const index = $(this).attr("id").replace("deviceInput", "");
-            setupAutocomplete({
+        function initAllChoices() {
+            setupChoicesAutocomplete({
                 type: "device",
-                inputSelector: `#deviceInput${index}`,
-                hiddenInputSelector: `#deviceId${index}`,
-                sourceUrl: "system_1/autocomplete.php",
-                confirmMessage: "ไม่พบหน่วยงานนี้ในระบบ",
-                resetValue: "-",
-                defaultHiddenId: "105"
+                selectSelector: "select[id^='deviceInput']",
+                sourceUrl: "system_1/autocomplete.php"
             });
+
+            setupChoicesAutocomplete({
+                type: "depart",
+                selectSelector: "select[id^='departId']",
+                sourceUrl: "system_1/autocomplete.php"
+            });
+        }
+
+        // ✅ Run on page load
+        initAllChoices();
+
+        // ✅ Run again whenever DataTables redraws
+        $('#dataAll').on('draw.dt', function(e) {
+            if (e.target && e.target.nodeName === "TABLE") {
+                initAllChoices();
+            }
+        });
+
+        $('#dataAllUncomplete').on('draw.dt', function(e) {
+            if (e.target && e.target.nodeName === "TABLE") {
+                initAllChoices();
+            }
         });
     });
 </script>

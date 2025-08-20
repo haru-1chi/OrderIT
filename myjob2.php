@@ -69,10 +69,10 @@ $name = $result['full_name'] ?? '-';
             padding: 0.375rem 0.75rem;
         }
 
-        /* Remove default focus ring from Choices.js */
-        .choices__inner:focus-within {
-            border-color: #86b7fe;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25);
+        .choices.is-focused .choices__inner,
+        .choices.is-open .choices__inner {
+            border-color: #86b7fe !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25) !important;
         }
     </style>
 </head>

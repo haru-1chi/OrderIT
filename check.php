@@ -76,6 +76,44 @@ $fullname = $result['full_name'] ?? '-';
     .giggle {
       animation: shrinkExpand 0.3s ease-in-out;
     }
+
+    .choices {
+      margin-bottom: 0 !important;
+    }
+
+    .choices__inner {
+      border-radius: 0.375rem !important;
+      min-height: 33px !important;
+      border: 1px solid #ced4da;
+      padding: 0 !important;
+      background-color: #fff !important;
+      font-size: 1rem !important;
+      line-height: 1.5;
+    }
+
+    .choices__inner.is-invalid {
+      border-color: #dc3545 !important;
+    }
+
+    .choices__list--single {
+      padding: 0 !important;
+    }
+
+    .choices__list--dropdown {
+      border-radius: 0.375rem;
+      border: 1px solid #ced4da;
+    }
+
+    .choices__item--selectable {
+      padding: 0.375rem 0.75rem;
+    }
+
+    /* Remove default focus ring from Choices.js */
+    .choices.is-focused .choices__inner,
+    .choices.is-open .choices__inner {
+      border-color: #86b7fe !important;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25) !important;
+    }
   </style>
 </head>
 
@@ -1186,8 +1224,7 @@ ORDER BY nd.id, oi.id
               <div class="col-sm-6">
                 <div class="mb-3">
                   <label for="departInput">หน่วยงาน</label>
-                  <input type="text" class="form-control" id="departInput-create" name="ref_depart">
-                  <input type="hidden" id="departId-create" name="depart_id">
+                  <select class="form-select" id="departSelect-create" name="depart_id" required></select>
                 </div>
               </div>
 
@@ -1471,8 +1508,9 @@ ORDER BY nd.id, oi.id
                     $stmt->execute([$rowData['refDepart']]);
                     $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
                     ?>
-                    <input type="text" class="form-control" id="departInput-copied" name="ref_depart" value="<?= $departRow['depart_name'] ?>">
-                    <input type="hidden" name="depart_id" id="departId-copied" value="<?= $rowData['refDepart'] ?>">
+                    <select class="form-select" id="departSelect-copied" name="depart_id" required>
+                      <option value="<?= $rowData['refDepart'] ?>" selected><?= $departRow['depart_name'] ?></option>
+                    </select>
                   </div>
                 </div>
 
@@ -2262,113 +2300,183 @@ ORDER BY nd.id, oi.id
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
   <script>
-    $(function() {
-      function setupAutocomplete({
+    // $(function() {
+    //   function setupAutocomplete({
+    //     type,
+    //     inputSelector,
+    //     hiddenInputSelector,
+    //     sourceUrl,
+    //     confirmMessage = "คุณต้องการเพิ่มรายการนี้หรือไม่?",
+    //     resetValue = "",
+    //     defaultHiddenId = ""
+    //   }) {
+    //     let inputChanged = false;
+    //     let alertShown = false; // Flag to track if the alert has been shown already
+
+    //     const $input = $(inputSelector);
+    //     const $hiddenInput = $(hiddenInputSelector);
+
+    //     $input.autocomplete({
+    //         source: function(request, response) {
+    //           $.ajax({
+    //             url: sourceUrl,
+    //             method: "GET",
+    //             dataType: "json",
+    //             data: {
+    //               term: request.term,
+    //               type: type
+    //             },
+    //             success: function(data) {
+    //               response(data); // Show suggestions
+    //             },
+    //             error: function() {
+    //               response([]);
+    //             }
+    //           });
+    //         },
+    //         minLength: 1,
+    //         autoFocus: true,
+    //         select: function(event, ui) {
+    //           if (ui.item && ui.item.value !== "") {
+    //             $input.val(ui.item.label);
+    //             $hiddenInput.val(ui.item.value);
+    //           } else {
+    //             $input.val('');
+    //             $hiddenInput.val('');
+    //           }
+    //           inputChanged = false;
+    //           return false;
+    //         }
+    //       })
+    //       .data("ui-autocomplete")._renderItem = function(ul, item) {
+    //         return $("<li>")
+    //           .append("<div>" + item.label + "</div>")
+    //           .appendTo(ul);
+    //       };
+
+    //     $input.on("input", function() {
+    //       inputChanged = true;
+    //     });
+
+    //     $input.on("blur", function() {
+    //       if (!inputChanged) return;
+
+    //       const enteredValue = $input.val().trim();
+    //       if (!enteredValue) {
+    //         $hiddenInput.val('');
+    //         return;
+    //       }
+
+    //       $.ajax({
+    //         url: sourceUrl,
+    //         method: "GET",
+    //         dataType: "json",
+    //         data: {
+    //           term: enteredValue,
+    //           type: type
+    //         },
+    //         success: function(data) {
+    //           const found = data.some(item => item.label === enteredValue);
+    //           if (!found) {
+    //             alertShown = true;
+    //             Swal.fire({
+    //               icon: 'warning',
+    //               title: confirmMessage,
+    //               text: 'หากต้องการเพิ่ม กรุณาติดต่อแอดมิน',
+    //               confirmButtonText: 'ตกลง'
+    //             }).then(() => {
+    //               $input.val(resetValue);
+    //               $hiddenInput.val(defaultHiddenId);
+    //               alertShown = false;
+    //             });
+    //           }
+    //         }
+    //       });
+    //       inputChanged = false; // Reset the flag
+    //     });
+    //   }
+    //   $("input[id^='departInput']").each(function() {
+    //     const index = $(this).attr("id").replace("departInput", "");
+    //     setupAutocomplete({
+    //       type: "depart",
+    //       inputSelector: `#departInput${index}`,
+    //       hiddenInputSelector: `#departId${index}`,
+    //       sourceUrl: "system_1/autocomplete.php",
+    //       notFoundMessage: "ไม่พบหน่วยงานนี้ในระบบ",
+    //       resetValue: "-",
+    //       defaultHiddenId: "222"
+    //     });
+    //   });
+    // });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      function setupChoicesAutocomplete({
         type,
-        inputSelector,
-        hiddenInputSelector,
+        selectSelector,
         sourceUrl,
-        confirmMessage = "คุณต้องการเพิ่มรายการนี้หรือไม่?",
-        resetValue = "",
-        defaultHiddenId = ""
+        notFoundMessage = "ไม่พบข้อมูลในระบบ"
       }) {
-        let inputChanged = false;
-        let alertShown = false; // Flag to track if the alert has been shown already
+        const selects = document.querySelectorAll(selectSelector);
 
-        const $input = $(inputSelector);
-        const $hiddenInput = $(hiddenInputSelector);
-
-        $input.autocomplete({
-            source: function(request, response) {
-              $.ajax({
-                url: sourceUrl,
-                method: "GET",
-                dataType: "json",
-                data: {
-                  term: request.term,
-                  type: type
-                },
-                success: function(data) {
-                  response(data); // Show suggestions
-                },
-                error: function() {
-                  response([]);
-                }
-              });
-            },
-            minLength: 1,
-            autoFocus: true,
-            select: function(event, ui) {
-              if (ui.item && ui.item.value !== "") {
-                $input.val(ui.item.label);
-                $hiddenInput.val(ui.item.value);
-              } else {
-                $input.val('');
-                $hiddenInput.val('');
-              }
-              inputChanged = false;
-              return false;
-            }
-          })
-          .data("ui-autocomplete")._renderItem = function(ul, item) {
-            return $("<li>")
-              .append("<div>" + item.label + "</div>")
-              .appendTo(ul);
-          };
-
-        $input.on("input", function() {
-          inputChanged = true;
-        });
-
-        $input.on("blur", function() {
-          if (!inputChanged) return;
-
-          const enteredValue = $input.val().trim();
-          if (!enteredValue) {
-            $hiddenInput.val('');
-            return;
-          }
-
-          $.ajax({
-            url: sourceUrl,
-            method: "GET",
-            dataType: "json",
-            data: {
-              term: enteredValue,
-              type: type
-            },
-            success: function(data) {
-              const found = data.some(item => item.label === enteredValue);
-              if (!found) {
-                alertShown = true;
-                Swal.fire({
-                  icon: 'warning',
-                  title: confirmMessage,
-                  text: 'หากต้องการเพิ่ม กรุณาติดต่อแอดมิน',
-                  confirmButtonText: 'ตกลง'
-                }).then(() => {
-                  $input.val(resetValue);
-                  $hiddenInput.val(defaultHiddenId);
-                  alertShown = false;
-                });
-              }
-            }
+        selects.forEach(select => {
+          const initialValue = select.value;
+          const choices = new Choices(select, {
+            searchEnabled: true,
+            shouldSort: false,
+            placeholder: true,
+            placeholderValue: `กรุณาเลือก...`,
+            searchPlaceholderValue: 'พิมพ์เพื่อค้นหา...',
+            itemSelectText: '',
+            searchResultLimit: -1,
           });
-          inputChanged = false; // Reset the flag
+
+          async function fetchData(term = '') {
+            try {
+              const response = await fetch(`${sourceUrl}?term=${encodeURIComponent(term)}&type=${type}`);
+              const data = await response.json();
+
+              choices.clearChoices();
+
+              if (!data.length) {
+                choices.setChoices([{
+                  value: '',
+                  label: notFoundMessage,
+                  disabled: true
+                }], 'value', 'label', true);
+                return;
+              }
+
+              const options = data.map(item => ({
+                value: item.value,
+                label: item.label,
+                selected: item.value == initialValue // ✅ mark the DB value as selected
+              }));
+
+              // Add a placeholder option at the top
+              options.unshift({
+                value: '',
+                label: 'กรุณาเลือก...',
+                selected: !initialValue,
+                disabled: false
+              });
+
+              choices.setChoices(options, 'value', 'label', true);
+            } catch (error) {
+              console.error('Error fetching data:', error);
+            }
+          }
+          // Load data initially
+          fetchData();
         });
       }
-      $("input[id^='departInput']").each(function() {
-        const index = $(this).attr("id").replace("departInput", "");
-        setupAutocomplete({
-          type: "depart",
-          inputSelector: `#departInput${index}`,
-          hiddenInputSelector: `#departId${index}`,
-          sourceUrl: "system_1/autocomplete.php",
-          notFoundMessage: "ไม่พบหน่วยงานนี้ในระบบ",
-          resetValue: "-",
-          defaultHiddenId: "222"
-        });
+
+      setupChoicesAutocomplete({
+        type: "depart",
+        selectSelector: "select[id^='departSelect']",
+        sourceUrl: "system_1/autocomplete.php"
       });
     });
   </script>
