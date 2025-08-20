@@ -35,7 +35,7 @@ $nameColumn = $tableMap[$type]['name_column'];
 
 try {
     // Prepare the SQL query
-    $sql = "SELECT $idColumn, $nameColumn FROM $table WHERE $nameColumn LIKE :term  order by $nameColumn ASC";
+    $sql = "SELECT $idColumn, $nameColumn FROM $table WHERE $nameColumn LIKE :term";
     $stmt = $conn->prepare($sql);
     $stmt->bindValue(':term', '%' . $term . '%', PDO::PARAM_STR);
     $stmt->execute();

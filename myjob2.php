@@ -110,9 +110,6 @@ $name = $result['full_name'] ?? '-';
                     </div>
                     <div class="col-4 mb-3">
                         <label class="form-label" for="departInput">หน่วยงาน</label>
-                        <!-- <input type="text" class="form-control" id="departInput" name="ref_depart" autocomplete="off" required>
-                        <input type="hidden" id="departId" name="depart_id"> -->
-
                         <select class="form-select" id="departSelect" name="depart_id" required></select>
                     </div>
 
@@ -123,9 +120,6 @@ $name = $result['full_name'] ?? '-';
 
                     <div class="col-4 mb-3">
                         <label class="form-label" for="deviceInput">อุปกรณ์</label>
-                        <!-- <input class="form-control" type="text" id="deviceInput" name="deviceName" autocomplete="off" value="-" required>
-                        <input type="hidden" id="deviceId" name="device_id" value="105"> -->
-
                         <select class="form-select" id="deviceSelect" name="deviceName" required></select>
                     </div>
 
@@ -204,6 +198,7 @@ $name = $result['full_name'] ?? '-';
                     searchPlaceholderValue: 'พิมพ์เพื่อค้นหา...',
                     removeItemButton: false,
                     itemSelectText: '',
+                    searchResultLimit: -1
                 });
 
                 // Fetch function
