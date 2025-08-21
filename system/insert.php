@@ -1746,6 +1746,39 @@ if (isset($_POST['cancelWork'])) {
         echo '' . $e->getMessage() . '';
     }
 }
+if (isset($_POST['backto_calm'])) {
+    $id = $_POST['id'];
+    $close_date = null;
+    $close_time = null;
+    $status = 3;
+    try {
+        $sql = "UPDATE data_report 
+                SET status = :status, 
+                    username = :username, 
+                    close_date = :close_date, 
+                    close_time = :close_time 
+                WHERE id = :id";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":status", $status);
+        $stmt->bindParam(":username", $username);
+        $stmt->bindParam(":close_date", $close_date, PDO::PARAM_NULL);
+        $stmt->bindParam(":close_time", $close_time, PDO::PARAM_NULL);
+        $stmt->bindParam(":id", $id);
+
+        if ($stmt->execute()) {
+            $_SESSION["success"] = "เปลี่ยนสถานะเป็น 'รออะไหล่' เรียบร้อยแล้ว";
+            header("location: ../myjob.php");
+            exit();
+        } else {
+            $_SESSION["error"] = "พบข้อผิดพลาด";
+            header("location: ../myjob.php");
+            exit();
+        }
+    } catch (PDOException $e) {
+        echo 'Error: ' . $e->getMessage();
+    }
+}
 if (isset($_POST['CloseSubmit'])) {
     $id = $_POST['id'];
     $date_report = $_POST['date_report'];

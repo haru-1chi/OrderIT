@@ -1170,6 +1170,9 @@ if (!isset($_SESSION["admin_log"])) {
 
                                                                 <?php } ?>
                                                                 <div class="w-100 d-flex justify-content-center">
+                                                                    <?php if ($row['status'] == 4 || $row['status'] == 6): ?>
+                                                                        <button type="submit" name="backto_calm" class="w-100 btn btn-warning mt-3 me-3">ย้อนสถานะรออะไหล่</button>
+                                                                    <?php endif; ?>
                                                                     <button type="submit" name="save_with_work" class="w-100 btn btn-primary mt-3">อัพเดตข้อมูล</button>
                                                                 </div>
                                                             <?php } else { ?>
@@ -2562,6 +2565,9 @@ ORDER BY id DESC;
 
                                                                 <?php } ?>
                                                                 <div class="w-100 d-flex justify-content-center">
+                                                                    <?php if ($row['status'] == 4 || $row['status'] == 6): ?>
+                                                                        <button type="submit" name="backto_calm" class="w-100 btn btn-warning mt-3 me-3">ย้อนสถานะรออะไหล่</button>
+                                                                    <?php endif; ?>
                                                                     <button type="submit" name="save_with_work" class="w-100 btn btn-primary mt-3">อัพเดตข้อมูล</button>
                                                                 </div>
                                                             <?php } else { ?>
