@@ -1754,14 +1754,12 @@ if (isset($_POST['backto_calm'])) {
     try {
         $sql = "UPDATE data_report 
                 SET status = :status, 
-                    username = :username, 
                     close_date = :close_date, 
                     close_time = :close_time 
                 WHERE id = :id";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":status", $status);
-        $stmt->bindParam(":username", $username);
         $stmt->bindParam(":close_date", $close_date, PDO::PARAM_NULL);
         $stmt->bindParam(":close_time", $close_time, PDO::PARAM_NULL);
         $stmt->bindParam(":id", $id);
