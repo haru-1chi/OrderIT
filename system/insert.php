@@ -26,14 +26,44 @@ function backToInsertPage($data = [])
 }
 
 if (isset($_POST['save_note'])) {
-    $username = $_POST['username']; // Assuming you get it from a hidden field or session
+    $username = $_POST['username'];
     $title = $_POST['title'];
     $description = $_POST['description'];
-    $pined = isset($_POST['pined']) ? 1 : 0; // if checkbox is checked
+    $pined = isset($_POST['pined']) ? 1 : 0;
 
     try {
-        $sql = "INSERT INTO notelist(username, title, description, pined) 
-                VALUES(:username, :title, :description, :pined)";
+        // Absolute paths for moving files
+        $tempDir = __DIR__ . '/../uploads/temp/';  // adjust path relative to insert.php
+        $permDir = __DIR__ . '/../uploads/notes/';
+        if (!file_exists($permDir)) mkdir($permDir, 0777, true);
+
+        // Extract image URLs from description
+        preg_match_all('/<img.*?src=["\'](.*?)["\'].*?>/i', $description, $matches);
+        $usedImages = !empty($matches[1]) ? $matches[1] : [];
+
+        foreach ($usedImages as $imgPath) {
+            // Only process temp images
+            if (strpos($imgPath, 'uploads/temp/') !== false) {
+
+                $basename = basename($imgPath); // get filename
+                $newPath = $permDir . $basename;
+
+                $oldPath = __DIR__ . '/../' . $imgPath; // full path to temp file
+
+                if (file_exists($oldPath)) {
+                    rename($oldPath, $newPath); // move file
+                    $description = str_replace($imgPath, 'uploads/notes/' . $basename, $description);
+                }
+            }
+        }
+
+        // Delete any remaining temp files
+        foreach (glob($tempDir . '*') as $file) {
+            @unlink($file);
+        }
+
+        $sql = "INSERT INTO notelist (username, title, description, pined) 
+                VALUES (:username, :title, :description, :pined)";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":username", $username);
         $stmt->bindParam(":title", $title);

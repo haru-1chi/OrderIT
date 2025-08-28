@@ -24,7 +24,48 @@ if (isset($_POST['update_note'])) {
     $description = $_POST['description'];
     $pined = isset($_POST['pined']) ? 1 : 0;
 
+    $tempDir = __DIR__ . '/../uploads/temp/';
+    $permDir = __DIR__ . '/../uploads/notes/';
+
     try {
+        // 1. Get old note content
+        $stmt = $conn->prepare("SELECT description FROM notelist WHERE id = :id");
+        $stmt->bindParam(':id', $noteId);
+        $stmt->execute();
+        $oldDescription = $stmt->fetchColumn();
+
+        // 2. Extract images from old content
+        preg_match_all('/<img.*?src=["\'](.*?)["\'].*?>/i', $oldDescription, $oldMatches);
+        $oldImages = !empty($oldMatches[1]) ? $oldMatches[1] : [];
+
+        // 3. Extract images from new content
+        preg_match_all('/<img.*?src=["\'](.*?)["\'].*?>/i', $description, $newMatches);
+        $newImages = !empty($newMatches[1]) ? $newMatches[1] : [];
+
+        // 4. Delete images removed by user
+        foreach ($oldImages as $imgPath) {
+            if (!in_array($imgPath, $newImages)) {
+                $fullPath = __DIR__ . '/../' . $imgPath;
+                if (file_exists($fullPath)) {
+                    unlink($fullPath);
+                }
+            }
+        }
+
+        // 5. Move newly added images from temp to permanent
+        foreach ($newImages as $imgPath) {
+            if (strpos($imgPath, 'uploads/temp/') !== false) {
+                $basename = basename($imgPath);
+                $oldPath = __DIR__ . '/../' . $imgPath;
+                $newPath = $permDir . $basename;
+
+                if (file_exists($oldPath)) {
+                    rename($oldPath, $newPath); // move file
+                    $description = str_replace($imgPath, 'uploads/notes/' . $basename, $description);
+                }
+            }
+        }
+
         $sql = "UPDATE notelist SET title = :title, description = :description, pined = :pined WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":title", $title);
@@ -258,23 +299,23 @@ if (isset($_POST['problemL'])) {
         global $conn, $problemName, $id;
 
         try {
-   
+
 
             $statement = $conn->prepare("SELECT * FROM  problemlist WHERE id = :id");
             $statement->bindParam(":id", $id);
             $statement->execute();
             $data = $statement->fetch(PDO::FETCH_ASSOC);
             if ($statement->rowCount() === 0) {
-                
+
                 return false;
             }
-        
+
             if ($data["problemName"] !== $problemName) {
-       
+
                 return true;
             }
 
-       
+
 
             return false;
         } catch (PDOException $error) {
@@ -285,9 +326,9 @@ if (isset($_POST['problemL'])) {
 
     try {
         $isChanged = isProblemNameChanged();
-     
+
         echo $isChanged;
-    
+
         if ($isChanged) {
             $sql = "SELECT * FROM problemlist WHERE problemName = :problemName";
             $stmt = $conn->prepare($sql);

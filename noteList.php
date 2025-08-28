@@ -33,6 +33,11 @@ $name = $result['full_name'] ?? '-';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
     <style>
         body {
             background-color: #F9FDFF;
@@ -60,9 +65,32 @@ $name = $result['full_name'] ?? '-';
         }
 
         .truncate-expanded {
-            max-height: 1000px;
             transition: max-height 0.3s ease;
             /* Large enough to fit the content */
+        }
+
+        #editor img {
+            max-width: 100%;
+            width: 500px;
+            height: auto;
+        }
+
+        .post-content img {
+            max-width: 100%;
+            width: 500px;
+            height: auto;
+        }
+
+        .post-content .ql-align-center {
+            text-align: center;
+        }
+
+        .post-content .ql-align-right {
+            text-align: right;
+        }
+
+        .post-content .ql-align-justify {
+            text-align: justify;
         }
     </style>
 </head>
@@ -88,7 +116,7 @@ $name = $result['full_name'] ?? '-';
         <input type="text" class="form-control mb-3" id="search-input" placeholder="🔍คำค้นหา">
         <div id="note-list"></div>
         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h1 class="modal-title fs-5" id="exampleModalLabel">สร้างโน้ต</h1>
@@ -104,10 +132,8 @@ $name = $result['full_name'] ?? '-';
                                 <label for="title">หัวข้อ</label>
                             </div>
 
-                            <div class="form-floating">
-                                <textarea class="form-control" id="description" name="description" style="height: 100px"></textarea>
-                                <label for="description">รายละเอียด</label>
-                            </div>
+                            <div id="editor" style="height: 200px; "></div>
+                            <input type="hidden" name="description" id="hiddenInput">
                         </div>
                         <div class="modal-footer">
                             <input type="checkbox" class="btn-check" id="btn-check-outlined" name="pined" value="1">
@@ -120,6 +146,59 @@ $name = $result['full_name'] ?? '-';
         </div>
     </div>
     <script>
+        var quill = new Quill('#editor', {
+            theme: 'snow',
+            placeholder: 'รายละเอียด...',
+            modules: {
+                toolbar: {
+                    container: [
+                        [{
+                            'header': [1, 2, false]
+                        }],
+                        ['bold', 'italic', 'underline'],
+                        ['image'],
+                        [{
+                            'align': []
+                        }]
+                    ],
+                    handlers: {
+                        image: imageHandler
+                    }
+                }
+            }
+        });
+
+        function imageHandler() {
+            var input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+            input.click();
+
+            input.onchange = function() {
+                var file = input.files[0];
+                if (/^image\//.test(file.type)) {
+                    var formData = new FormData();
+                    formData.append('image', file);
+
+                    fetch('system_1/upload_img_note.php', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            let range = quill.getSelection();
+                            quill.insertEmbed(range.index, 'image', result.url);
+                        });
+                } else {
+                    console.warn('You can only upload images.');
+                }
+            };
+        }
+
+        document.querySelector('#noteForm').onsubmit = function() {
+            document.querySelector('#hiddenInput').value = quill.root.innerHTML;
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             const noteListEl = document.getElementById('note-list');
             const searchInput = document.getElementById('search-input');
@@ -197,13 +276,15 @@ $name = $result['full_name'] ?? '-';
                         const noteIdInput = document.getElementById('note-id');
                         const noteForm = document.getElementById('noteForm');
                         const titleInput = document.getElementById('title');
-                        const descriptionInput = document.getElementById('description');
+                        // const descriptionInput = document.getElementById('description');
                         const pinCheckbox = document.getElementById('btn-check-outlined');
 
                         titleInput.value = title;
-                        descriptionInput.value = description;
+                        // descriptionInput.value = description;
                         noteIdInput.value = id;
                         pinCheckbox.checked = pined;
+
+                        quill.root.innerHTML = description;
 
                         modalLabel.textContent = "แก้ไขโน้ต";
                         submitBtn.name = "update_note";
@@ -232,13 +313,12 @@ $name = $result['full_name'] ?? '-';
                 const submitBtn = document.getElementById('submitBtn');
                 const noteIdInput = document.getElementById('note-id');
                 const titleInput = document.getElementById('title');
-                const descriptionInput = document.getElementById('description');
                 const pinCheckbox = document.getElementById('btn-check-outlined');
 
                 titleInput.value = '';
-                descriptionInput.value = '';
                 noteIdInput.value = '';
                 pinCheckbox.checked = false;
+                quill.root.innerHTML = '';
 
                 modalLabel.textContent = "สร้างโน้ต";
                 submitBtn.name = "save_note";
