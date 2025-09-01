@@ -12,24 +12,37 @@ try {
     $stmt->execute([':search' => "%$search%"]);
     $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    function makeLinksClickable($text)
+    function convertEmojiLinks($html)
     {
-        // Don't escape everything – Quill already provides HTML
-        return nl2br(preg_replace_callback(
-            '/(?:(\X)(?=https?:\/\/)|)(https?:\/\/[^\s]+)/u',
-            function ($matches) {
-                $emoji = $matches[1] ?? '';
-                $url = $matches[2];
+        $doc = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $doc->loadHTML(mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8'));
+        libxml_clear_errors();
 
-                // Encode only the emoji/text, not the HTML
-                $linkText = $emoji !== '' ? htmlspecialchars($emoji) : htmlspecialchars($url);
+        $anchors = $doc->getElementsByTagName('a');
 
-                return '<a class="text-decoration-none" href="' . htmlspecialchars($url) . '" target="_blank" rel="noopener noreferrer">' . $linkText . '</a>';
-            },
-            $text
-        ));
+        foreach ($anchors as $a) {
+            $text = $a->textContent; // safer than nodeValue
+
+            if (preg_match('/^\X/u', $text, $match)) {
+                $emoji = $match[0];
+
+                // Remove all children and add only emoji text node
+                while ($a->firstChild) {
+                    $a->removeChild($a->firstChild);
+                }
+                $a->appendChild($doc->createTextNode($emoji));
+            }
+        }
+
+        // Extract body inner HTML
+        $body = $doc->getElementsByTagName('body')->item(0);
+        $innerHTML = '';
+        foreach ($body->childNodes as $child) {
+            $innerHTML .= $doc->saveHTML($child);
+        }
+        return $innerHTML;
     }
-
 
     foreach ($notes as $row):
         $descId = "desc-" . $row['id'];
@@ -43,7 +56,7 @@ try {
             </div>
             <div class="d-flex text-break">
                 <div class="w-100 m-0 truncate-2-lines post-content" id="<?= $descId ?>">
-                    <?= makeLinksClickable($row['description']) ?>
+                    <?= $row['description'] ?>
                 </div>
             </div>
             <div class="d-flex justify-content-between align-items-end mt-2">

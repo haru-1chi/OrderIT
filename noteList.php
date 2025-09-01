@@ -156,7 +156,7 @@ $name = $result['full_name'] ?? '-';
                             'header': [1, 2, false]
                         }],
                         ['bold', 'italic', 'underline'],
-                        ['image'],
+                        ['image'],['link'],
                         [{
                             'align': []
                         }]
