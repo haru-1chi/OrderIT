@@ -2,14 +2,40 @@
 require_once "../config/db.php";
 
 $search = isset($_GET['q']) ? trim($_GET['q']) : '';
+$selectedCategories = isset($_GET['categories']) ? explode(',', $_GET['categories']) : [];
 
 try {
-    $stmt = $conn->prepare("
-        SELECT * FROM notelist 
-        WHERE is_deleted = 0 AND (title LIKE :search OR description LIKE :search OR username LIKE :search OR created_at LIKE :search)
-        ORDER BY pined DESC, created_at DESC
-    ");
-    $stmt->execute([':search' => "%$search%"]);
+    $sql = "
+SELECT DISTINCT n.*
+FROM notelist n
+LEFT JOIN notelist_category nc ON n.id = nc.note_id
+LEFT JOIN category_note c ON nc.category_id = c.id
+WHERE n.is_deleted = 0
+  AND (
+       n.title LIKE :search
+    OR n.description LIKE :search
+    OR n.username LIKE :search
+    OR n.created_at LIKE :search
+    OR c.name LIKE :search
+  )
+";
+
+    $params = [':search' => "%$search%"];
+
+    if (!empty($selectedCategories)) {
+        $catPlaceholders = [];
+        foreach ($selectedCategories as $index => $cat) {
+            $key = ":cat$index";
+            $catPlaceholders[] = $key;
+            $params[$key] = $cat;
+        }
+        $sql .= " AND c.name IN (" . implode(',', $catPlaceholders) . ")";
+    }
+
+    $sql .= " ORDER BY n.pined DESC, n.created_at DESC";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute($params);
     $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     function convertEmojiLinks($html)
@@ -46,19 +72,44 @@ try {
 
     foreach ($notes as $row):
         $descId = "desc-" . $row['id'];
+
+
+        $stmtCat = $conn->prepare("
+    SELECT c.name 
+    FROM notelist_category nc
+    JOIN category_note c ON nc.category_id = c.id
+    WHERE nc.note_id = :note_id
+");
+        $stmtCat->execute([':note_id' => $row['id']]);
+        $categories = $stmtCat->fetchAll(PDO::FETCH_COLUMN);
+        $categoriesJson = htmlspecialchars(json_encode($categories), ENT_QUOTES);
 ?>
         <div class="card card-body rounded-3 shadow-sm mb-3 note-card" style="cursor:pointer;" data-target="#<?= $descId ?>">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="m-0"><?= htmlspecialchars($row['title']) ?></h5>
-                <span class="star <?= $row['pined'] ? 'active' : '' ?>"
-                    data-id="<?= $row['id'] ?>"
-                    data-pined="<?= $row['pined'] ?>">★</span>
-            </div>
-            <div class="d-flex text-break">
-                <div class="w-100 m-0 truncate-2-lines post-content" id="<?= $descId ?>">
-                    <?= $row['description'] ?>
+                <div class="d-flex align-items-center">
+                    <span class="star <?= $row['pined'] ? 'active' : '' ?>"
+                        data-id="<?= $row['id'] ?>"
+                        data-pined="<?= $row['pined'] ?>">★</span>
+                    <span class="ms-3">⯆</span>
                 </div>
             </div>
+            <div class="content" style="cursor:default;">
+                <?php if (!empty($categories)): ?>
+                    <div class="mb-2 d-flex flex-wrap gap-2">
+                        <?php foreach ($categories as $cat): ?>
+                            <span class="chip" data-chip="<?= htmlspecialchars($cat) ?>"><?= htmlspecialchars($cat) ?></span>
+                        <?php endforeach; ?>
+
+                    </div>
+                <?php endif; ?>
+                <div class="d-flex text-break">
+                    <div class="w-100 m-0 truncate-2-lines post-content" id="<?= $descId ?>">
+                        <?= $row['description'] ?>
+                    </div>
+                </div>
+            </div>
+
             <div class="d-flex justify-content-between align-items-end mt-2">
                 <p class="m-0"><?= date("d/m/y, H:i", strtotime($row['created_at'])) ?> | noted by <?= htmlspecialchars($row['username']) ?></p>
                 <div class="d-flex">
@@ -68,7 +119,8 @@ try {
                         data-id="<?= $row['id'] ?>"
                         data-title="<?= htmlspecialchars($row['title'], ENT_QUOTES) ?>"
                         data-description="<?= htmlspecialchars($row['description'], ENT_QUOTES) ?>"
-                        data-pined="<?= $row['pined'] ?>">
+                        data-pined="<?= $row['pined'] ?>"
+                        data-categories="<?= $categoriesJson ?>">
                         แก้ไข
                     </button>
                     <button type="button" class="btn btn-outline-danger ms-3 deleteBtn" data-id="<?= $row['id'] ?>">ลบ</button>

@@ -73,6 +73,34 @@ if (isset($_POST['update_note'])) {
         $stmt->bindParam(":pined", $pined);
         $stmt->bindParam(":id", $noteId);
 
+        // Handle categories
+        if (isset($_POST['categories'])) {
+            $categories = array_filter(array_map('trim', explode(',', $_POST['categories'])));
+
+            // Clear old categories
+            $stmtDel = $conn->prepare("DELETE FROM notelist_category WHERE note_id = :note_id");
+            $stmtDel->execute([':note_id' => $noteId]);
+
+            foreach ($categories as $cat) {
+                // Check if category exists
+                $stmtCheck = $conn->prepare("SELECT id FROM category_note WHERE name = :name");
+                $stmtCheck->execute([':name' => $cat]);
+                $catId = $stmtCheck->fetchColumn();
+
+                if (!$catId) {
+                    // Insert new category
+                    $stmtIns = $conn->prepare("INSERT INTO category_note (name) VALUES (:name)");
+                    $stmtIns->execute([':name' => $cat]);
+                    $catId = $conn->lastInsertId();
+                }
+
+                // Insert relation
+                $stmtRel = $conn->prepare("INSERT INTO notelist_category (note_id, category_id) VALUES (:note_id, :category_id)");
+                $stmtRel->execute([':note_id' => $noteId, ':category_id' => $catId]);
+            }
+        }
+
+
         if ($stmt->execute()) {
             $_SESSION["success"] = "แก้ไขข้อมูลสำเร็จ";
             header("location: ../noteList.php");

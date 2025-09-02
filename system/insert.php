@@ -30,6 +30,7 @@ if (isset($_POST['save_note'])) {
     $title = $_POST['title'];
     $description = $_POST['description'];
     $pined = isset($_POST['pined']) ? 1 : 0;
+    $categories = explode(',', $_POST['categories']);
 
     try {
         // Absolute paths for moving files
@@ -62,19 +63,48 @@ if (isset($_POST['save_note'])) {
             @unlink($file);
         }
 
+        $conn->beginTransaction();
+
+        // 1. Insert note
         $sql = "INSERT INTO notelist (username, title, description, pined) 
                 VALUES (:username, :title, :description, :pined)";
         $stmt = $conn->prepare($sql);
-        $stmt->bindParam(":username", $username);
-        $stmt->bindParam(":title", $title);
-        $stmt->bindParam(":description", $description);
-        $stmt->bindParam(":pined", $pined);
+        $stmt->execute([
+            ':username' => $username,
+            ':title' => $title,
+            ':description' => $description,
+            ':pined' => $pined
+        ]);
+        $noteId = $conn->lastInsertId();
 
-        if ($stmt->execute()) {
-            $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-            header("location: ../noteList.php");
+        // 2. Process categories
+        foreach ($categories as $catName) {
+            $catName = trim($catName);
+            if ($catName === '') continue;
+
+            // Insert category if not exists
+            $stmt = $conn->prepare("INSERT IGNORE INTO category_note (name) VALUES (:name)");
+            $stmt->execute([':name' => $catName]);
+
+            // Get category id
+            $stmt = $conn->prepare("SELECT id FROM category_note WHERE name = :name");
+            $stmt->execute([':name' => $catName]);
+            $catId = $stmt->fetchColumn();
+
+            // Insert into junction table
+            $stmt = $conn->prepare("INSERT INTO notelist_category (note_id, category_id) VALUES (:note_id, :cat_id)");
+            $stmt->execute([
+                ':note_id' => $noteId,
+                ':cat_id' => $catId
+            ]);
         }
+
+        $conn->commit();
+        $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
+        header("location: ../noteList.php");
+        exit;
     } catch (PDOException $e) {
+        $conn->rollBack();
         echo 'Error: ' . $e->getMessage();
     }
 }
