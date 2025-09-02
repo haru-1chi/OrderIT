@@ -116,7 +116,6 @@ $name = $result['full_name'] ?? '-';
 <body>
     <?php navbar() ?>
     <div class="container" style="width: 50%;">
-
         <?php foreach (['error' => 'danger', 'warning' => 'warning', 'success' => 'success'] as $key => $class): ?>
             <?php if (isset($_SESSION[$key])): ?>
                 <div class="alert alert-<?= $class ?>" role="alert">
@@ -137,14 +136,43 @@ $name = $result['full_name'] ?? '-';
         $stmtCat = $conn->query("SELECT id, category_name FROM category_note ORDER BY category_name ASC");
         $allCategories = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
         ?>
-        <div id="category-filters" class="mb-3">
+        <div id="category-filters" class="bg-white rounded border border-2 p-2 position-fixed" style="top: 275px; left: 280px; z-index: 1000;">
+            <button class="btn btn-primary mb-2">เพิ่ม</button>
             <?php foreach ($allCategories as $cat): ?>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input category-filter" type="checkbox" id="cat-<?= $cat['id'] ?>" value="<?= htmlspecialchars($cat['category_name']) ?>">
-                    <label class="form-check-label" for="cat-<?= $cat['id'] ?>"><?= htmlspecialchars($cat['category_name']) ?></label>
+                <div class="form-check d-flex justify-content-between mb-2">
+                    <div>
+                        <input class="form-check-input category-filter" type="checkbox" id="cat-<?= $cat['id'] ?>" value="<?= htmlspecialchars($cat['category_name']) ?>">
+                        <label class="form-check-label" for="cat-<?= $cat['id'] ?>"><?= htmlspecialchars($cat['category_name']) ?></label>
+                    </div>
+                    <div>
+                        <span>✏️</span>
+                        <button class="btn btn-danger px-2 py-0 rounded-pill text-white">-</button>
+                    </div>
                 </div>
             <?php endforeach; ?>
         </div>
+        <div class="modal fade"tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <form method="post" action="system/update.php?page=7" id="page-form" class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">แก้ไข</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" name="">
+                            <label for="floatingPassword">ชื่อหมวดหมู่</label>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" id="form-submit" name="" class="btn btn-primary">อัพเดต</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <div id="note-list"></div>
         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl">

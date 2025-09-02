@@ -719,7 +719,6 @@ if (!isset($_SESSION["admin_log"])) {
                 <div class="col-sm-12" id="page-column" data-pageId="1"> <!-- ประเภทการเบิก -->
                     <h1 class="pt-3">ประเภทการเบิก</h1>
                     <div>
-
                         <div class="d-flex justify-content-between my-2">
                             <div class="">
                                 <select name="" class="form-select form-select-md px-12" id="select-page-button">
@@ -730,8 +729,6 @@ if (!isset($_SESSION["admin_log"])) {
                                     <option value="5">รายการอุปกรณ์</option>
                                 </select>
                             </div>
-
-
                             <button type="button" class="btn btn-primary border-0 px-4 py-2" style="background-color: #4ACA84;" data-bs-toggle="modal" data-bs-target="#ประเภทการเบิก">เพิ่มข้อมูล</button>
                         </div>
                     </div>
@@ -1030,6 +1027,10 @@ if (!isset($_SESSION["admin_log"])) {
                         <thead class="table-primary">
                             <tr>
                                 <th scope="col">ชื่อรายการ</th>
+                                <th scope="col">คุณสมบัติ</th>
+                                <th scope="col">ราคา</th>
+                                <th scope="col">หน่วย</th>
+
                                 <th scope="col">แก้ไข</th>
                                 <th scope="col">ลบ</th>
                             </tr>
@@ -1038,6 +1039,10 @@ if (!isset($_SESSION["admin_log"])) {
                             <?php foreach ($result as $row) { ?>
                                 <tr>
                                     <th scope="row"><?= $row['models_name'] ?></th>
+                                    <td scope="row"><?= $row['quality'] ?></td>
+                                    <td scope="row"><?= $row['price'] ?></td>
+                                    <td scope="row"><?= $row['unit'] ?></td>
+
                                     <td>
                                         <button type="button" class="btn btn-warning text-white" style="background-color: #FFAE2C;" data-bs-toggle="modal" data-bs-target="#model<?= $row['models_id'] ?>">แก้ไข</button>
                                     </td>
@@ -1435,7 +1440,7 @@ if (!isset($_SESSION["admin_log"])) {
 
                     <div class="my-3 d-flex justify-content-between h-25">
                         <h1 class="d-flex">เพิ่มผู้ใช้งาน</h1>
-                        
+
                         <div class="d-flex text-center">
                             <button type="button" class="btn btn-primary border-0 px-4" style="background-color: #4ACA84;" data-bs-toggle="modal" data-bs-target="#addUsers">เพิ่มข้อมูล</button>
                         </div>
