@@ -111,7 +111,22 @@ WHERE n.is_deleted = 0
             </div>
 
             <div class="d-flex justify-content-between align-items-end mt-2">
-                <p class="m-0"><?= date("d/m/y, H:i", strtotime($row['created_at'])) ?> | noted by <?= htmlspecialchars($row['username']) ?></p>
+                <div>
+                    <?php if (!empty($row['edited_by'])): ?>
+                        <p class="m-0">
+                            สร้าง&nbsp;&nbsp;&nbsp;:&nbsp; <?= date("d/m/y, H:i", strtotime($row['created_at'])) ?> | noted by <?= htmlspecialchars($row['username']) ?>
+                        </p>
+                        <p class="m-0">
+                            อัพเดต:&nbsp; <?= date("d/m/y, H:i", strtotime($row['update_at'])) ?> | noted by <?= htmlspecialchars($row['edited_by']) ?>
+                        </p>
+                    <?php else: ?>
+                        <p class="m-0">
+                            สร้าง: <?= date("d/m/y, H:i", strtotime($row['created_at'])) ?> | noted by <?= htmlspecialchars($row['username']) ?>
+                        </p>
+                    <?php endif; ?>
+                </div>
+
+
                 <div class="d-flex">
                     <button type="button" class="btn btn-outline-warning editBtn"
                         data-bs-toggle="modal"

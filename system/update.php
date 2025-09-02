@@ -19,6 +19,7 @@ print_r($_GET);
 
 if (isset($_POST['update_note'])) {
     // UPDATE logic
+    $username = $_POST['username'];
     $noteId = $_POST['note_id'];
     $title = $_POST['title'];
     $description = $_POST['description'];
@@ -66,10 +67,11 @@ if (isset($_POST['update_note'])) {
             }
         }
 
-        $sql = "UPDATE notelist SET title = :title, description = :description, pined = :pined WHERE id = :id";
+        $sql = "UPDATE notelist SET edited_by = :edited_by, title = :title, description = :description, pined = :pined WHERE id = :id";
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":title", $title);
         $stmt->bindParam(":description", $description);
+        $stmt->bindParam(":edited_by", $username);
         $stmt->bindParam(":pined", $pined);
         $stmt->bindParam(":id", $noteId);
 
