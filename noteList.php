@@ -134,14 +134,14 @@ $name = $result['full_name'] ?? '-';
         <input type="text" class="form-control mb-3" id="search-input" placeholder="🔍คำค้นหา">
         <?php
         // Fetch all categories
-        $stmtCat = $conn->query("SELECT id, name FROM category_note ORDER BY name ASC");
+        $stmtCat = $conn->query("SELECT id, category_name FROM category_note ORDER BY category_name ASC");
         $allCategories = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
         ?>
         <div id="category-filters" class="mb-3">
             <?php foreach ($allCategories as $cat): ?>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input category-filter" type="checkbox" id="cat-<?= $cat['id'] ?>" value="<?= htmlspecialchars($cat['name']) ?>">
-                    <label class="form-check-label" for="cat-<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></label>
+                    <input class="form-check-input category-filter" type="checkbox" id="cat-<?= $cat['id'] ?>" value="<?= htmlspecialchars($cat['category_name']) ?>">
+                    <label class="form-check-label" for="cat-<?= $cat['id'] ?>"><?= htmlspecialchars($cat['category_name']) ?></label>
                 </div>
             <?php endforeach; ?>
         </div>

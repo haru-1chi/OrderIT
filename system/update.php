@@ -83,13 +83,13 @@ if (isset($_POST['update_note'])) {
 
             foreach ($categories as $cat) {
                 // Check if category exists
-                $stmtCheck = $conn->prepare("SELECT id FROM category_note WHERE name = :name");
+                $stmtCheck = $conn->prepare("SELECT id FROM category_note WHERE category_name = :name");
                 $stmtCheck->execute([':name' => $cat]);
                 $catId = $stmtCheck->fetchColumn();
 
                 if (!$catId) {
                     // Insert new category
-                    $stmtIns = $conn->prepare("INSERT INTO category_note (name) VALUES (:name)");
+                    $stmtIns = $conn->prepare("INSERT INTO category_note (category_name) VALUES (:name)");
                     $stmtIns->execute([':name' => $cat]);
                     $catId = $conn->lastInsertId();
                 }

@@ -16,7 +16,7 @@ WHERE n.is_deleted = 0
     OR n.description LIKE :search
     OR n.username LIKE :search
     OR n.created_at LIKE :search
-    OR c.name LIKE :search
+    OR c.category_name LIKE :search
   )
 ";
 
@@ -29,7 +29,7 @@ WHERE n.is_deleted = 0
             $catPlaceholders[] = $key;
             $params[$key] = $cat;
         }
-        $sql .= " AND c.name IN (" . implode(',', $catPlaceholders) . ")";
+        $sql .= " AND c.category_name IN (" . implode(',', $catPlaceholders) . ")";
     }
 
     $sql .= " ORDER BY n.pined DESC, n.created_at DESC";
@@ -75,7 +75,7 @@ WHERE n.is_deleted = 0
 
 
         $stmtCat = $conn->prepare("
-    SELECT c.name 
+    SELECT c.category_name 
     FROM notelist_category nc
     JOIN category_note c ON nc.category_id = c.id
     WHERE nc.note_id = :note_id
