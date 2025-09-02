@@ -1087,7 +1087,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">
-                                                        <button type="submit" name="models" id="update-form-submit" data-target="model<?= $row['models_id'] ?>" class="btn btn-primary">บันทึก</button>
+                                                        <button type="submit" name="models" id="update-form-submit" data-target="form-model<?= $row['models_id'] ?>" class="btn btn-primary">บันทึก</button>
 
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                                                     </div>
