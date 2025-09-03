@@ -16,21 +16,42 @@ if (isset($_GET['device'])) {
     }
 }
 
-if (isset($_GET['id'])) {
-    $noteId = $_GET['id'];
-
+if (isset($_GET['noteId'])) {
+    $noteId = $_GET['noteId'];
     try {
         $stmt = $conn->prepare("UPDATE notelist SET is_deleted = 1 WHERE id = :id");
         $stmt->bindParam(":id", $noteId);
         if ($stmt->execute()) {
             $_SESSION["success"] = "ลบโน้ตเรียบร้อยแล้ว";
             header("Location: ../noteList.php");
+            exit;
         }
     } catch (PDOException $e) {
         $_SESSION["error"] = "เกิดข้อผิดพลาด: " . $e->getMessage();
         header("Location: ../noteList.php");
+        exit;
     }
 }
+
+if (isset($_GET['categoryId'])) {
+    $categoryId = $_GET['categoryId'];
+    try {
+        $stmt = $conn->prepare("DELETE FROM notelist_category WHERE category_id = :id");
+        $stmt->execute([':id' => $categoryId]);
+
+        $stmt = $conn->prepare("DELETE FROM category_note WHERE id = :id");
+        $stmt->execute([':id' => $categoryId]);
+
+        $_SESSION["success"] = "ลบหมวดหมู่เรียบร้อยแล้ว";
+        header("Location: ../noteList.php");
+        exit;
+    } catch (PDOException $e) {
+        $_SESSION["error"] = "เกิดข้อผิดพลาด: " . $e->getMessage();
+        header("Location: ../noteList.php");
+        exit;
+    }
+}
+
 
 if (isset($_GET['models'])) {
     $id = $_GET['models'];

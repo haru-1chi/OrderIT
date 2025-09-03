@@ -129,49 +129,91 @@ $name = $result['full_name'] ?? '-';
         <div class="d-flex justify-content-end">
             <button type="button" class="btn btn-success mb-3 " data-bs-toggle="modal" data-bs-target="#exampleModal">สร้างโน้ต</button>
         </div>
-
         <input type="text" class="form-control mb-3" id="search-input" placeholder="🔍คำค้นหา">
+
         <?php
-        // Fetch all categories
-        $stmtCat = $conn->query("SELECT id, category_name FROM category_note ORDER BY category_name ASC");
+        $stmtCat = $conn->query("
+SELECT 
+    c.id, 
+    c.category_name, 
+    COUNT(CASE WHEN n.is_deleted = 0 THEN n.id END) AS note_count
+FROM category_note c
+LEFT JOIN notelist_category nc ON c.id = nc.category_id
+LEFT JOIN notelist n ON nc.note_id = n.id
+GROUP BY c.id, c.category_name
+ORDER BY note_count DESC, c.category_name ASC;
+
+");
         $allCategories = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
         ?>
-        <div id="category-filters" class="bg-white rounded border border-2 p-2 position-fixed" style="top: 275px; left: 280px; z-index: 1000;">
-            <button class="btn btn-primary mb-2">เพิ่ม</button>
+
+        <div id="category-filters" class="bg-white rounded border border-2 p-2 position-fixed" style="top: 275px; right: 1450px; z-index: 1000;">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                <h5 class="m-0">หมวดหมู่</h5>
+                <button class="btn btn-success p-0 px-2"
+                    type="button"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editModal"
+                    id="add-category-btn">
+                    +เพิ่ม
+                </button>
+            </div>
+
             <?php foreach ($allCategories as $cat): ?>
                 <div class="form-check d-flex justify-content-between mb-2">
-                    <div>
-                        <input class="form-check-input category-filter" type="checkbox" id="cat-<?= $cat['id'] ?>" value="<?= htmlspecialchars($cat['category_name']) ?>">
-                        <label class="form-check-label" for="cat-<?= $cat['id'] ?>"><?= htmlspecialchars($cat['category_name']) ?></label>
+                    <div class="d-flex">
+                        <input class="form-check-input category-filter me-2"
+                            type="checkbox"
+                            id="cat-<?= $cat['id'] ?>"
+                            value="<?= htmlspecialchars($cat['category_name']) ?>">
+                        <label class="form-check-label" for="cat-<?= $cat['id'] ?>">
+                            <?= htmlspecialchars($cat['category_name']) ?>
+                        </label>
+                        <p class="ms-1 m-0 text-secondary">(<?= $cat['note_count'] ?>)</p>
                     </div>
                     <div>
-                        <span>✏️</span>
-                        <button class="btn btn-danger px-2 py-0 rounded-pill text-white">-</button>
+                        <button type="button"
+                            class="btn btn-light p-0 edit-category-btn"
+                            data-bs-toggle="modal"
+                            data-bs-target="#editModal"
+                            data-id="<?= $cat['id'] ?>"
+                            data-name="<?= htmlspecialchars($cat['category_name']) ?>">
+                            ✏️
+                        </button>
+
+                        <button type="button"
+                            class="btn btn-danger px-2 py-0 rounded-pill text-white delete-category-btn"
+                            data-id="<?= $cat['id'] ?>"
+                            data-name="<?= htmlspecialchars($cat['category_name']) ?>">
+                            -
+                        </button>
                     </div>
                 </div>
             <?php endforeach; ?>
         </div>
-        <div class="modal fade"tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+
+        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
             <div class="modal-dialog">
-                <form method="post" action="system/update.php?page=7" id="page-form" class="modal-content">
+                <form method="post" action="system/update.php" id="page-form" class="modal-content">
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">แก้ไข</h1>
+                        <h1 class="modal-title fs-5" id="editModalLabel">แก้ไข</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <input type="hidden" name="id" id="category-id">
                         <div class="form-floating mb-3">
-                            <input type="text" class="form-control" name="">
-                            <label for="floatingPassword">ชื่อหมวดหมู่</label>
-
+                            <input type="text" class="form-control" name="category_name" id="category-name">
+                            <label for="category-name">ชื่อหมวดหมู่</label>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" id="form-submit" name="" class="btn btn-primary">อัพเดต</button>
+                        <button type="submit" id="form-submit" class="btn btn-primary" name="updateCategoryName">อัพเดต</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
                     </div>
                 </form>
             </div>
         </div>
+
 
         <div id="note-list"></div>
         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -338,7 +380,7 @@ $name = $result['full_name'] ?? '-';
                             cancelButtonText: 'ยกเลิก'
                         }).then(result => {
                             if (result.isConfirmed) {
-                                fetch(`system/delete.php?id=${noteId}`, {
+                                fetch(`system/delete.php?noteId=${noteId}`, {
                                         method: 'GET'
                                     })
                                     .then(() => fetchNotes(searchInput.value))
@@ -522,6 +564,76 @@ $name = $result['full_name'] ?? '-';
             });
         });
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var editButtons = document.querySelectorAll('.edit-category-btn');
+            var addButton = document.getElementById('add-category-btn');
+            var modalTitle = document.getElementById('editModalLabel');
+            var categoryId = document.getElementById('category-id');
+            var categoryName = document.getElementById('category-name');
+            var formSubmit = document.getElementById('form-submit');
+            var form = document.getElementById('page-form');
+            var editModal = document.getElementById('editModal');
+
+            // For Edit
+            editButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    modalTitle.textContent = 'แก้ไขหมวดหมู่';
+                    categoryId.value = this.getAttribute('data-id');
+                    categoryName.value = this.getAttribute('data-name');
+                    form.action = 'system/update.php';
+                    formSubmit.name = "updateCategoryName";
+                    formSubmit.textContent = 'อัพเดต';
+                });
+            });
+
+            // For Add
+            addButton.addEventListener('click', function() {
+                modalTitle.textContent = 'เพิ่มหมวดหมู่';
+                categoryId.value = '';
+                categoryName.value = '';
+                form.action = 'system/insert.php';
+                formSubmit.name = "addCategoryName";
+                formSubmit.textContent = 'เพิ่ม';
+            });
+
+            editModal.addEventListener('hidden.bs.modal', function() {
+                modalTitle.textContent = 'เพิ่มหมวดหมู่';
+                categoryId.value = '';
+                categoryName.value = '';
+                form.action = 'system/insert.php';
+                formSubmit.name = "updateCategoryName";
+                formSubmit.textContent = 'เพิ่ม';
+            });
+
+            document.querySelectorAll('.delete-category-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const categoryId = btn.getAttribute('data-id');
+                    const categoryName = btn.getAttribute('data-name');
+
+                    Swal.fire({
+                        title: 'คุณแน่ใจหรือไม่?',
+                        text: `คุณต้องการลบหมวดหมู่ ${categoryName} ใช่ไหม?`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#aaa',
+                        confirmButtonText: 'ใช่, ลบเลย!',
+                        cancelButtonText: 'ยกเลิก'
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            fetch(`system/delete.php?categoryId=${categoryId}`, {
+                                    method: 'GET'
+                                })
+                                .then(() => location.reload())
+                                .catch(err => console.error('Delete error:', err));
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+
 
     <?php SC5() ?>
 </body>

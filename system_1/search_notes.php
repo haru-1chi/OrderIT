@@ -32,7 +32,7 @@ WHERE n.is_deleted = 0
         $sql .= " AND c.category_name IN (" . implode(',', $catPlaceholders) . ")";
     }
 
-    $sql .= " ORDER BY n.pined DESC, n.created_at DESC";
+    $sql .= " ORDER BY n.pined DESC, n.updated_at DESC";
 
     $stmt = $conn->prepare($sql);
     $stmt->execute($params);
@@ -117,7 +117,7 @@ WHERE n.is_deleted = 0
                             สร้าง&nbsp;&nbsp;&nbsp;:&nbsp; <?= date("d/m/y, H:i", strtotime($row['created_at'])) ?> | noted by <?= htmlspecialchars($row['username']) ?>
                         </p>
                         <p class="m-0">
-                            อัพเดต:&nbsp; <?= date("d/m/y, H:i", strtotime($row['update_at'])) ?> | noted by <?= htmlspecialchars($row['edited_by']) ?>
+                            อัพเดต:&nbsp; <?= date("d/m/y, H:i", strtotime($row['updated_at'])) ?> | noted by <?= htmlspecialchars($row['edited_by']) ?>
                         </p>
                     <?php else: ?>
                         <p class="m-0">

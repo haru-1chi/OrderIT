@@ -112,7 +112,20 @@ if (isset($_POST['update_note'])) {
         echo 'Error: ' . $e->getMessage();
     }
 }
+if (isset($_POST['updateCategoryName'])) {
+    $id = (int)$_POST['id'];
+    $categoryName = trim($_POST['category_name']);
 
+    try {
+        $stmt = $conn->prepare("UPDATE category_note SET category_name = :name WHERE id = :id");
+        $stmt->execute([':name' => $categoryName, ':id' => $id]);
+        $_SESSION['success'] = 'อัพเดตหมวดหมู่สำเร็จ';
+    } catch (PDOException $e) {
+        $_SESSION['error'] = $e->getMessage();
+    }
+    header('Location: ../noteList.php');
+    exit;
+}
 if (isset($_POST['withdraw'])) {
     $withdraw_name = $_POST['withdraw_name'];
     $withdraw_id = $_POST['withdraw_id'];

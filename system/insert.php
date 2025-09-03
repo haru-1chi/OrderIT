@@ -109,6 +109,40 @@ if (isset($_POST['save_note'])) {
     }
 }
 
+if (isset($_POST['addCategoryName'])) { // เพิ่ม ร้านที่เสนอราคา
+    $categoryName = trim($_POST['category_name']);
+
+    try {
+        // Check if category exists
+        $sql = "SELECT id FROM category_note WHERE category_name = :category_name";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':category_name', $categoryName);
+        $stmt->execute();
+
+        if ($stmt->rowCount() > 0) {
+            $_SESSION['error'] = 'มีหมวดหมู่นี้อยู่แล้ว';
+            header('Location: ../noteList.php');
+            exit;
+        }
+
+        // Insert new category
+        $sql = "INSERT INTO category_note (category_name) VALUES (:category_name)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':category_name', $categoryName);
+
+        if ($stmt->execute()) {
+            $_SESSION['success'] = 'เพิ่มหมวดหมู่สำเร็จ';
+        } else {
+            $_SESSION['error'] = 'ไม่สามารถเพิ่มหมวดหมู่ได้';
+        }
+    } catch (PDOException $e) {
+        $_SESSION['error'] = $e->getMessage();
+    }
+
+    header('Location: ../noteList.php');
+    exit;
+}
+
 if (isset($_POST['addUsers'])) { // เพิ่ม Admin
     $username = $_POST['username'];
     $password = $_POST['password'];
