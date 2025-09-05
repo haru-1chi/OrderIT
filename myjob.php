@@ -284,6 +284,7 @@ if (!isset($_SESSION["admin_log"])) {
                             <th scope="col">ผู้แจ้ง</th>
                             <th scope="col">หน่วยงาน</th>
                             <th scope="col">เบอร์โทร</th>
+                            <th scope="col">ความสำคัญ</th>
                             <th scope="col">วันปิดงาน</th>
                             <th scope="col">เวลาปิดงาน</th>
                             <th scope="col">สถานะ</th>
@@ -322,6 +323,16 @@ if (!isset($_SESSION["admin_log"])) {
                                 <td class="text-start"><?= $row['reporter'] ?></td>
                                 <td class="text-start"><?= $row['depart_name'] ?></td>
                                 <td class="text-start"><?= $row['tel'] ?></td>
+                                <?php
+                                $priorityLabels = [
+                                    3 => "🔴สูง",
+                                    2 => "🟡กลาง",
+                                    1 => "🔵ต่ำ"
+                                ];
+                                ?>
+                                <td class="text-start">
+                                    <?= $priorityLabels[$row['priority']] ?? '-' ?>
+                                </td>
                                 <td class="text-start"><?= $closeDateFormatted ?></td>
                                 <td class="text-start"><?= $closeTimeFormatted ?></td>
                                 <?php
@@ -416,6 +427,27 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <input type="time" class="form-control" id="time_report" name="close_date"
                                                                         value="<?= ($row['status'] == 3 && ($row['close_date'] === '00:00:00.000000' || $row['close_date'] === null || trim($row['close_date']) === ''))
                                                                                     ? '' : (($row['close_date'] && $row['close_date'] !== '00:00:00.000000') ? date('H:i', strtotime($row['close_date'])) : '') ?>">
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>ประเภทงาน</label>
+                                                                    <select name="work_type" class="form-select work-type">
+                                                                        <option value="" <?= empty($row['work_type']) ? 'selected' : '' ?>>เลือก...</option>
+                                                                        <option value="incident" <?= ($row['work_type'] === 'incident') ? 'selected' : '' ?>>อุบัติการณ์</option>
+                                                                        <option value="อื่นๆ" <?= ($row['work_type'] === 'อื่นๆ') ? 'selected' : '' ?>>อื่นๆ</option>
+                                                                    </select>
+                                                                </div>
+
+                                                                <div class="col-6">
+                                                                    <label>ความสำคัญ</label>
+                                                                    <select name="priority" class="form-select priority">
+                                                                        <option value="" <?= empty($row['priority']) ? 'selected' : '' ?>>เลือก...</option>
+                                                                        <option value="3" <?= ($row['priority'] == 3) ? 'selected' : '' ?>>🔴สูง</option>
+                                                                        <option value="2" <?= ($row['priority'] == 2) ? 'selected' : '' ?>>🟡กลาง</option>
+                                                                        <option value="1" <?= ($row['priority'] == 1) ? 'selected' : '' ?>>🔵ต่ำ</option>
+                                                                    </select>
                                                                 </div>
                                                             </div>
 
@@ -1629,6 +1661,7 @@ ORDER BY id DESC;
                             <th scope="col">ผู้แจ้ง</th>
                             <th scope="col">หน่วยงาน</th>
                             <th scope="col">เบอร์โทร</th>
+                            <th scope="col">ความสำคัญ</th>
                             <th scope="col">วันปิดงาน</th>
                             <th scope="col">เวลาปิดงาน</th>
                             <th scope="col">สถานะ</th>
@@ -1674,6 +1707,16 @@ ORDER BY id DESC;
                                 <td class="text-start"><?= $row['reporter'] ?></td>
                                 <td class="text-start"><?= $row['depart_name'] ?></td>
                                 <td class="text-start"><?= $row['tel'] ?></td>
+                                <?php
+                                $priorityLabels = [
+                                    3 => "🔴สูง",
+                                    2 => "🟡กลาง",
+                                    1 => "🔵ต่ำ"
+                                ];
+                                ?>
+                                <td class="text-start">
+                                    <?= $priorityLabels[$row['priority']] ?? '-' ?>
+                                </td>
                                 <td class="text-start"><?= $closeDateFormatted ?></td>
                                 <td class="text-start"><?= $closeTimeFormatted ?></td>
                                 <?php
@@ -1786,6 +1829,27 @@ ORDER BY id DESC;
                                                                 </div>
                                                             </div>
 
+                                                             <div class="row">
+                                                                <div class="col-6">
+                                                                    <label>ประเภทงาน</label>
+                                                                    <select name="work_type" class="form-select work-type">
+                                                                        <option value="" <?= empty($row['work_type']) ? 'selected' : '' ?>>เลือก...</option>
+                                                                        <option value="incident" <?= ($row['work_type'] === 'incident') ? 'selected' : '' ?>>อุบัติการณ์</option>
+                                                                        <option value="อื่นๆ" <?= ($row['work_type'] === 'อื่นๆ') ? 'selected' : '' ?>>อื่นๆ</option>
+                                                                    </select>
+                                                                </div>
+
+                                                                <div class="col-6">
+                                                                    <label>ความสำคัญ</label>
+                                                                    <select name="priority" class="form-select priority">
+                                                                        <option value="" <?= empty($row['priority']) ? 'selected' : '' ?>>เลือก...</option>
+                                                                        <option value="3" <?= ($row['priority'] == 3) ? 'selected' : '' ?>>🔴สูง</option>
+                                                                        <option value="2" <?= ($row['priority'] == 2) ? 'selected' : '' ?>>🟡กลาง</option>
+                                                                        <option value="1" <?= ($row['priority'] == 1) ? 'selected' : '' ?>>🔵ต่ำ</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            
                                                             <div class="row">
                                                                 <div class="col-6">
                                                                     <label>ผู้แจ้ง</label>

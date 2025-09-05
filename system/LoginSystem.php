@@ -22,6 +22,7 @@ if (isset($_POST['submit'])) {
 
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['admin_log'] = $user['username'];
+            $_SESSION['show_dashboard_panels'] = true;
             header('Location: ../dashboard.php');
             exit();
         } else {

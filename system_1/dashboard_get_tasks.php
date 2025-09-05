@@ -8,11 +8,21 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
 $dateNow = new DateTime();
 $dateThai = $dateNow->format("Y-m-d");
 // Define the SQL query based on the requested type
-if ($type === 'today') {
+if ($type === 'unfiltered') {
+    $sql = "SELECT dp.*, dt.depart_name
+            FROM data_report AS dp
+            LEFT JOIN depart AS dt ON dp.department = dt.depart_id
+            WHERE dp.status = 7 
+            AND ((dp.work_type IS NULL OR dp.work_type = '')
+              OR (dp.priority IS NULL OR dp.priority = ''))";
+} else if ($type === 'today') {
     $sql = "SELECT dp.*, dt.depart_name 
-            FROM data_report as dp
-            LEFT JOIN depart as dt ON dp.department = dt.depart_id
-            WHERE dp.status = 0 AND DATE(date_report) = '$dateThai'";
+            FROM data_report AS dp
+            LEFT JOIN depart AS dt ON dp.department = dt.depart_id
+            WHERE dp.status = 0 
+              AND DATE(date_report) = '$dateThai'
+              AND dp.work_type IS NOT NULL AND dp.work_type != ''
+              AND dp.priority IS NOT NULL AND dp.priority != ''";
 } elseif ($type === 'in_progress') {
     $sql = "SELECT dp.id, dp.device, dp.report, dp.time_report, dp.take, dt.depart_name, 
                    adm.fname, adm.lname, dp.deviceName
@@ -26,7 +36,8 @@ if ($type === 'today') {
                     FROM data_report as dp
                     LEFT JOIN depart as dt ON dp.department = dt.depart_id
                     WHERE dp.status = 0 AND DATE(date_report) <> '$dateThai'
-                    
+                        AND dp.work_type IS NOT NULL AND dp.work_type != ''
+              AND dp.priority IS NOT NULL AND dp.priority != ''
                     ";
 } elseif ($type === 'calm') {
     $sql = "SELECT dp.*,dt.depart_name, adm.fname, adm.lname
@@ -43,7 +54,6 @@ if ($type === 'today') {
                     INNER JOIN admin as adm ON dp.username = adm.username
                     WHERE dp.status = 4
                     ";
-
 } elseif ($type === 'cards') {
     $sql = "SELECT status, COUNT(*) as count FROM data_report GROUP BY status";
 } else {
@@ -68,6 +78,11 @@ foreach ($result as &$row) {
     }
     if (isset($row['close_date'])) {
         $row['close_date'] = date('H:i', strtotime($row['close_date'])) . 'น.';
+    }
+    if (!empty($row['close_time']) && $row['close_time'] != '0000-00-00' && $row['close_time'] != '0000-00-00 00:00:00') {
+        $row['close_time'] = date('d/m/Y', strtotime($row['close_time']));
+    } else {
+        $row['close_time'] = '-';
     }
 }
 

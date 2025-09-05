@@ -849,6 +849,8 @@ if (isset($_POST['submit_with_work'])) {
     $status = 1;
     $id_ref = $_POST["id_ref"];
     $numberDevices = $_POST["number_device"];
+    $work_type = $_POST['work_type'] ?? '';
+    $priority = $_POST['priority'] ?? '';
 
     $lists = $_POST['list'];
     $qualities = $_POST['quality'];
@@ -1018,7 +1020,9 @@ if (isset($_POST['submit_with_work'])) {
                 $firstNumberDevice = $firstNumberDevice ?? null;
 
                 $updateSql = "UPDATE data_report 
-                              SET date_report = :date_report, time_report = :time_report, take = :take, problem = :problem, description = :description, note = :note, withdraw = :withdraw,
+                              SET                      work_type = :work_type, 
+                      priority = :priority, 
+                      date_report = :date_report, time_report = :time_report, take = :take, problem = :problem, description = :description, note = :note, withdraw = :withdraw,
                                   number_device = :number_device, device = :device, deviceName = :deviceName, sla = :sla, 
                                   kpi = :kpi,reporter = :reporter, 
                     tel = :tel, 
@@ -1033,6 +1037,8 @@ if (isset($_POST['submit_with_work'])) {
                 $updateStmt->bindParam(":date_report", $date_report);
                 $updateStmt->bindParam(":time_report", $time_report);
                 $updateStmt->bindParam(":take", $take);
+                $updateStmt->bindParam(":work_type", $work_type);
+                $updateStmt->bindParam(":priority", $priority);
                 $updateStmt->bindParam(":problem", $problem);
                 $updateStmt->bindParam(":description", $description);
                 $updateStmt->bindParam(":note", $noteTask);
@@ -1057,13 +1063,15 @@ if (isset($_POST['submit_with_work'])) {
                 if (isset($_POST['assignedTask'])) {
                     $assignedTask = $_POST['assignedTask'];
                     foreach ($assignedTask as $username) {
-                        $sql = "INSERT INTO data_report(time_report, date_report, device, number_device, ip_address, report, close_time, reporter, department,sla,kpi,note,repair_count,username, tel, take, problem, description, withdraw, close_date, status,deviceName ,create_by) 
-                VALUES (:time_report, :date_report, :device, :number_device, :ip_address, :report, :close_time, :reporter, :department, :sla,:kpi,:note,:repair_count,:username, :tel, :take, :problem, :description, :withdraw, :close_date, :status,:deviceName,:create_by)";
+                        $sql = "INSERT INTO data_report(work_type,priority,time_report, date_report, device, number_device, ip_address, report, close_time, reporter, department,sla,kpi,note,repair_count,username, tel, take, problem, description, withdraw, close_date, status,deviceName ,create_by) 
+                VALUES (:work_type,:priority,:time_report, :date_report, :device, :number_device, :ip_address, :report, :close_time, :reporter, :department, :sla,:kpi,:note,:repair_count,:username, :tel, :take, :problem, :description, :withdraw, :close_date, :status,:deviceName,:create_by)";
                         $assignStmt = $conn->prepare($sql);
                         $assignStmt->bindParam(':date_report', $date_report);
                         $assignStmt->bindParam(':time_report', $time_report);
                         $assignStmt->bindParam(':device', $device);
                         $assignStmt->bindParam(":deviceName", $deviceName);
+                        $assignStmt->bindParam(':work_type', $work_type);
+                        $assignStmt->bindParam(':priority', $priority);
                         $assignStmt->bindParam(":number_device", $firstNumberDevice);
                         $assignStmt->bindParam(":ip_address", $ip_address);
                         $assignStmt->bindParam(":report", $report_work);
@@ -1168,6 +1176,8 @@ if (isset($_POST['save_with_work'])) {
     $note = $_POST["note"];
     $status = $_POST["status"];
     $id_ref = $_POST["id_ref"];
+    $work_type = $_POST['work_type'] ?? '';
+    $priority = $_POST['priority'] ?? '';
 
     $numberDevices = $_POST["number_device"];
     $update_number_device = $_POST["update_number_device"];
@@ -1429,7 +1439,9 @@ if (isset($_POST['save_with_work'])) {
                 }
 
                 $updateSql = "UPDATE data_report 
-                              SET date_report = :date_report, time_report = :time_report, take = :take,problem = :problem, description = :description, note = :note, withdraw = :withdraw,
+                              SET  work_type = :work_type, 
+                      priority = :priority, 
+                      date_report = :date_report, time_report = :time_report, take = :take,problem = :problem, description = :description, note = :note, withdraw = :withdraw,
                                   number_device = :number_device, device = :device, deviceName = :deviceName, sla = :sla, 
                                   kpi = :kpi,  reporter = :reporter, 
                     tel = :tel, 
@@ -1445,6 +1457,8 @@ if (isset($_POST['save_with_work'])) {
                 $updateStmt->bindParam(":time_report", $time_report);
                 $updateStmt->bindParam(":take", $take);
                 $updateStmt->bindParam(":problem", $problem);
+                $updateStmt->bindParam(":work_type", $work_type);
+                $updateStmt->bindParam(":priority", $priority);
                 $updateStmt->bindParam(":description", $description);
                 $updateStmt->bindParam(":note", $noteTask);
                 $updateStmt->bindParam(":ip_address", $ip_address);
@@ -1470,8 +1484,8 @@ if (isset($_POST['save_with_work'])) {
                 if (isset($_POST['assignedTask'])) {
                     $assignedTask = $_POST['assignedTask'];
                     foreach ($assignedTask as $username) {
-                        $sql = "INSERT INTO data_report(time_report, date_report, device, number_device, ip_address, report, close_time, reporter, department,sla,kpi,note,repair_count,username, tel, take, problem, description, withdraw, close_date, status,deviceName ,create_by) 
-                VALUES (:time_report, :date_report, :device, :number_device, :ip_address, :report, :close_time, :reporter, :department, :sla,:kpi,:note,:repair_count,:username, :tel, :take, :problem, :description, :withdraw, :close_date, :status,:deviceName,:create_by)";
+                        $sql = "INSERT INTO data_report(work_type,priority,time_report, date_report, device, number_device, ip_address, report, close_time, reporter, department,sla,kpi,note,repair_count,username, tel, take, problem, description, withdraw, close_date, status,deviceName ,create_by) 
+                VALUES (:work_type,:priority,:time_report, :date_report, :device, :number_device, :ip_address, :report, :close_time, :reporter, :department, :sla,:kpi,:note,:repair_count,:username, :tel, :take, :problem, :description, :withdraw, :close_date, :status,:deviceName,:create_by)";
                         $assignStmt = $conn->prepare($sql);
                         $assignStmt->bindParam(':date_report', $date_report);
                         $assignStmt->bindParam(':time_report', $time_report);
@@ -1483,6 +1497,8 @@ if (isset($_POST['save_with_work'])) {
                         $assignStmt->bindParam(':reporter', $reporter);
                         $assignStmt->bindParam(":department", $department);
                         $assignStmt->bindParam(":tel", $tel);
+                        $assignStmt->bindParam(':work_type', $work_type);
+                        $assignStmt->bindParam(':priority', $priority);
                         $assignStmt->bindParam(":take", $take);
                         $assignStmt->bindParam(":problem", $problem);
                         $assignStmt->bindParam(":sla", $sla);
@@ -1701,6 +1717,53 @@ if (isset($_POST['CheckAll'])) {
         echo "" . $e->getMessage() . "";
     }
 }
+if (isset($_POST['confirm_filtered'])) {
+    $id = $_POST['id'];
+    $work_type = $_POST['work_type'] ?? '';
+    $priority = $_POST['priority'] ?? '';
+
+    // Case 1: both empty → error
+    if (empty($work_type) && empty($priority)) {
+        $_SESSION["error"] = "กรุณาเลือกประเภทงานหรือความสำคัญอย่างน้อย 1 ค่า";
+        header("location: ../dashboard.php");
+        exit;
+    }
+
+    try {
+        // Build SQL dynamically
+        $fields = [];
+        $params = [":id" => $id];
+
+        if (!empty($work_type)) {
+            $fields[] = "work_type = :work_type";
+            $params[":work_type"] = $work_type;
+        }
+        if (!empty($priority)) {
+            $fields[] = "priority = :priority";
+            $params[":priority"] = $priority;
+        }
+
+        // If both are provided → also update status
+        if (!empty($work_type) && !empty($priority)) {
+            $fields[] = "status = :status";
+            $params[":status"] = 0;
+        }
+
+        $sql = "UPDATE data_report SET " . implode(", ", $fields) . " WHERE id = :id";
+        $stmt = $conn->prepare($sql);
+
+        if ($stmt->execute($params)) {
+            $_SESSION["success"] = "อัปเดตข้อมูลเรียบร้อยแล้ว";
+        } else {
+            $_SESSION["error"] = "พบข้อผิดพลาด";
+        }
+        header("location: ../dashboard.php");
+        exit;
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
+}
+
 if (isset($_POST['takeaway'])) {
     $id = $_POST['id'];
     $username = $_POST['username'];
@@ -1875,9 +1938,13 @@ if (isset($_POST['CloseSubmit'])) {
     $id = $_POST['id'];
     $date_report = $_POST['date_report'];
     $time_report = $_POST['time_report'];
+    $work_type = $_POST['work_type'] ?? '';
+    $priority = $_POST['priority'] ?? '';
     $take = $_POST['take'];
     $problem = $_POST['problem'];
     $description = $_POST['description'];
+    $work_type = $_POST['work_type'] ?? '';
+    $priority = $_POST['priority'] ?? '';
     $note = $_POST['noteTask'];
     $ip_address = $_POST["ip_address"];
     $department = $_POST['department'];
@@ -1920,7 +1987,9 @@ if (isset($_POST['CloseSubmit'])) {
                 SET date_report = :date_report, time_report = :time_report, take = :take,problem = :problem, 
                     description = :description, 
                     device = :device, 
-                    deviceName = :deviceName, 
+                    deviceName = :deviceName,
+                          work_type = :work_type, 
+                      priority = :priority,  
                     sla = :sla, 
                     kpi = :kpi, 
                     number_device = :number_device,
@@ -1942,6 +2011,8 @@ if (isset($_POST['CloseSubmit'])) {
         $stmt->bindParam(":take", $take);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
+        $stmt->bindParam(":work_type", $work_type);
+        $stmt->bindParam(":priority", $priority);
         $stmt->bindParam(":device", $device);
         $stmt->bindParam(":deviceName", $deviceName);
         $stmt->bindParam(":sla", $sla);
@@ -1962,14 +2033,16 @@ if (isset($_POST['CloseSubmit'])) {
             if (isset($_POST['assignedTask'])) {
                 $assignedTask = $_POST['assignedTask'];
                 foreach ($assignedTask as $username) {
-                    $sql = "INSERT INTO data_report(time_report, date_report, device, number_device, ip_address, report, close_time, reporter, department,sla,kpi,note,repair_count,username, tel, take, problem, description, close_date, status,deviceName ,create_by) 
-                VALUES (:time_report, :date_report, :device, :number_device, :ip_address, :report, :close_time, :reporter, :department, :sla,:kpi,:note,:repair_count,:username, :tel, :take, :problem, :description, :close_date, :status,:deviceName,:create_by)";
+                    $sql = "INSERT INTO data_report(work_type,priority,time_report, date_report, device, number_device, ip_address, report, close_time, reporter, department,sla,kpi,note,repair_count,username, tel, take, problem, description, close_date, status,deviceName ,create_by) 
+                VALUES (:work_type,:priority,:time_report, :date_report, :device, :number_device, :ip_address, :report, :close_time, :reporter, :department, :sla,:kpi,:note,:repair_count,:username, :tel, :take, :problem, :description, :close_date, :status,:deviceName,:create_by)";
                     $assignStmt = $conn->prepare($sql);
                     $assignStmt->bindParam(':date_report', $date_report);
                     $assignStmt->bindParam(':time_report', $time_report);
                     $assignStmt->bindParam(':device', $device);
                     $assignStmt->bindParam(":deviceName", $deviceName);
                     $assignStmt->bindParam(":number_device", $number_device);
+                    $assignStmt->bindParam(':work_type', $work_type);
+                    $assignStmt->bindParam(':priority', $priority);
                     $assignStmt->bindParam(":ip_address", $ip_address);
                     $assignStmt->bindParam(":report", $report);
                     $assignStmt->bindParam(':reporter', $reporter);
@@ -2094,7 +2167,8 @@ if (isset($_POST['Bantext'])) {
     $problem = $_POST['problem'];
     $description = $_POST['description'];
     $withdraw = $_POST['withdraw'] ?? "";
-
+    $work_type = $_POST['work_type'] ?? '';
+    $priority = $_POST['priority'] ?? '';
     // if ($withdraw == "" || empty($withdraw)) {
     //     $withdraw = $_POST['withdraw2'] ?? "";
     // }
@@ -2144,6 +2218,8 @@ if (isset($_POST['Bantext'])) {
                 SET date_report = :date_report, time_report = :time_report, take = :take,
                     problem = :problem, 
                     description = :description, 
+                     work_type = :work_type, 
+                      priority = :priority, 
                     note = :note, 
                     withdraw = :withdraw, 
                     number_device = :number_device, 
@@ -2174,6 +2250,8 @@ if (isset($_POST['Bantext'])) {
         $stmt->bindParam(":take", $take);
         $stmt->bindParam(":problem", $problem);
         $stmt->bindParam(":description", $description);
+        $stmt->bindParam(":work_type", $work_type);
+        $stmt->bindParam(":priority", $priority);
         $stmt->bindParam(":note", $note);
         $stmt->bindParam(":ip_address", $ip_address);
         $stmt->bindParam(":withdraw", $withdraw);
@@ -2201,11 +2279,13 @@ if (isset($_POST['Bantext'])) {
             if (isset($_POST['assignedTask'])) {
                 $assignedTask = $_POST['assignedTask'];
                 foreach ($assignedTask as $username) {
-                    $sql = "INSERT INTO data_report(time_report, date_report, device, number_device, ip_address, report, close_time, reporter, department,sla,kpi,note,repair_count,username, tel, take, problem, description, withdraw, close_date, status,deviceName ,create_by) 
-                VALUES (:time_report, :date_report, :device, :number_device, :ip_address, :report, :close_time, :reporter, :department, :sla,:kpi,:note,:repair_count,:username, :tel, :take, :problem, :description, :withdraw, :close_date, :status,:deviceName,:create_by)";
+                    $sql = "INSERT INTO data_report(work_type,priority,time_report, date_report, device, number_device, ip_address, report, close_time, reporter, department,sla,kpi,note,repair_count,username, tel, take, problem, description, withdraw, close_date, status,deviceName ,create_by) 
+                VALUES (:work_type,:priority,:time_report, :date_report, :device, :number_device, :ip_address, :report, :close_time, :reporter, :department, :sla,:kpi,:note,:repair_count,:username, :tel, :take, :problem, :description, :withdraw, :close_date, :status,:deviceName,:create_by)";
                     $assignStmt = $conn->prepare($sql);
                     $assignStmt->bindParam(':date_report', $date_report);
                     $assignStmt->bindParam(':time_report', $time_report);
+                    $assignStmt->bindParam(':work_type', $work_type);
+                    $assignStmt->bindParam(':priority', $priority);
                     $assignStmt->bindParam(':device', $device);
                     $assignStmt->bindParam(":deviceName", $deviceName);
                     $assignStmt->bindParam(":number_device", $number_device);
@@ -2302,8 +2382,15 @@ if (isset($_POST['saveWork'])) {
     $reporter = $_POST['reporter'];
     $department = $_POST['depart_id'];
     $tel = $_POST['tel'];
+    $work_type = $_POST['work_type'] ?? '';
+    $priority = $_POST['priority'] ?? '';
     $create_by = $_POST['create_by'];
-    $status = 0;
+    if (empty($work_type) || empty($priority)) {
+        $status = 7;
+    } else {
+        $status = 0;
+    }
+
     // username, take, problem, description, close_date, countList, device, withdraw, create_by}
 
     try {
@@ -2313,8 +2400,8 @@ if (isset($_POST['saveWork'])) {
             exit();
         }
 
-        $sql = "INSERT INTO data_report(time_report, date_report, number_device, ip_address, report, reporter, department, tel, status,deviceName, create_by) 
-                VALUES (:time_report, :date_report, :number_device, :ip_address, :report, :reporter, :department, :tel, :status,:deviceName, :create_by)";
+        $sql = "INSERT INTO data_report(time_report, date_report, number_device, ip_address, report, reporter, department, tel, work_type, priority, status, deviceName, create_by) 
+                VALUES (:time_report, :date_report, :number_device, :ip_address, :report, :reporter, :department, :tel, :work_type, :priority, :status, :deviceName, :create_by)";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(":time_report", $time_report);
@@ -2325,6 +2412,8 @@ if (isset($_POST['saveWork'])) {
         $stmt->bindParam(":reporter", $reporter);
         $stmt->bindParam(":department", $department);
         $stmt->bindParam(":tel", $tel);
+        $stmt->bindParam(":work_type", $work_type);
+        $stmt->bindParam(":priority", $priority);
         $stmt->bindParam(":status", $status);
         $stmt->bindParam(":create_by", $create_by);
         $stmt->bindParam(":deviceName", $deviceName);

@@ -74,6 +74,13 @@ $name = $result['full_name'] ?? '-';
             border-color: #86b7fe !important;
             box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25) !important;
         }
+
+        .custom-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.5rem;
+            /* Bootstrap g-2 equivalent */
+        }
     </style>
 </head>
 
@@ -132,15 +139,42 @@ $name = $result['full_name'] ?? '-';
                         <input class="form-control" value="-" type="text" id="ipInput" name="ip_address" required>
                     </div>
 
+                    <div class="col-6 mb-3">
+                        <p class="mb-2">ประเภทงาน <span class="text-muted">(ไม่บังคับ)</span></p>
+                        <div class="custom-grid-2">
+                            <div class="border rounded py-1 px-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="work_type" id="radioDefault1" value="incident">
+                                    <label class="form-check-label w-100" for="radioDefault1">อุบัติการณ์</label>
+                                </div>
+                            </div>
+                            <div class="border rounded p-1 px-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="work_type" id="radioDefault2" value="อื่นๆ">
+                                    <label class="form-check-label w-100" for="radioDefault2">งานอื่นๆ</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-6">
+                        <label class="form-label" for="ipInput">ลำดับความเร่งด่วน <span class="text-muted">(ไม่บังคับ)</span></label>
+                        <select class="form-select" name="priority" aria-label="Default select example">
+                            <option value="" selected>เลือก...</option>
+                            <option value="3">🔴สูง</option>
+                            <option value="2">🟡กลาง</option>
+                            <option value="1">🔵ต่ำ</option>
+                        </select>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label" for="issueInput">อาการที่ได้รับแจ้ง</label>
                         <textarea class="form-control " id="issueInput" name="report" rows="2" required></textarea>
-
                     </div>
+
                     <input type="hidden" name="create_by" value="<?= htmlspecialchars($name) ?>">
                     <div class="d-grid gap-3 my-3">
                         <button type="submit" name="saveWork" class="btn p-3 btn-primary">บันทึก</button>
-                        <!-- <button type="submit" name="saveWorkSuccess" class="btn p-3 btn-success">ปิดงาน</button> -->
                     </div>
                 </div>
             </form>

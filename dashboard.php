@@ -37,6 +37,11 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
             background-color: #F9FDFF;
         }
 
+        #unfiltered tbody tr td {
+            background-color: #f7f7f7ff;
+            color: #000;
+        }
+
         #dataAll tbody tr td {
             background-color: #fff4f5;
             color: #000;
@@ -94,18 +99,51 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
             <div class="col-sm-12 col-lg-12 col-md-12">
                 <h1 class="text-center my-4">สรุปยอดจำนวนงาน</h1>
                 <div class="row d-flex justify-content-center"></div>
-                <div class="d-flex">
-                    <div class="card p-3 mt-4 rounded-4" style="width: 1850px; height: 400px;">
-                        <input type="hidden" id="filter-date" class="form-control mb-3" />
-                        <select id="timelineFilter" class="form-control">
-                            <option value="problem" selected>Activity Report</option>
-                            <option value="device">รูปแบบการทำงาน</option>
-                            <option value="report">อาการรับแจ้ง</option>
-                            <option value="sla">SLA</option>
-                        </select>
-                        <canvas id="gantt-summary" width="800" height="200"></canvas>
+
+                <?php
+                // default hide
+                if (!isset($_SESSION['panel_state'])) {
+                    $_SESSION['panel_state'] = [
+                        'collapseExample1' => 'show', // or 'hide' depending on default
+                        'collapseExample2' => 'hide'
+                    ];
+                }
+
+                $panel1State = $_SESSION['panel_state']['collapseExample1'];
+                $panel2State = $_SESSION['panel_state']['collapseExample2'];
+
+                $panel1Class = $panel1State === 'show' ? 'show' : '';
+                $panel2Class = $panel2State === 'show' ? 'show' : '';
+
+                $panel1ButtonText = $panel1State === 'show' ? 'Hide Activity Timeline' : 'Show Activity Timeline';
+                $panel2ButtonText = $panel2State === 'show' ? 'Hide งานที่ไม่ได้กรอง' : 'Show งานที่ไม่ได้กรอง';
+
+                ?>
+
+                <div class="d-flex flex-column gap-3 position-fixed end-0 m-3" style="top: 100px">
+                    <button id="btnCollapse1" class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample1" aria-expanded="<?= $panel1State === 'show' ? 'true' : 'false' ?>">
+                        <?= $panel1ButtonText ?>
+                    </button>
+                    <button id="btnCollapse2" class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample2" aria-expanded="<?= $panel2State === 'show' ? 'true' : 'false' ?>">
+                        <?= $panel2ButtonText ?>
+                    </button>
+                </div>
+
+                <div class="collapse <?= $panel1Class ?>" id="collapseExample1" data-bs-toggle="collapse">
+                    <div class="d-flex">
+                        <div class="card p-3 mt-4 rounded-4" style="width: 1850px; height: 400px;">
+                            <input type="hidden" id="filter-date" class="form-control mb-3" />
+                            <select id="timelineFilter" class="form-control">
+                                <option value="problem" selected>Activity Report</option>
+                                <option value="device">รูปแบบการทำงาน</option>
+                                <option value="report">อาการรับแจ้ง</option>
+                                <option value="sla">SLA</option>
+                            </select>
+                            <canvas id="gantt-summary" width="800" height="200"></canvas>
+                        </div>
                     </div>
                 </div>
+
 
                 <!-- ------------------- notification -------------------- -->
                 <!-- <button type="button" class="btn btn-primary" id="liveToastBtn">Show live toast</button> -->
@@ -193,6 +231,33 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                     <textarea name="message">Test message from form</textarea>
                     <button type="submit">Send</button>
                 </form> -->
+
+                <div class="collapse <?= $panel2Class ?>" id="collapseExample2" data-bs-toggle="collapse">
+                    <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
+                        <h1>งานที่ยังไม่ได้กรอง</h1>
+                        <div class="table-responsive">
+                            <table id="unfiltered" class="table table-secondary">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th scope="col">หมายเลข</th>
+                                        <th scope="col">วันที่</th>
+                                        <th scope="col">เวลาแจ้ง</th>
+                                        <th scope="col">อุปกรณ์</th>
+                                        <th scope="col">อาการที่ได้รับแจ้ง</th>
+                                        <th scope="col">ผู้แจ้ง</th>
+                                        <th scope="col">หน่วยงาน</th>
+                                        <th scope="col">สร้างโดย</th>
+                                        <th scope="col">ประเภทงาน</th>
+                                        <th scope="col">ความสำคัญ</th>
+                                        <th scope="col">ยืนยัน</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
                 <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
                     <h1>งานวันนี้</h1>
                     <div class="table-responsive">
@@ -208,6 +273,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                                     <th scope="col">หน่วยงาน</th>
                                     <th scope="col">เบอร์ติดต่อกลับ</th>
                                     <th scope="col">สร้างโดย</th>
+                                    <th scope="col">ความสำคัญ</th>
                                     <th scope="col">ปุ่มรับงาน</th>
                                 </tr>
                             </thead>
@@ -298,8 +364,10 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                                     <th scope="col" style="text-align: left; width: 170px;">หน่วยงาน</th>
                                     <th scope="col" style="text-align: left; width: 170px;">SLA</th>
                                     <th scope="col" style="text-align: left; width: 120px;">ตัวชี้วัด</th>
+                                    <th scope="col" style="text-align: left; width: 80px;">วันที่แจ้ง</th>
                                     <th scope="col" style="text-align: left; width: 80px;">เวลาแจ้ง</th>
                                     <th scope="col" style="text-align: left; width: 80px;">เวลารับงาน</th>
+                                    <th scope="col" style="text-align: left; width: 80px;">วันที่ปิดงาน</th>
                                     <th scope="col" style="text-align: left; width: 80px;">เวลาปิดงาน</th>
                                 </tr>
                             </thead>
@@ -334,10 +402,53 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                         6: {
                             text: "รอกรอกรายละเอียด",
                             color: "#6CC668"
+                        },
+                        7: {
+                            text: "งานที่ยังไม่ได้กรอง",
+                            color: "#838383ff"
                         }
                     };
 
+
+                    const PRIORITY_LABELS = {
+                        3: "🔴สูง",
+                        2: "🟡กลาง",
+                        1: "🔵ต่ำ"
+                    };
+
+
                     const typeRenderers = {
+                        unfiltered: (row, admin) => `
+  <td>${row.id}</td>
+  <td>${row.date_report}</td>
+  <td>${row.time_report}</td>
+  <td>${row.deviceName}</td>
+  <td>${row.report}</td>   
+  <td>${row.reporter}</td>
+  <td>${row.depart_name}</td>
+  <td>${row.create_by}</td>
+  <td>
+  <select name="work_type" class="form-select work-type" form="form-${row.id}">
+      <option value="" ${!row.work_type ? 'selected' : ''}>เลือก...</option>
+      <option value="incident" ${row.work_type === 'incident' ? 'selected' : ''}>อุบัติการณ์</option>
+      <option value="อื่นๆ" ${row.work_type === 'อื่นๆ' ? 'selected' : ''}>อื่นๆ</option>
+  </select>
+</td>
+<td>
+  <select name="priority" class="form-select priority" form="form-${row.id}">
+      <option value="" ${!row.priority ? 'selected' : ''}>เลือก...</option>
+      <option value="3" ${row.priority == 3 ? 'selected' : ''}>🔴สูง</option>
+      <option value="2" ${row.priority == 2 ? 'selected' : ''}>🟡กลาง</option>
+      <option value="1" ${row.priority == 1 ? 'selected' : ''}>🔵ต่ำ</option>
+  </select>
+</td>
+  <td>
+      <form id="form-${row.id}" action="system/insert.php" method="post">
+          <input type="hidden" name="id" value="${row.id}">
+          <button type="submit" name="confirm_filtered" class="btn btn-primary">ยืนยัน</button>
+      </form>
+  </td>
+`,
                         today: (row, admin) => `
             <td>${row.id}</td>
             <td>${row.date_report}</td>
@@ -348,6 +459,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
             <td>${row.depart_name}</td>
             <td>${row.tel}</td>
             <td>${row.create_by}</td>
+                               <td>${PRIORITY_LABELS[row.priority] || "-"}</td>
             <td>
                 <form action="system/insert.php" method="post">
                     <input type="hidden" name="username" value="${admin}">
@@ -399,9 +511,12 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
             <td>${row.depart_name}</td>
             <td>${row.sla}</td>
             <td>${row.kpi}</td>
+              <td>${row.date_report ?? '-'}</td>
             <td>${row.time_report ?? '-'}</td>
             <td>${row.take ?? '-'}</td>
+                        <td>${row.close_time ?? '-'}</td>
             <td>${row.close_date ?? '-'}</td>
+     
         `
                     };
 
@@ -414,7 +529,17 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
                             const fragment = document.createDocumentFragment();
 
-                            data.forEach(({
+                            // Custom sort order
+                            const sortOrder = [7, 0, 2, 3, 4, 6];
+
+                            // Sort data based on sortOrder
+                            const sortedData = data.sort((a, b) => {
+                                const indexA = sortOrder.indexOf(parseInt(a.status));
+                                const indexB = sortOrder.indexOf(parseInt(b.status));
+                                return indexA - indexB;
+                            });
+
+                            sortedData.forEach(({
                                 status,
                                 count
                             }) => {
@@ -490,6 +615,9 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
                     // Initial load
                     const taskTypes = [{
+                            type: "unfiltered",
+                            id: "unfiltered"
+                        }, {
                             type: "today",
                             id: "dataAll"
                         },
@@ -520,6 +648,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
                     // Optionally, refresh data every 30 seconds without reloading the page
                     setInterval(() => {
+                        fetchTasks("unfiltered", "unfiltered");
                         fetchTasks("today", "dataAll");
                         fetchTasks("in_progress", "inTime");
                         fetchCards('cards');
@@ -532,7 +661,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
             <script>
                 $(document).ready(function() {
                     setTimeout(function() {
-                        $('#dataAll, #inTime, #dataAllNOTTAKE, #wait, #success').DataTable();
+                        $('#unfiltered, #dataAll, #inTime, #dataAllNOTTAKE, #wait, #success').DataTable();
                     }, 1000);
                 });
             </script>
@@ -687,6 +816,59 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                     timelineFilterSelect.addEventListener("change", function() {
                         fetchDataAndRenderChart(filterDateInput.value || null, this.value);
                     });
+                });
+            </script>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const panels = [{
+                            btnId: 'btnCollapse1',
+                            panelId: 'collapseExample1',
+                            showText: 'Show Activity Timeline',
+                            hideText: 'Hide Activity Timeline'
+                        },
+                        {
+                            btnId: 'btnCollapse2',
+                            panelId: 'collapseExample2',
+                            showText: 'Show งานที่ไม่ได้กรอง',
+                            hideText: 'Hide งานที่ไม่ได้กรอง'
+                        }
+                    ];
+
+                    // On page load
+                    panels.forEach(({
+                        btnId,
+                        panelId,
+                        showText,
+                        hideText
+                    }) => {
+                        const savedState = localStorage.getItem(panelId); // 'show' or 'hide'
+                        const collapseEl = document.getElementById(panelId);
+                        const btn = document.getElementById(btnId);
+
+                        if (savedState === 'show') {
+                            collapseEl.classList.add('show');
+                            btn.textContent = hideText;
+                        } else {
+                            collapseEl.classList.remove('show');
+                            btn.textContent = showText;
+                        }
+
+                        // Save state on toggle
+                        collapseEl.addEventListener('shown.bs.collapse', () => localStorage.setItem(panelId, 'show'));
+                        collapseEl.addEventListener('hidden.bs.collapse', () => localStorage.setItem(panelId, 'hide'));
+                    });
+
+
+                    function savePanelState(panelId, action) {
+                        fetch('system_1/toggle_panel.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: `panel_id=${panelId}&action=${action}`
+                        });
+                    }
+
                 });
             </script>
             <?php SC5() ?>
