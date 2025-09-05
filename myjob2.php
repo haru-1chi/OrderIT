@@ -158,7 +158,7 @@ $name = $result['full_name'] ?? '-';
                     </div>
 
                     <div class="col-6">
-                        <label class="form-label" for="ipInput">ลำดับความเร่งด่วน <span class="text-muted">(ไม่บังคับ)</span></label>
+                        <label class="form-label" for="ipInput">ระดับความเร่งด่วน <span class="text-muted">(ไม่บังคับ)</span></label>
                         <select class="form-select" name="priority" aria-label="Default select example">
                             <option value="" selected>เลือก...</option>
                             <option value="3">🔴สูง</option>

@@ -248,7 +248,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                                         <th scope="col">หน่วยงาน</th>
                                         <th scope="col">สร้างโดย</th>
                                         <th scope="col">ประเภทงาน</th>
-                                        <th scope="col">ความสำคัญ</th>
+                                        <th scope="col">ระดับความเร่งด่วน</th>
                                         <th scope="col">ยืนยัน</th>
                                     </tr>
                                 </thead>
@@ -273,7 +273,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                                     <th scope="col">หน่วยงาน</th>
                                     <th scope="col">เบอร์ติดต่อกลับ</th>
                                     <th scope="col">สร้างโดย</th>
-                                    <th scope="col">ความสำคัญ</th>
+                                    <th scope="col">ระดับความเร่งด่วน</th>
                                     <th scope="col">ปุ่มรับงาน</th>
                                 </tr>
                             </thead>

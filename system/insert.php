@@ -1724,7 +1724,7 @@ if (isset($_POST['confirm_filtered'])) {
 
     // Case 1: both empty → error
     if (empty($work_type) && empty($priority)) {
-        $_SESSION["error"] = "กรุณาเลือกประเภทงานหรือความสำคัญอย่างน้อย 1 ค่า";
+        $_SESSION["error"] = "กรุณาเลือกประเภทงานหรือความเร่งด่วนอย่างน้อย 1 ค่า";
         header("location: ../dashboard.php");
         exit;
     }

@@ -284,7 +284,7 @@ if (!isset($_SESSION["admin_log"])) {
                             <th scope="col">ผู้แจ้ง</th>
                             <th scope="col">หน่วยงาน</th>
                             <th scope="col">เบอร์โทร</th>
-                            <th scope="col">ความสำคัญ</th>
+                            <th scope="col">ระดับความเร่งด่วน</th>
                             <th scope="col">วันปิดงาน</th>
                             <th scope="col">เวลาปิดงาน</th>
                             <th scope="col">สถานะ</th>
@@ -441,7 +441,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 </div>
 
                                                                 <div class="col-6">
-                                                                    <label>ความสำคัญ</label>
+                                                                    <label>ระดับความเร่งด่วน</label>
                                                                     <select name="priority" class="form-select priority">
                                                                         <option value="" <?= empty($row['priority']) ? 'selected' : '' ?>>เลือก...</option>
                                                                         <option value="3" <?= ($row['priority'] == 3) ? 'selected' : '' ?>>🔴สูง</option>
@@ -1661,7 +1661,7 @@ ORDER BY id DESC;
                             <th scope="col">ผู้แจ้ง</th>
                             <th scope="col">หน่วยงาน</th>
                             <th scope="col">เบอร์โทร</th>
-                            <th scope="col">ความสำคัญ</th>
+                            <th scope="col">ระดับความเร่งด่วน</th>
                             <th scope="col">วันปิดงาน</th>
                             <th scope="col">เวลาปิดงาน</th>
                             <th scope="col">สถานะ</th>
@@ -1840,7 +1840,7 @@ ORDER BY id DESC;
                                                                 </div>
 
                                                                 <div class="col-6">
-                                                                    <label>ความสำคัญ</label>
+                                                                    <label>ระดับความเร่งด่วน</label>
                                                                     <select name="priority" class="form-select priority">
                                                                         <option value="" <?= empty($row['priority']) ? 'selected' : '' ?>>เลือก...</option>
                                                                         <option value="3" <?= ($row['priority'] == 3) ? 'selected' : '' ?>>🔴สูง</option>
@@ -1849,7 +1849,7 @@ ORDER BY id DESC;
                                                                     </select>
                                                                 </div>
                                                             </div>
-                                                            
+
                                                             <div class="row">
                                                                 <div class="col-6">
                                                                     <label>ผู้แจ้ง</label>
