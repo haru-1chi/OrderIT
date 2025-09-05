@@ -325,9 +325,9 @@ if (!isset($_SESSION["admin_log"])) {
                                 <td class="text-start"><?= $row['tel'] ?></td>
                                 <?php
                                 $priorityLabels = [
-                                    3 => "🔴สูง",
+                                    3 => "🔴เร่งด่วน",
                                     2 => "🟡กลาง",
-                                    1 => "🔵ต่ำ"
+                                    1 => "🔵ปกติ"
                                 ];
                                 ?>
                                 <td class="text-start">
@@ -444,9 +444,9 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <label>ระดับความเร่งด่วน</label>
                                                                     <select name="priority" class="form-select priority">
                                                                         <option value="" <?= empty($row['priority']) ? 'selected' : '' ?>>เลือก...</option>
-                                                                        <option value="3" <?= ($row['priority'] == 3) ? 'selected' : '' ?>>🔴สูง</option>
+                                                                        <option value="3" <?= ($row['priority'] == 3) ? 'selected' : '' ?>>🔴เร่งด่วน</option>
                                                                         <option value="2" <?= ($row['priority'] == 2) ? 'selected' : '' ?>>🟡กลาง</option>
-                                                                        <option value="1" <?= ($row['priority'] == 1) ? 'selected' : '' ?>>🔵ต่ำ</option>
+                                                                        <option value="1" <?= ($row['priority'] == 1) ? 'selected' : '' ?>>🔵ปกติ</option>
                                                                     </select>
                                                                 </div>
                                                             </div>
@@ -1709,9 +1709,9 @@ ORDER BY id DESC;
                                 <td class="text-start"><?= $row['tel'] ?></td>
                                 <?php
                                 $priorityLabels = [
-                                    3 => "🔴สูง",
+                                    3 => "🔴เร่งด่วน",
                                     2 => "🟡กลาง",
-                                    1 => "🔵ต่ำ"
+                                    1 => "🔵ปกติ"
                                 ];
                                 ?>
                                 <td class="text-start">
@@ -1843,9 +1843,9 @@ ORDER BY id DESC;
                                                                     <label>ระดับความเร่งด่วน</label>
                                                                     <select name="priority" class="form-select priority">
                                                                         <option value="" <?= empty($row['priority']) ? 'selected' : '' ?>>เลือก...</option>
-                                                                        <option value="3" <?= ($row['priority'] == 3) ? 'selected' : '' ?>>🔴สูง</option>
+                                                                        <option value="3" <?= ($row['priority'] == 3) ? 'selected' : '' ?>>🔴เร่งด่วน</option>
                                                                         <option value="2" <?= ($row['priority'] == 2) ? 'selected' : '' ?>>🟡กลาง</option>
-                                                                        <option value="1" <?= ($row['priority'] == 1) ? 'selected' : '' ?>>🔵ต่ำ</option>
+                                                                        <option value="1" <?= ($row['priority'] == 1) ? 'selected' : '' ?>>🔵ปกติ</option>
                                                                     </select>
                                                                 </div>
                                                             </div>

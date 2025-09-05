@@ -318,6 +318,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                                     <th scope="col">หน่วยงาน</th>
                                     <th scope="col">เบอร์ติดต่อกลับ</th>
                                     <th scope="col">สร้างโดย</th>
+                                    <th scope="col">ระดับความเร่งด่วน</th>
                                     <th scope="col">ปุ่มรับงาน</th>
                                 </tr>
                             </thead>
@@ -411,9 +412,9 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
                     const PRIORITY_LABELS = {
-                        3: "🔴สูง",
+                        3: "🔴เร่งด่วน",
                         2: "🟡กลาง",
-                        1: "🔵ต่ำ"
+                        1: "🔵ปกติ"
                     };
 
 
@@ -437,9 +438,9 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 <td>
   <select name="priority" class="form-select priority" form="form-${row.id}">
       <option value="" ${!row.priority ? 'selected' : ''}>เลือก...</option>
-      <option value="3" ${row.priority == 3 ? 'selected' : ''}>🔴สูง</option>
+      <option value="3" ${row.priority == 3 ? 'selected' : ''}>🔴เร่งด่วน</option>
       <option value="2" ${row.priority == 2 ? 'selected' : ''}>🟡กลาง</option>
-      <option value="1" ${row.priority == 1 ? 'selected' : ''}>🔵ต่ำ</option>
+      <option value="1" ${row.priority == 1 ? 'selected' : ''}>🔵ปกติ</option>
   </select>
 </td>
   <td>
@@ -478,6 +479,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
             <td>${row.depart_name}</td>
             <td>${row.tel}</td>
             <td>${row.create_by}</td>
+                 <td>${PRIORITY_LABELS[row.priority] || "-"}</td>
             <td>
                 <form action="system/insert.php" method="post">
                     <input type="hidden" name="username" value="${admin}">

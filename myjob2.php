@@ -161,9 +161,9 @@ $name = $result['full_name'] ?? '-';
                         <label class="form-label" for="ipInput">ระดับความเร่งด่วน <span class="text-muted">(ไม่บังคับ)</span></label>
                         <select class="form-select" name="priority" aria-label="Default select example">
                             <option value="" selected>เลือก...</option>
-                            <option value="3">🔴สูง</option>
+                            <option value="3">🔴เร่งด่วน</option>
                             <option value="2">🟡กลาง</option>
-                            <option value="1">🔵ต่ำ</option>
+                            <option value="1">🔵ปกติ</option>
                         </select>
                     </div>
 
