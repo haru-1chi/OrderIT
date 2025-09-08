@@ -192,9 +192,8 @@ $name = $result['full_name'] ?? '-';
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const now = new Date();
-
             // Format current date
-            const formattedDate = now.toISOString().split('T')[0];
+            const formattedDate = now.toLocaleDateString('en-CA');
             document.querySelectorAll('.auto-date').forEach(input => {
                 input.value = formattedDate;
             });
