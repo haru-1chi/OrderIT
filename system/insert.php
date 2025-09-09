@@ -82,9 +82,16 @@ if (isset($_POST['save_note'])) {
             $catName = trim($catName);
             if ($catName === '') continue;
 
-            // Insert category if not exists
-            $stmt = $conn->prepare("INSERT IGNORE INTO category_note (category_name) VALUES (:name)");
+            $stmt = $conn->prepare("SELECT id FROM category_note WHERE category_name = :name");
             $stmt->execute([':name' => $catName]);
+            $catId = $stmt->fetchColumn();
+
+            if (!$catId) {
+                // Insert category if not exists
+                $stmt = $conn->prepare("INSERT INTO category_note (category_name) VALUES (:name)");
+                $stmt->execute([':name' => $catName]);
+                $catId = $conn->lastInsertId();
+            }
 
             // Get category id
             $stmt = $conn->prepare("SELECT id FROM category_note WHERE category_name = :name");
