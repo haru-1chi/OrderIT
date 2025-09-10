@@ -5,16 +5,13 @@ header('Content-Type: application/json');
 
 // Check if the "type" parameter is set in the request
 $type = isset($_GET['type']) ? $_GET['type'] : '';
-$dateNow = new DateTime();
-$dateThai = $dateNow->format("Y-m-d");
+$dateThai = (new DateTime('now', new DateTimeZone('Asia/Bangkok')))->format('Y-m-d');
 // Define the SQL query based on the requested type
 if ($type === 'unfiltered') {
     $sql = "SELECT dp.*, dt.depart_name
             FROM data_report AS dp
             LEFT JOIN depart AS dt ON dp.department = dt.depart_id
-            WHERE dp.status = 7 
-            AND ((dp.work_type IS NULL OR dp.work_type = '')
-              OR (dp.priority IS NULL OR dp.priority = ''))";
+            WHERE dp.status = 7";
 } else if ($type === 'today') {
     $sql = "SELECT dp.*, dt.depart_name 
             FROM data_report AS dp

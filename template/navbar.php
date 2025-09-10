@@ -89,9 +89,15 @@ function navbar($report_count = null)
                             <li><a class="dropdown-item" href="insertData.php">หลังบ้าน</a></li>
                         </ul>
                     </div>
-                    <li class="nav-item">
-                        <a class="nav-link" href="myjob.php">งานของฉัน</a>
-                    </li>
+                    <div class="dropdown">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenu2" data-bs-toggle="dropdown" aria-expanded="false" style="color: #fff; margin-top: 1px">
+                            งาน <span class="badge bg-danger">new</span>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                            <li><a class="dropdown-item" href="myjob.php">งานของฉัน</a></li>
+                            <li><a class="dropdown-item" href="routineJob.php">จัดการงาน Daily <span class="badge bg-danger">new</span></a></li>
+                        </ul>
+                    </div>
                     <li class="nav-item">
                         <a class="nav-link" href="myjob2.php">สร้างงาน</a>
                     </li>

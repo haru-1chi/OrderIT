@@ -2379,6 +2379,7 @@ if (isset($_POST['Bantext'])) {
         echo '' . $e->getMessage() . '';
     }
 }
+
 if (isset($_POST['saveWork'])) {
     $time_report = $_POST['time_report'];
     $date_report = $_POST['date_report'];
@@ -2392,7 +2393,9 @@ if (isset($_POST['saveWork'])) {
     $work_type = $_POST['work_type'] ?? '';
     $priority = $_POST['priority'] ?? '';
     $create_by = $_POST['create_by'];
-    if (empty($work_type) || empty($priority)) {
+    $weekdays = $_POST['weekdays'] ?? [];
+    $monthdays = $_POST['monthdays'] ?? [];
+    if ($work_type === '' || $priority === '') {
         $status = 7;
     } else {
         $status = 0;
@@ -2425,6 +2428,40 @@ if (isset($_POST['saveWork'])) {
         $stmt->bindParam(":create_by", $create_by);
         $stmt->bindParam(":deviceName", $deviceName);
         if ($stmt->execute()) {
+
+
+            if (!empty($weekdays) || !empty($monthdays)) {
+                $sqlTemplate = "INSERT INTO routine_template(date_create, time_report, number_device, ip_address, report, reporter, department, tel, work_type, priority, deviceName, create_by) 
+                VALUES (:date_create, :time_report, :number_device, :ip_address, :report, :reporter, :department, :tel, :work_type, :priority, :deviceName, :create_by)";
+
+                $stmtTemplate = $conn->prepare($sqlTemplate);
+                $stmtTemplate->bindParam(":date_create", $date_report);
+                $stmtTemplate->bindParam(":time_report", $time_report);
+                $stmtTemplate->bindParam(":number_device", $number_device);
+                $stmtTemplate->bindParam(":ip_address", $ip_address);
+                $stmtTemplate->bindParam(":report", $report);
+                $stmtTemplate->bindParam(":reporter", $reporter);
+                $stmtTemplate->bindParam(":department", $department);
+                $stmtTemplate->bindParam(":tel", $tel);
+                $stmtTemplate->bindParam(":work_type", $work_type);
+                $stmtTemplate->bindParam(":priority", $priority);
+                $stmtTemplate->bindParam(":create_by", $create_by);
+                $stmtTemplate->bindParam(":deviceName", $deviceName);
+                $stmtTemplate->execute();
+
+                $report_id = $conn->lastInsertId();
+
+                $weekdayStr = implode(',', $weekdays); // e.g. "Mon,Wed,Fri"
+
+                $sqlRepeat = "INSERT INTO repeat_task (report_id, weekdays,monthdays) 
+                              VALUES (:report_id, :weekdays,:monthdays)";
+                $stmtRepeat = $conn->prepare($sqlRepeat);
+                $stmtRepeat->bindParam(":report_id", $report_id);
+                $stmtRepeat->bindParam(":weekdays", $weekdayStr);
+                $stmtRepeat->bindParam(":monthdays", $monthdays);
+                $stmtRepeat->execute();
+            }
+
             $_SESSION['success'] = "เพิ่มงานเรียบร้อยแล้ว";
             header("location: ../dashboard.php");
         } else {

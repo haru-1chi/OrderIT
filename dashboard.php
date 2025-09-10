@@ -412,9 +412,10 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
                     const PRIORITY_LABELS = {
-                        3: "🔴เร่งด่วน",
-                        2: "🟡กลาง",
-                        1: "🔵ปกติ"
+                        4: "🔴เร่งด่วน",
+                        3: "🟡กลาง",
+                        2: "🔵ปกติ",
+                        1: "⏰งานประจำวัน",
                     };
 
 
@@ -438,9 +439,10 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 <td>
   <select name="priority" class="form-select priority" form="form-${row.id}">
       <option value="" ${!row.priority ? 'selected' : ''}>เลือก...</option>
-      <option value="3" ${row.priority == 3 ? 'selected' : ''}>🔴เร่งด่วน</option>
-      <option value="2" ${row.priority == 2 ? 'selected' : ''}>🟡กลาง</option>
-      <option value="1" ${row.priority == 1 ? 'selected' : ''}>🔵ปกติ</option>
+      <option value="4" ${row.priority == 4 ? 'selected' : ''}>🔴เร่งด่วน</option>
+      <option value="3" ${row.priority == 3 ? 'selected' : ''}>🟡กลาง</option>
+      <option value="2" ${row.priority == 2 ? 'selected' : ''}>🔵ปกติ</option>
+           <option value="1" ${row.priority == 1 ? 'selected' : ''}>⏰งานประจำวัน</option>
   </select>
 </td>
   <td>

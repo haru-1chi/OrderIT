@@ -13,9 +13,97 @@ function backToInsertPage($data = [])
     }
     // echo $link;
     header($link);
+    exit;
 }
 
-print_r($_GET);
+if (isset($_POST['updateTemplate'])) {
+    $id = $_POST['id'];
+    $time_report = $_POST['time_report'];
+    $device = $_POST['device'];
+    $work_type = $_POST['work_type'] ?? '';
+    $priority = $_POST['priority'] ?? '';
+    $reporter = $_POST['reporter'];
+    $department = $_POST['department'];
+    $tel = $_POST['tel'];
+    $deviceName = $_POST['deviceName'];
+    $number_device = $_POST['number_devices'];
+    $ip_address = $_POST["ip_address"];
+    $report = $_POST['report_work'];
+    $description = $_POST['description'];
+    $note = $_POST['noteTask'];
+    $sla = $_POST['sla'];
+    $kpi = $_POST['kpi'];
+    $problem = $_POST['problem'];
+    $weekdays = $_POST['weekdays'] ?? [];
+    $monthdays = $_POST['monthdays'] ?? [];
+    try {
+        // Prepare the SQL query dynamically
+        $sql = "UPDATE routine_template 
+                SET time_report = :time_report,
+                    device = :device, 
+                    work_type = :work_type, 
+                    priority = :priority, 
+                    reporter = :reporter, 
+                    department = :department,
+                    tel = :tel, 
+                    deviceName = :deviceName, 
+                    number_device = :number_device, 
+                    ip_address = :ip_address, 
+                    report = :report, 
+                    description = :description, 
+                    note = :note, 
+                    sla = :sla, 
+                    kpi = :kpi, 
+                    problem = :problem
+                    WHERE id = :id";
+        $stmt = $conn->prepare($sql);
+        // Bind common parameters
+        $stmt->bindParam(":time_report", $time_report);
+        $stmt->bindParam(":device", $device);
+        $stmt->bindParam(":work_type", $work_type);
+        $stmt->bindParam(":priority", $priority);
+        $stmt->bindParam(":reporter", $reporter);
+        $stmt->bindParam(":department", $department);
+        $stmt->bindParam(":tel", $tel);
+        $stmt->bindParam(":deviceName", $deviceName);
+        $stmt->bindParam(":number_device", $number_device);
+        $stmt->bindParam(":ip_address", $ip_address);
+        $stmt->bindParam(":report", $report);
+        $stmt->bindParam(":description", $description);
+        $stmt->bindParam(":note", $note);
+        $stmt->bindParam(":sla", $sla);
+        $stmt->bindParam(":kpi", $kpi);
+        $stmt->bindParam(":problem", $problem);
+        $stmt->bindParam(":id", $id);
+
+        if ($stmt->execute()) {
+            if (!empty($weekdays) || !empty($monthdays)) {
+                $weekdayStr = !empty($weekdays) ? implode(',', $weekdays) : null; // e.g. "Mon,Wed,Fri"
+                $monthdaysStr = !empty($monthdays) ? $monthdays : null; // already "1,15,30"
+
+                $sqlRepeat = "UPDATE repeat_task
+                      SET weekdays = :weekdays,
+                          monthdays = :monthdays
+                      WHERE report_id = :report_id";
+                $stmtRepeat = $conn->prepare($sqlRepeat);
+                $stmtRepeat->bindParam(":report_id", $id);
+                $stmtRepeat->bindParam(":weekdays", $weekdayStr);
+                $stmtRepeat->bindParam(":monthdays", $monthdaysStr);
+                $stmtRepeat->execute();
+            }
+
+            $_SESSION["success"] = "บันทึกเรียบร้อยแล้ว";
+            header("location: ../routineJob.php");
+            exit;
+        } else {
+            $_SESSION["error"] = "พบข้อผิดพลาด";
+            header("location: ../routineJob.php");
+            exit;
+        }
+    } catch (PDOException $e) {
+        echo '' . $e->getMessage() . '';
+    }
+}
 
 if (isset($_POST['update_note'])) {
     // UPDATE logic

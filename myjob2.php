@@ -33,6 +33,8 @@ $name = $result['full_name'] ?? '-';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
         body {
             background-color: #F9FDFF;
@@ -98,7 +100,7 @@ $name = $result['full_name'] ?? '-';
             <?php endif; ?>
         <?php endforeach; ?>
 
-        <div class="card card-body rounded-4 mt-5 shadow-sm">
+        <div class="card card-body rounded-4 mt-3 shadow-sm">
             <form action="system/insert.php" method="POST">
                 <div class="row">
                     <div class="col-6 mb-3">
@@ -161,9 +163,10 @@ $name = $result['full_name'] ?? '-';
                         <label class="form-label" for="ipInput">ระดับความเร่งด่วน <span class="text-muted">(ไม่บังคับ)</span></label>
                         <select class="form-select" name="priority" aria-label="Default select example">
                             <option value="" selected>เลือก...</option>
-                            <option value="3">🔴เร่งด่วน</option>
-                            <option value="2">🟡กลาง</option>
-                            <option value="1">🔵ปกติ</option>
+                            <option value="4">🔴เร่งด่วน</option>
+                            <option value="3">🟡กลาง</option>
+                            <option value="2">🔵ปกติ</option>
+                            <option value="1">⏰งานประจำวัน</option>
                         </select>
                     </div>
 
@@ -172,12 +175,65 @@ $name = $result['full_name'] ?? '-';
                         <textarea class="form-control " id="issueInput" name="report" rows="2" required></textarea>
                     </div>
 
+                    <div>
+                        <div>
+                            <label class="form-label">สร้างงานประจำ</label>
+                            <button type="button" class="btn btn-light px-0 me-2" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">▼</button>
+                        </div>
+                        <div class="collapse" id="collapseExample">
+                            <div class="row mt-3">
+                                <div class="col-6">
+                                    <p class="mb-2">ทำซ้ำทุกวันในสัปดาห์</p>
+                                    <div class="list-group ms-5 me-5">
+                                        <label class="list-group-item">
+                                            <input class="form-check-input" type="checkbox" id="Mon" value="Mon" name="weekdays[]">
+                                            🟡ทุกวันจันทร์
+                                        </label>
+                                        <label class="list-group-item">
+                                            <input class="form-check-input" type="checkbox" id="Tue" value="Tue" name="weekdays[]">
+                                            🩷ทุกวันอังคาร
+                                        </label>
+                                        <label class="list-group-item">
+                                            <input class="form-check-input" type="checkbox" id="Wed" value="Wed" name="weekdays[]">
+                                            🟢ทุกวันพุธ
+                                        </label>
+                                        <label class="list-group-item">
+                                            <input class="form-check-input" type="checkbox" id="Thu" value="Thu" name="weekdays[]">
+                                            🟠ทุกวันพฤหัส
+                                        </label>
+                                        <label class="list-group-item">
+                                            <input class="form-check-input" type="checkbox" id="Fri" value="Fri" name="weekdays[]">
+                                            🔵ทุกวันศุกร์
+                                        </label>
+                                        <label class="list-group-item">
+                                            <input class="form-check-input" type="checkbox" id="Sat" value="Sat" name="weekdays[]">
+                                            🟣ทุกวันเสาร์
+                                        </label>
+                                        <label class="list-group-item">
+                                            <input class="form-check-input" type="checkbox" id="Sun" value="Sun" name="weekdays[]">
+                                            🔴ทุกวันอาทิตย์
+                                        </label>
+                                    </div>
+
+                                </div>
+                                <div class="col-6 border-start">
+                                    <p class="mb-2" for="multiDate">ทำซ้ำทุกวันที่ในเดือน <span class="text-muted">(เลือกได้หลายวัน)</span></p>
+                                    <div class="d-flex justify-content-center">
+                                        <div id="multiDate"></div>
+                                    </div>
+                                    <input type="hidden" name="monthdays" id="monthdays" class="form-control mt-3">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <input type="hidden" name="create_by" value="<?= htmlspecialchars($name) ?>">
                     <div class="d-grid gap-3 my-3">
                         <button type="submit" name="saveWork" class="btn p-3 btn-primary">บันทึก</button>
                     </div>
                 </div>
             </form>
+
         </div>
 
         <?php
@@ -189,6 +245,18 @@ $name = $result['full_name'] ?? '-';
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script>
+        flatpickr("#multiDate", {
+            inline: true,
+            mode: "multiple",
+            dateFormat: "d",
+            onChange: function(selectedDates, dateStr, instance) {
+                const days = selectedDates.map(d => d.getDate());
+                document.getElementById("monthdays").value = days.join(",");
+                console.log("Selected days:", days.join(",")); // for debug
+            }
+        });
+    </script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const now = new Date();

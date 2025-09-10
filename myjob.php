@@ -325,9 +325,10 @@ if (!isset($_SESSION["admin_log"])) {
                                 <td class="text-start"><?= $row['tel'] ?></td>
                                 <?php
                                 $priorityLabels = [
-                                    3 => "🔴เร่งด่วน",
-                                    2 => "🟡กลาง",
-                                    1 => "🔵ปกติ"
+                                    4 => "🔴เร่งด่วน",
+                                    3 => "🟡กลาง",
+                                    2 => "🔵ปกติ",
+                                    1 => "⏰งานประจำวัน"
                                 ];
                                 ?>
                                 <td class="text-start">
@@ -444,9 +445,10 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <label>ระดับความเร่งด่วน</label>
                                                                     <select name="priority" class="form-select priority">
                                                                         <option value="" <?= empty($row['priority']) ? 'selected' : '' ?>>เลือก...</option>
-                                                                        <option value="3" <?= ($row['priority'] == 3) ? 'selected' : '' ?>>🔴เร่งด่วน</option>
-                                                                        <option value="2" <?= ($row['priority'] == 2) ? 'selected' : '' ?>>🟡กลาง</option>
-                                                                        <option value="1" <?= ($row['priority'] == 1) ? 'selected' : '' ?>>🔵ปกติ</option>
+                                                                        <option value="4" <?= ($row['priority'] == 4) ? 'selected' : '' ?>>🔴เร่งด่วน</option>
+                                                                        <option value="3" <?= ($row['priority'] == 3) ? 'selected' : '' ?>>🟡กลาง</option>
+                                                                        <option value="2" <?= ($row['priority'] == 2) ? 'selected' : '' ?>>🔵ปกติ</option>
+                                                                        <option value="1" <?= ($row['priority'] == 1) ? 'selected' : '' ?>>⏰งานประจำวัน</option>
                                                                     </select>
                                                                 </div>
                                                             </div>
@@ -1709,9 +1711,10 @@ ORDER BY id DESC;
                                 <td class="text-start"><?= $row['tel'] ?></td>
                                 <?php
                                 $priorityLabels = [
-                                    3 => "🔴เร่งด่วน",
-                                    2 => "🟡กลาง",
-                                    1 => "🔵ปกติ"
+                                    4 => "🔴เร่งด่วน",
+                                    3 => "🟡กลาง",
+                                    2 => "🔵ปกติ",
+                                    1 => "⏰งานประจำวัน"
                                 ];
                                 ?>
                                 <td class="text-start">
@@ -1829,7 +1832,7 @@ ORDER BY id DESC;
                                                                 </div>
                                                             </div>
 
-                                                             <div class="row">
+                                                            <div class="row">
                                                                 <div class="col-6">
                                                                     <label>ประเภทงาน</label>
                                                                     <select name="work_type" class="form-select work-type">
@@ -1843,9 +1846,10 @@ ORDER BY id DESC;
                                                                     <label>ระดับความเร่งด่วน</label>
                                                                     <select name="priority" class="form-select priority">
                                                                         <option value="" <?= empty($row['priority']) ? 'selected' : '' ?>>เลือก...</option>
-                                                                        <option value="3" <?= ($row['priority'] == 3) ? 'selected' : '' ?>>🔴เร่งด่วน</option>
-                                                                        <option value="2" <?= ($row['priority'] == 2) ? 'selected' : '' ?>>🟡กลาง</option>
-                                                                        <option value="1" <?= ($row['priority'] == 1) ? 'selected' : '' ?>>🔵ปกติ</option>
+                                                                        <option value="4" <?= ($row['priority'] == 4) ? 'selected' : '' ?>>🔴เร่งด่วน</option>
+                                                                        <option value="3" <?= ($row['priority'] == 3) ? 'selected' : '' ?>>🟡กลาง</option>
+                                                                        <option value="2" <?= ($row['priority'] == 2) ? 'selected' : '' ?>>🔵ปกติ</option>
+                                                                        <option value="1" <?= ($row['priority'] == 1) ? 'selected' : '' ?>>⏰งานประจำวัน</option>
                                                                     </select>
                                                                 </div>
                                                             </div>
