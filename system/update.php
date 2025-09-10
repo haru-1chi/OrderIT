@@ -77,20 +77,18 @@ if (isset($_POST['updateTemplate'])) {
         $stmt->bindParam(":id", $id);
 
         if ($stmt->execute()) {
-            if (!empty($weekdays) || !empty($monthdays)) {
-                $weekdayStr = !empty($weekdays) ? implode(',', $weekdays) : null; // e.g. "Mon,Wed,Fri"
-                $monthdaysStr = !empty($monthdays) ? $monthdays : null; // already "1,15,30"
+            $weekdayStr = !empty($weekdays) ? implode(',', $weekdays) : null; // e.g. "Mon,Wed,Fri"
+            $monthdaysStr = !empty($monthdays) ? $monthdays : null; // already "1,15,30"
 
-                $sqlRepeat = "UPDATE repeat_task
+            $sqlRepeat = "UPDATE repeat_task
                       SET weekdays = :weekdays,
                           monthdays = :monthdays
                       WHERE report_id = :report_id";
-                $stmtRepeat = $conn->prepare($sqlRepeat);
-                $stmtRepeat->bindParam(":report_id", $id);
-                $stmtRepeat->bindParam(":weekdays", $weekdayStr);
-                $stmtRepeat->bindParam(":monthdays", $monthdaysStr);
-                $stmtRepeat->execute();
-            }
+            $stmtRepeat = $conn->prepare($sqlRepeat);
+            $stmtRepeat->bindParam(":report_id", $id);
+            $stmtRepeat->bindParam(":weekdays", $weekdayStr);
+            $stmtRepeat->bindParam(":monthdays", $monthdaysStr);
+            $stmtRepeat->execute();
 
             $_SESSION["success"] = "บันทึกเรียบร้อยแล้ว";
             header("location: ../routineJob.php");
