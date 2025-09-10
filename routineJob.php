@@ -207,12 +207,12 @@ if (!isset($_SESSION["admin_log"])) {
                             <th scope="col">วันที่สร้าง</th>
                             <th scope="col">เวลาที่แจ้ง</th>
                             <th scope="col">รูปแบบการทำงาน</th>
-                            <th scope="col">หมายเลขครุภัณฑ์</th>
                             <th scope="col">อาการที่ได้รับแจ้ง</th>
                             <th scope="col">ผู้แจ้ง</th>
                             <th scope="col">หน่วยงาน</th>
                             <th scope="col">เบอร์โทร</th>
                             <th scope="col">ระดับความเร่งด่วน</th>
+                            <th scope="col">สถานะ</th>
                             <th scope="col"></th>
                         </tr>
                     </thead>
@@ -231,7 +231,6 @@ if (!isset($_SESSION["admin_log"])) {
                                 <td class="text-start"><?= $dateFormatted ?></td>
                                 <td class="text-start"><?= $timeFormatted ?></td>
                                 <td class="text-start"><?= $row['device'] ?></td>
-                                <td class="text-start"><?= $row['number_device'] ?></td>
                                 <td class="text-start"><?= $row['report'] ?></td>
                                 <td class="text-start"><?= $row['reporter'] ?></td>
                                 <td class="text-start"><?= $row['depart_name'] ?></td>
@@ -247,9 +246,21 @@ if (!isset($_SESSION["admin_log"])) {
                                 <td class="text-start">
                                     <?= $priorityLabels[$row['priority']] ?? '-' ?>
                                 </td>
-                                <td>
+                                <td class="align-middle">
+                                    <?php if ($row['template_status'] == 1): ?>
+                                        <div class="bg-warning rounded-2 text-white text-center">
+                                            กำลังใช้งาน
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="bg-secondary rounded-2 text-white text-center">
+                                            ปิดการใช้งาน
+                                        </div>
+                                    <?php endif; ?>
+                                </td>
+
+                                <td class="align-middle">
                                     <button type="button"
-                                        class="btn mb-3 btn-primary"
+                                        class="btn btn-primary"
                                         onclick="toggleModal('#workflowModalTask<?= $row['id'] ?>')">
                                         ดูข้อมูล
                                     </button>
@@ -496,7 +507,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                             </div>
                                                             <hr class="mb-2">
                                                             <div class="row mt-3">
-                                                                <h4 class="mt-0 mb-3" id="staticBackdropLabel">กำหนดการทำซ้ำ</h4>
+                                                                <h4 class="mt-0 mb-3" id="staticBackdropLabel">กำหนดการทำซ้ำ <span class="text-mute fs-6">(เลือกอย่างใดอย่างหนึ่ง)</span></h4>
                                                                 <div class="col-6">
                                                                     <p class="mb-2">ทำซ้ำทุกวันในสัปดาห์</p>
                                                                     <?php
@@ -547,6 +558,20 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
 
                                                     <div class="modal-footer">
+                    
+                                                        <input type="checkbox"
+                                                            class="btn-check switchBtn"
+                                                            id="switchBtn<?= $row['id'] ?>"
+                                                            data-id="<?= $row['id'] ?>"
+                                                            name="template_status"
+                                                            value="1"
+                                                            <?= $row['template_status'] == 1 ? 'checked' : '' ?>>
+
+                                                        <label class="btn <?= $row['template_status'] == 1 ? 'btn-warning' : 'btn-secondary' ?> switchLabel"
+                                                            for="switchBtn<?= $row['id'] ?>">
+                                                            <?= $row['template_status'] == 1 ? 'เปิดการใช้งาน' : 'ปิดการใช้งาน' ?>
+                                                        </label>
+
                                                         <button type="submit" class="btn btn-primary"
                                                             onclick="removeHiddenInputOnModalClose('#requisitionModal<?= $row['id'] ?>')"
                                                             name="updateTemplate">บันทึก</button>
@@ -566,6 +591,22 @@ if (!isset($_SESSION["admin_log"])) {
 
         </div>
     </div>
+    <script>
+        document.querySelectorAll('.switchBtn').forEach(input => {
+            input.addEventListener('change', function() {
+                const label = document.querySelector(`label[for="${this.id}"]`);
+                if (this.checked) {
+                    label.classList.remove('btn-secondary');
+                    label.classList.add('btn-warning');
+                    label.textContent = 'เปิดการใช้งาน';
+                } else {
+                    label.classList.remove('btn-warning');
+                    label.classList.add('btn-secondary');
+                    label.textContent = 'ปิดการใช้งาน';
+                }
+            });
+        });
+    </script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>

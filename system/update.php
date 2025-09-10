@@ -33,6 +33,7 @@ if (isset($_POST['updateTemplate'])) {
     $note = $_POST['noteTask'];
     $sla = $_POST['sla'];
     $kpi = $_POST['kpi'];
+    $template_status = isset($_POST['template_status']) ? 1 : 0;
     $problem = $_POST['problem'];
     $weekdays = $_POST['weekdays'] ?? [];
     $monthdays = $_POST['monthdays'] ?? [];
@@ -54,6 +55,7 @@ if (isset($_POST['updateTemplate'])) {
                     note = :note, 
                     sla = :sla, 
                     kpi = :kpi, 
+                    template_status = :template_status, 
                     problem = :problem
                     WHERE id = :id";
         $stmt = $conn->prepare($sql);
@@ -67,6 +69,7 @@ if (isset($_POST['updateTemplate'])) {
         $stmt->bindParam(":tel", $tel);
         $stmt->bindParam(":deviceName", $deviceName);
         $stmt->bindParam(":number_device", $number_device);
+        $stmt->bindParam(":template_status", $template_status);
         $stmt->bindParam(":ip_address", $ip_address);
         $stmt->bindParam(":report", $report);
         $stmt->bindParam(":description", $description);

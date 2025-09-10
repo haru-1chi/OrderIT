@@ -11,7 +11,8 @@ try {
     // 1. Get all repeat tasks with template data
     $sql = "SELECT rt.id AS repeat_id, rt.weekdays,rt.monthdays, tpl.* 
             FROM repeat_task rt
-            JOIN routine_template tpl ON tpl.id = rt.report_id";
+            JOIN routine_template tpl ON tpl.id = rt.report_id
+            WHERE tpl.template_status != 0";
     $stmt = $conn->prepare($sql);
     $stmt->execute();
     $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
