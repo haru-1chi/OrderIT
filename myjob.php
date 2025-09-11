@@ -3469,12 +3469,12 @@ ORDER BY id DESC;
 <script>
     $('#dataAll').DataTable({
         order: [
-            [10, 'asc']
+            [0, 'desc']
         ] // assuming you want to sort the first column in ascending order
     });
     $('#dataAllUncomplete').DataTable({
         order: [
-            [10, 'asc']
+            [0, 'desc']
         ] // assuming you want to sort the first column in ascending order
     });
 </script>
