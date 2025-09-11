@@ -177,7 +177,7 @@ $name = $result['full_name'] ?? '-';
 
                     <div>
                         <div>
-                            <label class="form-label">กำหนดการทำซ้ำ</label>
+                            <label class="form-label">กำหนด Routine</label>
                             <button type="button" class="btn btn-light px-0 me-2" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">▼</button>
                         </div>
                         <div class="collapse" id="collapseExample">

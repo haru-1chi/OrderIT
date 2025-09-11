@@ -196,7 +196,7 @@ if (!isset($_SESSION["admin_log"])) {
                             <button type="submit" name="checkDate_my_work" class="btn btn-primary">ยืนยัน</button>
                         </div>
                     </form>
-                    <button type="button" class="btn btn-success" onclick="toggleModal('#createModalTask')">+ สร้างการแจ้งเตือน</button>
+                    <button type="button" class="btn btn-success" onclick="toggleModal('#createModalTask')">+ สร้างงาน Routine</button>
                 </div>
 
                 <hr>
@@ -508,7 +508,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                             </div>
                                                             <hr class="mb-2">
                                                             <div class="row mt-3">
-                                                                <h4 class="mt-0 mb-3" id="staticBackdropLabel">กำหนดการทำซ้ำ <span class="text-mute fs-6">(เลือกอย่างใดอย่างหนึ่ง)</span></h4>
+                                                                <h4 class="mt-0 mb-3" id="staticBackdropLabel">กำหนด Routine <span class="text-mute fs-6">(เลือกอย่างใดอย่างหนึ่ง)</span></h4>
                                                                 <div class="col-6">
                                                                     <p class="mb-2">ทำซ้ำทุกวันในสัปดาห์</p>
                                                                     <?php
@@ -805,7 +805,7 @@ if (!isset($_SESSION["admin_log"])) {
                                 </div>
                                 <hr class="mb-2">
                                 <div class="row mt-3">
-                                    <h4 class="mt-0 mb-3" id="staticBackdropLabel">กำหนดการทำซ้ำ <span class="text-mute fs-6">(เลือกอย่างใดอย่างหนึ่ง)</span></h4>
+                                    <h4 class="mt-0 mb-3" id="staticBackdropLabel">กำหนด Routine <span class="text-mute fs-6">(เลือกอย่างใดอย่างหนึ่ง)</span></h4>
                                     <div class="col-6">
                                         <p class="mb-2">ทำซ้ำทุกวันในสัปดาห์</p>
                                         <div class="list-group ms-5 me-5">
