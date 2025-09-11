@@ -176,24 +176,43 @@ if (!isset($_SESSION["admin_log"])) {
                 <?php } ?>
 
                 <?php
-                $sql = "SELECT dp.*, dt.depart_name, rt.id as repeat_id, rt.weekdays, rt.monthdays
-                        FROM routine_template AS dp
-                        LEFT JOIN depart AS dt ON dp.department = dt.depart_id
-                        LEFT JOIN repeat_task AS rt ON dp.id = rt.report_id
-                        ORDER BY dp.id ASC";
-                $stmt = $conn->prepare($sql);
-                $stmt->execute();
-                $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $dateStart = $_POST['dateStart'] ?? null;
+                $dateEnd   = $_POST['dateEnd'] ?? null;
+
+                if (isset($_POST['checkDate']) && !empty($dateStart) && !empty($dateEnd)) {
+                    $sql = "SELECT dp.*, dt.depart_name, rt.id as repeat_id, rt.weekdays, rt.monthdays
+            FROM routine_template AS dp
+            LEFT JOIN depart AS dt ON dp.department = dt.depart_id
+            LEFT JOIN repeat_task AS rt ON dp.id = rt.report_id
+            WHERE dp.date_create BETWEEN :dateStart AND :dateEnd
+            ORDER BY dp.id ASC";
+
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bindParam(':dateStart', $dateStart);
+                    $stmt->bindParam(':dateEnd', $dateEnd);
+                    $stmt->execute();
+                    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                } else {
+                    $sql = "SELECT dp.*, dt.depart_name, rt.id as repeat_id, rt.weekdays, rt.monthdays
+            FROM routine_template AS dp
+            LEFT JOIN depart AS dt ON dp.department = dt.depart_id
+            LEFT JOIN repeat_task AS rt ON dp.id = rt.report_id
+            ORDER BY dp.id ASC";
+
+                    $stmt = $conn->prepare($sql);
+                    $stmt->execute();
+                    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                }
                 ?>
 
                 <div class="d-flex justify-content-between align-items-center">
                     <form action="" method="post">
                         <div class="d-flex gap-4">
-                            <input type="date" value="<?= isset($dateStart) ? $dateStart : ''; ?>" name="dateStart_my_work"
+                            <input type="date" value="<?= htmlspecialchars($dateStart ?? '') ?>" name="dateStart"
                                 class="form-control" style="width: 250px;">
-                            <input type="date" value="<?= isset($dateEnd) ? $dateEnd : ''; ?>" name="dateEnd_my_work"
+                            <input type="date" value="<?= htmlspecialchars($dateEnd ?? '') ?>" name="dateEnd"
                                 class="form-control" style="width: 250px;">
-                            <button type="submit" name="checkDate_my_work" class="btn btn-primary">ยืนยัน</button>
+                            <button type="submit" name="checkDate" class="btn btn-primary">ยืนยัน</button>
                         </div>
                     </form>
                     <button type="button" class="btn btn-success" onclick="toggleModal('#createModalTask')">+ สร้างงาน Routine</button>

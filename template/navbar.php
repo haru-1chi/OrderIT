@@ -95,7 +95,7 @@ function navbar($report_count = null)
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
                             <li><a class="dropdown-item" href="myjob.php">งานของฉัน</a></li>
-                            <li><a class="dropdown-item" href="routineJob.php">จัดการงาน Daily</a></li>
+                            <li><a class="dropdown-item" href="routineJob.php">จัดการงาน Routine</a></li>
                         </ul>
                     </div>
                     <li class="nav-item">
