@@ -25,6 +25,90 @@ function backToInsertPage($data = [])
     header($link);
 }
 
+if (isset($_POST['insertTemplate'])) {
+    $date_create = $_POST['date_create'] ?? '';
+    $time_report = $_POST['time_report'] ?? '';
+    $device = $_POST['device'] ?? '';
+    $work_type = $_POST['work_type'] ?? '';
+    $priority = $_POST['priority'] ?? '';
+    $reporter = $_POST['reporter'] ?? '';
+    $department = $_POST['department'] ?? '';
+    $tel = $_POST['tel'] ?? '';
+    $deviceName = $_POST['deviceName'] ?? '';
+    $number_device = $_POST['number_devices'] ?? '';
+    $ip_address = $_POST["ip_address"] ?? '';
+    $report = $_POST['report_work'] ?? '';
+    $description = $_POST['description'] ?? '';
+    $note = $_POST['noteTask'] ?? '';
+    $sla = $_POST['sla'] ?? '';
+    $kpi = $_POST['kpi'] ?? '';
+    $template_status = 1;
+    $problem = $_POST['problem'] ?? '';
+    $create_by = $_POST['create_by'] ?? '';
+    $weekdays = $_POST['weekdays'] ?? [];
+    $monthdays = $_POST['monthdays'] ?? [];
+
+    try {
+        // Prepare the SQL query dynamically
+        $sql = "INSERT INTO routine_template (
+                    date_create, time_report, device, work_type, priority, 
+                    reporter, department, tel, deviceName, number_device, 
+                    ip_address, report, description, note, sla, kpi, 
+                    template_status, problem, create_by
+                ) VALUES (
+                    :date_create, :time_report, :device, :work_type, :priority,
+                    :reporter, :department, :tel, :deviceName, :number_device,
+                    :ip_address, :report, :description, :note, :sla, :kpi,
+                    :template_status, :problem, :create_by
+                )";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(":date_create", $date_create);
+        $stmt->bindParam(":time_report", $time_report);
+        $stmt->bindParam(":device", $device);
+        $stmt->bindParam(":work_type", $work_type);
+        $stmt->bindParam(":priority", $priority);
+        $stmt->bindParam(":reporter", $reporter);
+        $stmt->bindParam(":department", $department);
+        $stmt->bindParam(":tel", $tel);
+        $stmt->bindParam(":deviceName", $deviceName);
+        $stmt->bindParam(":number_device", $number_device);
+        $stmt->bindParam(":ip_address", $ip_address);
+        $stmt->bindParam(":report", $report);
+        $stmt->bindParam(":description", $description);
+        $stmt->bindParam(":note", $note);
+        $stmt->bindParam(":sla", $sla);
+        $stmt->bindParam(":kpi", $kpi);
+        $stmt->bindParam(":template_status", $template_status);
+        $stmt->bindParam(":problem", $problem);
+        $stmt->bindParam(":create_by", $create_by);
+        if ($stmt->execute()) {
+            $template_id = $conn->lastInsertId();
+
+            $weekdayStr = !empty($weekdays) ? implode(',', $weekdays) : []; // e.g. "Mon,Wed,Fri"
+            $monthdaysStr = !empty($monthdays) ? $monthdays : ''; // already "1,15,30"
+
+            $sqlRepeat = "INSERT INTO repeat_task (report_id, weekdays, monthdays) 
+                          VALUES (:report_id, :weekdays, :monthdays)";
+            $stmtRepeat = $conn->prepare($sqlRepeat);
+            $stmtRepeat->bindParam(":report_id", $template_id);
+            $stmtRepeat->bindParam(":weekdays", $weekdayStr);
+            $stmtRepeat->bindParam(":monthdays", $monthdaysStr);
+            $stmtRepeat->execute();
+
+            $_SESSION["success"] = "เพิ่ม Template สำเร็จแล้ว ✅";
+            header("location: ../routineJob.php");
+            exit;
+        } else {
+            $_SESSION["error"] = "ไม่สามารถเพิ่ม Template ได้ ❌";
+            header("location: ../routineJob.php");
+            exit;
+        }
+    } catch (PDOException $e) {
+        echo '' . $e->getMessage() . '';
+    }
+}
+
 if (isset($_POST['save_note'])) {
     $username = $_POST['username'];
     $title = $_POST['title'];

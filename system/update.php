@@ -81,7 +81,7 @@ if (isset($_POST['updateTemplate'])) {
 
         if ($stmt->execute()) {
             $weekdayStr = !empty($weekdays) ? implode(',', $weekdays) : null; // e.g. "Mon,Wed,Fri"
-            $monthdaysStr = !empty($monthdays) ? $monthdays : null; // already "1,15,30"
+            $monthdaysStr = !empty($monthdays) ? $monthdays : ''; // already "1,15,30"
 
             $sqlRepeat = "UPDATE repeat_task
                       SET weekdays = :weekdays,
