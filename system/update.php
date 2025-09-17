@@ -311,17 +311,18 @@ if (isset($_POST['models'])) {
     $quality = $_POST['quality'];
     $price = $_POST['price'];
     $unit = $_POST['unit'];
+    $auto_close = $_POST['auto_close'];
     try {
 
         if (!isset($_SESSION['error'])) {
-            $sql = "UPDATE device_models SET models_name = :models_name , quality = :quality , price = :price , unit = :unit WHERE models_id = :models_id";
+            $sql = "UPDATE device_models SET models_name = :models_name , quality = :quality , price = :price , unit = :unit, auto_close = :auto_close WHERE models_id = :models_id";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(":models_id", $models_id);
             $stmt->bindParam(":models_name", $models_name);
             $stmt->bindParam(":quality", $quality);
             $stmt->bindParam(":price", $price);
             $stmt->bindParam(":unit", $unit);
-
+            $stmt->bindParam(":auto_close", $auto_close);
             if ($stmt->execute()) {
                 $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";
                 backToInsertPage();
@@ -523,6 +524,9 @@ if (isset($_POST['updateData'])) {
     $deleted_items = $_POST['deleted_items'];
 
     $editedBy = $_SESSION['admin_log'] ?? 'unknown';
+
+    date_default_timezone_set('Asia/Bangkok');
+    $timestamp = date('Y-m-d H:i:s');
     // echo '<pre>';
     // var_dump([
     //     'numberWork' => $numberWork,
@@ -866,6 +870,49 @@ if (isset($_POST['updateData'])) {
             $stmt->bindParam(":withdraw", $numberWork);
             $stmt->bindParam(":id", $id_ref);
             $stmt->execute();
+        }
+
+        $statusSql = "INSERT INTO order_status (order_id, status, timestamp) 
+              VALUES (:order_id, :status, :timestamp)";
+        $statusStmt = $conn->prepare($statusSql);
+
+        // Safely read from $_POST, default to []
+        $lists = $_POST['list'] ?? [];
+        $update_lists = $_POST['update_list'] ?? [];
+
+        // Make sure they are arrays
+        if (!is_array($lists)) $lists = [];
+        if (!is_array($update_lists)) $update_lists = [];
+
+        // Combine both
+        $allLists = array_merge($lists, $update_lists);
+        $allLists = array_map('intval', array_values(array_merge(...$allLists)));
+        $allLists = array_unique($allLists);
+
+
+
+        // Only run query if we have models to check
+        if (!empty($allLists)) {
+            $placeholders = implode(',', array_fill(0, count($allLists), '?'));
+
+
+            $checkSql = "SELECT COUNT(*) 
+                 FROM device_models 
+                 WHERE models_id IN ($placeholders) 
+                   AND auto_close = 1";
+            $checkStmt = $conn->prepare($checkSql);
+            $checkStmt->execute($allLists);
+            $autoCloseCount = $checkStmt->fetchColumn();
+
+            if ($autoCloseCount > 0) {
+                for ($s = 1; $s <= 5; $s++) {
+                    $statusStmt->execute([
+                        ':order_id' => $id,
+                        ':status'   => $s,
+                        ':timestamp' => $timestamp
+                    ]);
+                }
+            }
         }
     }
     $_SESSION["success"] = "อัพเดทข้อมูลเรียบร้อยแล้ว";

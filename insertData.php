@@ -93,8 +93,8 @@ if (!isset($_SESSION["admin_log"])) {
 
         <div class="row justify-content-center">
             <div class="p-0">
-                <button class="default-main-page-button" data-selectMainPage="1" id="select-main-page-button">ใบเบิก</button>
-                <button class="default-main-page-button" data-selectMainPage="2" id="select-main-page-button">ใบงาน</button>
+                <button class="default-main-page-button" data-selectMainPage="1" id="select-main-page-button">ใบงาน</button>
+                <button class="default-main-page-button" data-selectMainPage="2" id="select-main-page-button">ใบเบิก</button>
                 <button class="default-main-page-button" data-selectMainPage="3" id="select-main-page-button">ตัวชี้วัด</button>
                 <button class="default-main-page-button" data-selectMainPage="4" id="select-main-page-button">เจ้าหน้าที่</button>
             </div>
@@ -1007,6 +1007,15 @@ if (!isset($_SESSION["admin_log"])) {
                                                 <label for="floatingPassword">หน่วย</label>
                                             </div>
                                         </div>
+                                        <div class="col-md-12">
+                                            <div class="form-floating mb-3">
+                                                <select name="auto_close" class="form-select form-select-md px-12">
+                                                    <option selected value="0">ไม่ใช่</option>
+                                                    <option value="1">ใช่</option>
+                                                </select>
+                                                <label for="floatingPassword">ปิดงานใบเบิกเมื่อมี</label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -1030,7 +1039,7 @@ if (!isset($_SESSION["admin_log"])) {
                                 <th scope="col">คุณสมบัติ</th>
                                 <th scope="col">ราคา</th>
                                 <th scope="col">หน่วย</th>
-
+                                <th scope="col">ปิดงานอัตโนมัติ</th>
                                 <th scope="col">แก้ไข</th>
                                 <th scope="col">ลบ</th>
                             </tr>
@@ -1042,7 +1051,18 @@ if (!isset($_SESSION["admin_log"])) {
                                     <td scope="row"><?= $row['quality'] ?></td>
                                     <td scope="row"><?= $row['price'] ?></td>
                                     <td scope="row"><?= $row['unit'] ?></td>
+                                    <td scope="row">
+                                        <?php if ($row['auto_close'] == 1): ?>
+                                            <div class="bg-warning rounded-2 text-white text-center">
+                                                ใช่
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="bg-secondary rounded-2 text-white text-center">
+                                                ไม่ใช่
+                                            </div>
+                                        <?php endif; ?>
 
+                                    </td>
                                     <td>
                                         <button type="button" class="btn btn-warning text-white" style="background-color: #FFAE2C;" data-bs-toggle="modal" data-bs-target="#model<?= $row['models_id'] ?>">แก้ไข</button>
                                     </td>
@@ -1079,11 +1099,15 @@ if (!isset($_SESSION["admin_log"])) {
 
                                                         </div>
                                                         <div class="form-floating mb-3">
-
                                                             <input type="text" class="form-control" value="<?= $row['unit'] ?>" name="unit" placeholder="Password">
                                                             <label for="floatingPassword">หน่วย</label>
-
-
+                                                        </div>
+                                                        <div class="form-floating mb-3">
+                                                            <select id="auto_close" name="auto_close" class="form-select form-select-md">
+                                                                <option value="0" <?= $row['auto_close'] == 0 ? 'selected' : '' ?>>ไม่ใช่</option>
+                                                                <option value="1" <?= $row['auto_close'] == 1 ? 'selected' : '' ?>>ใช่</option>
+                                                            </select>
+                                                            <label for="auto_close">ปิดงานใบเบิกเมื่อมี</label>
                                                         </div>
                                                     </div>
                                                     <div class="modal-footer">

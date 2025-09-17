@@ -400,6 +400,7 @@ if (isset($_POST['addmodels'])) { // เพิ่ม รายการอุป
     $quality = $_POST['quality'];
     $price = $_POST['price'];
     $unit = $_POST['unit'];
+    $auto_close = $_POST['auto_close'];
     try {
         $sql = "SELECT * FROM device_models WHERE models_name = :models_name";
         $stmt = $conn->prepare($sql);
@@ -413,13 +414,13 @@ if (isset($_POST['addmodels'])) { // เพิ่ม รายการอุป
                 header('location: ../insertData.php');
             }
         } else if (!isset($_SESSION['error'])) {
-            $sql = "INSERT INTO device_models(models_name , quality , price , unit ) VALUES(:models_name , :quality , :price , :unit)";
+            $sql = "INSERT INTO device_models(models_name , quality , price , unit, auto_close ) VALUES(:models_name , :quality , :price , :unit, :auto_close)";
             $stmt = $conn->prepare($sql);
             $stmt->bindParam(":models_name", $models_name);
             $stmt->bindParam(":quality", $quality);
             $stmt->bindParam(":price", $price);
             $stmt->bindParam(":unit", $unit);
-
+            $stmt->bindParam(":auto_close", $auto_close);
             if ($stmt->execute()) {
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
                 backToInsertPage();
@@ -764,12 +765,36 @@ if (isset($_POST['submitWithdraw'])) {
                 }
 
                 $statusSql = "INSERT INTO order_status (order_id, status, timestamp) 
-                VALUES (:order_id, :status, :timestamp)";
+              VALUES (:order_id, :status, :timestamp)";
                 $statusStmt = $conn->prepare($statusSql);
-                $statusStmt->bindParam(':order_id', $orderId);
-                $statusStmt->bindParam(':status', $status);
-                $statusStmt->bindParam(':timestamp', $timestamp);
-                $statusStmt->execute();
+
+                // Check if auto_close = 1 for any device
+                $placeholders = implode(',', array_fill(0, count($lists), '?'));
+                $checkSql = "SELECT COUNT(*) as cnt 
+             FROM device_models dm 
+             WHERE dm.models_id IN ($placeholders) 
+               AND dm.auto_close = 1";
+                $checkStmt = $conn->prepare($checkSql);
+                $checkStmt->execute($lists);
+                $autoCloseCount = $checkStmt->fetchColumn();
+
+                if ($autoCloseCount > 0) {
+                    // Auto-close → insert all statuses 1-5
+                    for ($s = 1; $s <= 5; $s++) {
+                        $statusStmt->execute([
+                            ':order_id' => $orderId,
+                            ':status' => $s,
+                            ':timestamp' => $timestamp
+                        ]);
+                    }
+                } else {
+                    // Normal → insert only current status
+                    $statusStmt->execute([
+                        ':order_id' => $orderId,
+                        ':status' => $status,
+                        ':timestamp' => $timestamp
+                    ]);
+                }
 
                 // Commit transaction
                 $conn->commit();
