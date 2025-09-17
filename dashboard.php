@@ -83,16 +83,19 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
             /* 👈 Add this */
         }
 
+        .card-hover:hover {
+            filter: brightness(90%);
+            /* darker by ~15% */
+        }
+
         .section {
-            position: absolute;
-            visibility: hidden;
+            display: none;
             opacity: 0;
             transition: opacity 0.2s ease;
         }
 
         .section.active {
-            position: static;
-            visibility: visible;
+            display: block;
             opacity: 1;
         }
     </style>
