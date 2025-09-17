@@ -76,6 +76,25 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
             background-color: #fffbf0;
             color: #000;
         }
+
+        .card-hover {
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            /* 👈 Add this */
+        }
+
+        .section {
+            position: absolute;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .section.active {
+            position: static;
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 
@@ -302,79 +321,85 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                         </table>
                     </div>
                 </div>
-                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
-                    <h1>งานที่ถูกบันทึกไว้</h1>
-                    <hr>
-                    <div class="table-responsive">
-                        <table id="dataAllNOTTAKE" class="table table-danger">
-                            <thead>
-                                <tr class="text-center">
-                                    <th scope="col">หมายเลข</th>
-                                    <th scope="col">วันที่</th>
-                                    <th scope="col">เวลาแจ้ง</th>
-                                    <th scope="col">อุปกรณ์</th>
-                                    <th scope="col">อาการที่ได้รับแจ้ง</th>
-                                    <th scope="col">ผู้แจ้ง</th>
-                                    <th scope="col">หน่วยงาน</th>
-                                    <th scope="col">เบอร์ติดต่อกลับ</th>
-                                    <th scope="col">สร้างโดย</th>
-                                    <th scope="col">ระดับความเร่งด่วน</th>
-                                    <th scope="col">ปุ่มรับงาน</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
+                <div class="section active" id="0-section">
+                    <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
+                        <h1>งานที่ถูกบันทึกไว้</h1>
+                        <hr>
+                        <div class="table-responsive">
+                            <table id="dataAllNOTTAKE" class="table table-danger">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th scope="col">หมายเลข</th>
+                                        <th scope="col">วันที่</th>
+                                        <th scope="col">เวลาแจ้ง</th>
+                                        <th scope="col">อุปกรณ์</th>
+                                        <th scope="col">อาการที่ได้รับแจ้ง</th>
+                                        <th scope="col">ผู้แจ้ง</th>
+                                        <th scope="col">หน่วยงาน</th>
+                                        <th scope="col">เบอร์ติดต่อกลับ</th>
+                                        <th scope="col">สร้างโดย</th>
+                                        <th scope="col">ระดับความเร่งด่วน</th>
+                                        <th scope="col">ปุ่มรับงาน</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
-                    <div class="table-responsive">
-                        <h1>รออะไหล่</h1>
+                <div class="section" id="3-section">
+                    <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
+                        <div class="table-responsive">
+                            <h1>รออะไหล่</h1>
+                            <hr>
+                            <table id="wait" class="table table-primary">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" style="width: 80px;">หมายเลข</th>
+                                        <th scope="col">ผู้ซ่อม</th>
+                                        <th scope="col">อุปกรณ์</th>
+                                        <th scope="col">อาการที่ได้รับแจ้ง</th>
+                                        <th scope="col">หน่วยงาน</th>
+                                        <th scope="col" style="width: 80px;">เวลาแจ้ง</th>
+                                        <th scope="col" style="width: 80px;">เวลารับงาน</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
                         <hr>
-                        <table id="wait" class="table table-primary">
-                            <thead>
-                                <tr>
-                                    <th scope="col" style="width: 80px;">หมายเลข</th>
-                                    <th scope="col">ผู้ซ่อม</th>
-                                    <th scope="col">อุปกรณ์</th>
-                                    <th scope="col">อาการที่ได้รับแจ้ง</th>
-                                    <th scope="col">หน่วยงาน</th>
-                                    <th scope="col" style="width: 80px;">เวลาแจ้ง</th>
-                                    <th scope="col" style="width: 80px;">เวลารับงาน</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
                     </div>
-                    <hr>
                 </div>
-                <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
-                    <div class="table-responsive">
-                        <h1>งานที่เสร็จ</h1>
-                        <form method="post" action="system_1/export.php">
-                            <button name="actAll" class="btn btn-primary" type="submit">Export->Excel</button>
-                        </form>
-                        <hr>
-                        <table id="success" class="table table-success">
-                            <thead>
-                                <tr>
-                                    <th scope="col" style="text-align: left; width: 80px;">หมายเลข</th>
-                                    <th scope="col" style="text-align: left; width: 170px;">ผู้ซ่อม</th>
-                                    <th scope="col" style="text-align: left;">อาการที่ได้รับแจ้ง</th>
-                                    <th scope="col" style="text-align: left; width: 170px;">หน่วยงาน</th>
-                                    <th scope="col" style="text-align: left; width: 170px;">SLA</th>
-                                    <th scope="col" style="text-align: left; width: 120px;">ตัวชี้วัด</th>
-                                    <th scope="col" style="text-align: left; width: 80px;">วันที่แจ้ง</th>
-                                    <th scope="col" style="text-align: left; width: 80px;">เวลาแจ้ง</th>
-                                    <th scope="col" style="text-align: left; width: 80px;">เวลารับงาน</th>
-                                    <th scope="col" style="text-align: left; width: 80px;">วันที่ปิดงาน</th>
-                                    <th scope="col" style="text-align: left; width: 80px;">เวลาปิดงาน</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
+                <div class="section" id="4-section">
+                    <div class="card rounded-4 shadow-sm p-3 mt-4 col-sm-12 col-lg-12 col-md-12">
+                        <div class="table-responsive">
+                            <h1>งานที่เสร็จ</h1>
+                            <form method="post" action="system_1/export.php">
+                                <button name="actAll" class="btn btn-primary" type="submit">Export->Excel</button>
+                            </form>
+                            <hr>
+                            <table id="success" class="table table-success">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" style="text-align: left; width: 80px;">หมายเลข</th>
+                                        <th scope="col" style="text-align: left; width: 170px;">ผู้ซ่อม</th>
+                                        <th scope="col" style="text-align: left;">อาการที่ได้รับแจ้ง</th>
+                                        <th scope="col" style="text-align: left; width: 170px;">หน่วยงาน</th>
+                                        <th scope="col" style="text-align: left; width: 170px;">SLA</th>
+                                        <th scope="col" style="text-align: left; width: 120px;">ตัวชี้วัด</th>
+                                        <th scope="col" style="text-align: left; width: 80px;">วันที่แจ้ง</th>
+                                        <th scope="col" style="text-align: left; width: 80px;">เวลาแจ้ง</th>
+                                        <th scope="col" style="text-align: left; width: 80px;">เวลารับงาน</th>
+                                        <th scope="col" style="text-align: left; width: 80px;">วันที่ปิดงาน</th>
+                                        <th scope="col" style="text-align: left; width: 80px;">เวลาปิดงาน</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
                 <hr>
@@ -417,6 +442,16 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                         2: "🔵ปกติ",
                         1: "⏰งานประจำวัน",
                     };
+
+                    function showSection(sectionId) {
+                        const sections = document.querySelectorAll('.section');
+                        sections.forEach(section => section.classList.remove('active'));
+
+                        const target = document.getElementById(`${sectionId}-section`);
+                        if (target) {
+                            target.classList.add('active');
+                        }
+                    }
 
 
                     const typeRenderers = {
@@ -560,25 +595,37 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                                 const card = document.createElement('div');
                                 card.className = 'col-sm-2';
                                 card.innerHTML = `
-                    <div class="rounded-3 text-white ps-3 pb-2" style="max-width: 18rem; background-color: ${color}">
-                        <div class="card-header">
-                            <ion-icon name="people-outline"></ion-icon>
-                            <div class="d-flex align-items-end">
-                                <p style="font-size: 45px; margin: 0px;" class="count">${count}</p>
-                                <p class="ms-2" style="font-size: 32px; margin: 0px; margin-bottom:.4rem;">งาน</p>
-                            </div>
-                            <p style="font-size: 20px; margin: 0px;">${text}</p>
+                <div class="rounded-3 text-white ps-3 pb-2 card-hover"
+                     style="max-width: 18rem; background-color: ${color}"
+                     data-section="${status}">
+                    <div class="card-header">
+                        <ion-icon name="people-outline"></ion-icon>
+                        <div class="d-flex align-items-end">
+                            <p style="font-size: 45px; margin: 0px;" class="count">${count}</p>
+                            <p class="ms-2" style="font-size: 32px; margin: 0px; margin-bottom:.4rem;">งาน</p>
                         </div>
+                        <p style="font-size: 20px; margin: 0px;">${text}</p>
                     </div>
-                `;
+                </div>
+            `;
                                 fragment.appendChild(card);
                             });
 
                             container.appendChild(fragment);
+
+                            // 🔹 add click handler AFTER rendering
+                            container.querySelectorAll('[data-section]').forEach(card => {
+                                card.addEventListener('click', () => {
+                                    const sectionId = card.getAttribute('data-section');
+                                    showSection(sectionId);
+                                });
+                            });
+
                         } catch (err) {
                             console.error("Error fetching cards:", err);
                         }
                     };
+
 
 
                     const fetchTasks = async (type, tableId) => {
@@ -838,17 +885,17 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                         }
                     ];
 
-                    // On page load
                     panels.forEach(({
                         btnId,
                         panelId,
                         showText,
                         hideText
                     }) => {
-                        const savedState = localStorage.getItem(panelId); // 'show' or 'hide'
                         const collapseEl = document.getElementById(panelId);
                         const btn = document.getElementById(btnId);
 
+                        // Restore saved state
+                        const savedState = localStorage.getItem(panelId);
                         if (savedState === 'show') {
                             collapseEl.classList.add('show');
                             btn.textContent = hideText;
@@ -857,11 +904,19 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                             btn.textContent = showText;
                         }
 
-                        // Save state on toggle
-                        collapseEl.addEventListener('shown.bs.collapse', () => localStorage.setItem(panelId, 'show'));
-                        collapseEl.addEventListener('hidden.bs.collapse', () => localStorage.setItem(panelId, 'hide'));
-                    });
+                        // Listen for toggle events
+                        collapseEl.addEventListener('shown.bs.collapse', () => {
+                            localStorage.setItem(panelId, 'show');
+                            btn.textContent = hideText; // 🔹 update button
+                            savePanelState(panelId, 'show');
+                        });
 
+                        collapseEl.addEventListener('hidden.bs.collapse', () => {
+                            localStorage.setItem(panelId, 'hide');
+                            btn.textContent = showText; // 🔹 update button
+                            savePanelState(panelId, 'hide');
+                        });
+                    });
 
                     function savePanelState(panelId, action) {
                         fetch('system_1/toggle_panel.php', {
@@ -872,7 +927,6 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                             body: `panel_id=${panelId}&action=${action}`
                         });
                     }
-
                 });
             </script>
             <?php SC5() ?>
