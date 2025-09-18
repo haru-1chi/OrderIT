@@ -1053,11 +1053,11 @@ if (!isset($_SESSION["admin_log"])) {
                                     <td scope="row"><?= $row['unit'] ?></td>
                                     <td scope="row">
                                         <?php if ($row['auto_close'] == 1): ?>
-                                            <div class="bg-warning rounded-2 text-white text-center">
+                                            <div class="w-50 bg-warning rounded-2 text-white text-center">
                                                 ใช่
                                             </div>
                                         <?php else: ?>
-                                            <div class="bg-secondary rounded-2 text-white text-center">
+                                            <div class="w-50 bg-secondary rounded-2 text-white text-center">
                                                 ไม่ใช่
                                             </div>
                                         <?php endif; ?>
