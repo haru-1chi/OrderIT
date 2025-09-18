@@ -2293,17 +2293,6 @@ ORDER BY nd.id, oi.id
       }
     });
   </script>
-  <?php if (isset($_SESSION['open_form_workid'])): ?>
-    <script>
-      window.open(
-        "แบบฟอร์มคำขอส่งซ่อมบำรุงอุปกรณ์คอมพิวเตอร์.php?workid=<?= $_SESSION['open_form_workid'] ?>",
-        "_blank"
-      );
-    </script>
-  <?php
-    unset($_SESSION['open_form_workid']); // prevent popup on refresh
-  endif;
-  ?>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
 
