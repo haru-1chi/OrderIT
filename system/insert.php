@@ -1115,12 +1115,46 @@ if (isset($_POST['submit_with_work'])) {
                 }
 
                 $statusSql = "INSERT INTO order_status (order_id, status, timestamp) 
-                  VALUES (:order_id, :status, :timestamp)";
+              VALUES (:order_id, :status, :timestamp)";
                 $statusStmt = $conn->prepare($statusSql);
-                $statusStmt->bindParam(':order_id', $orderId);
-                $statusStmt->bindParam(':status', $status);
-                $statusStmt->bindParam(':timestamp', $timestamp);
-                $statusStmt->execute();
+
+                $allModelIds = [];
+                foreach ($lists as $modalId => $modalLists) {
+                    foreach ($modalLists as $id) {
+                        $allModelIds[] = $id;
+                    }
+                }
+
+                if (!empty($allModelIds)) {
+                    $placeholders = implode(',', array_fill(0, count($allModelIds), '?'));
+                    $checkSql = "SELECT COUNT(*) as cnt 
+                 FROM device_models dm 
+                 WHERE dm.models_id IN ($placeholders) 
+                   AND dm.auto_close = 1";
+                    $checkStmt = $conn->prepare($checkSql);
+                    $checkStmt->execute($allModelIds);
+                    $autoCloseCount = $checkStmt->fetchColumn();
+                } else {
+                    $autoCloseCount = 0;
+                }
+
+                if ($autoCloseCount > 0) {
+                    // Auto-close → insert all statuses 1-5
+                    for ($s = 1; $s <= 5; $s++) {
+                        $statusStmt->execute([
+                            ':order_id' => $orderId,
+                            ':status' => $s,
+                            ':timestamp' => $timestamp
+                        ]);
+                    }
+                } else {
+                    // Normal → insert only current status
+                    $statusStmt->execute([
+                        ':order_id' => $orderId,
+                        ':status' => $status,
+                        ':timestamp' => $timestamp
+                    ]);
+                }
 
                 // Update additional fields in data_report if `id_ref` matches
                 $checkSql = "SELECT numberWork FROM orderdata_new WHERE id_ref = :id_ref";
@@ -1534,14 +1568,61 @@ if (isset($_POST['save_with_work'])) {
                     }
                 }
 
-                //     $statusSql = "UPDATE order_status 
-                //   SET status = :status, timestamp = :timestamp 
-                //   WHERE order_id = :order_id";
-                //     $statusStmt = $conn->prepare($statusSql);
-                //     $statusStmt->bindParam(':order_id', $withdraw_id, PDO::PARAM_INT);
-                //     $statusStmt->bindParam(':status', $status, PDO::PARAM_STR);
-                //     $statusStmt->bindParam(':timestamp', $timestamp, PDO::PARAM_STR);
-                //     $statusStmt->execute();
+                $statusSql = "INSERT INTO order_status (order_id, status, timestamp) 
+              VALUES (:order_id, :status, :timestamp)";
+                $statusStmt = $conn->prepare($statusSql);
+
+                // Flatten helper
+                function flatten($array)
+                {
+                    $flat = [];
+                    foreach ($array as $sub) {
+                        foreach ($sub as $value) {
+                            $flat[] = $value;
+                        }
+                    }
+                    return $flat;
+                }
+
+                // Safely read arrays
+                $lists = $_POST['list'] ?? [];
+                $update_lists = $_POST['update_list'] ?? [];
+
+                if (!is_array($lists)) $lists = [];
+                if (!is_array($update_lists)) $update_lists = [];
+
+                // Flatten both arrays
+                $flatLists = flatten($lists);           // [20, 43]
+                $flatUpdateLists = flatten($update_lists); // [48]
+
+                // Combine and clean
+                $allLists = array_unique(array_map('intval', array_merge($flatLists, $flatUpdateLists)));
+
+                // Only run query if we have models to check
+
+
+
+                if (!empty($allLists)) {
+                    $placeholders = implode(',', array_fill(0, count($allLists), '?'));
+
+                    $checkSql = "SELECT COUNT(*) 
+                 FROM device_models 
+                 WHERE models_id IN ($placeholders) 
+                   AND auto_close = 1";
+                    $checkStmt = $conn->prepare($checkSql);
+                    $checkStmt->execute($allLists);
+                    $autoCloseCount = $checkStmt->fetchColumn();
+
+                    if ($autoCloseCount > 0) {
+                        for ($s = 1; $s <= 5; $s++) {
+                            $statusStmt->execute([
+                                ':order_id'  => $withdraw_id,
+                                ':status'    => $s,
+                                ':timestamp' => $timestamp
+                            ]);
+                        }
+                    }
+                }
 
                 // Update additional fields in data_report if `id_ref` matches
                 $checkSql = "SELECT numberWork FROM orderdata_new WHERE id_ref = :id_ref";
