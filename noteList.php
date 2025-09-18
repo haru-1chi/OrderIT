@@ -147,7 +147,7 @@ ORDER BY note_count DESC, c.category_name ASC;
         $allCategories = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
         ?>
 
-        <div id="category-filters" class="bg-white rounded border border-2 p-2 position-fixed" style="top: 275px; right: 1450px; z-index: 1000;">
+        <div id="category-filters" class="bg-white rounded border border-2 p-2 position-fixed" style="top: 30%; right: 76%; z-index: 1000;">
             <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
                 <h5 class="m-0">หมวดหมู่</h5>
                 <button class="btn btn-success p-0 px-2"
