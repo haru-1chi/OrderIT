@@ -800,7 +800,8 @@ if (isset($_POST['submitWithdraw'])) {
                 $conn->commit();
 
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จ";
-                header("location: ../check.php");
+                $_SESSION["open_form_workid"] = $numberWork;
+                header("Location: ../check.php");
             } else {
                 throw new Exception("Insert into orderdata_new failed.");
             }
@@ -1298,7 +1299,8 @@ if (isset($_POST['submit_with_work'])) {
 
                 $conn->commit();
                 $_SESSION["success"] = "เพิ่มข้อมูลสำเร็จและอัปเดตเรียบร้อย";
-                header("location: ../myjob.php");
+                $_SESSION["open_form_workid"] = $numberWork;
+                header("Location: ../check.php");
             } else {
                 throw new Exception("Insert into orderdata_new failed.");
             }

@@ -122,16 +122,7 @@ $fullname = $result['full_name'] ?? '-';
   <?php navbar();
   ?>
 
-  <div class="mt-5">
-    <?php foreach (['error' => 'danger', 'warning' => 'warning', 'success' => 'success'] as $key => $class): ?>
-      <?php if (isset($_SESSION[$key])): ?>
-        <div class="alert alert-<?= $class ?>" role="alert">
-          <?= htmlspecialchars($_SESSION[$key], ENT_QUOTES, 'UTF-8') ?>
-          <?php unset($_SESSION[$key]); ?>
-        </div>
-      <?php endif; ?>
-    <?php endforeach; ?>
-  </div>
+
 
   <?php
 
@@ -229,6 +220,17 @@ ORDER BY nd.id, oi.id
   ?>
 
   <div class="container-custom mt-3">
+    <div class="mt-5">
+      <?php foreach (['error' => 'danger', 'warning' => 'warning', 'success' => 'success'] as $key => $class): ?>
+        <?php if (isset($_SESSION[$key])): ?>
+          <div class="alert alert-<?= $class ?>" role="alert">
+            <?= htmlspecialchars($_SESSION[$key], ENT_QUOTES, 'UTF-8') ?>
+            <?php unset($_SESSION[$key]); ?>
+          </div>
+        <?php endif; ?>
+      <?php endforeach; ?>
+    </div>
+
     <div class="mt-3">
       <h2 class="text-center p-0 m-0">ตรวจสอบใบเบิก</h2>
       <div class="row pb-3">
@@ -2291,6 +2293,18 @@ ORDER BY nd.id, oi.id
       }
     });
   </script>
+  <?php if (isset($_SESSION['open_form_workid'])): ?>
+    <script>
+      window.open(
+        "แบบฟอร์มคำขอส่งซ่อมบำรุงอุปกรณ์คอมพิวเตอร์.php?workid=<?= $_SESSION['open_form_workid'] ?>",
+        "_blank"
+      );
+    </script>
+  <?php
+    unset($_SESSION['open_form_workid']); // prevent popup on refresh
+  endif;
+  ?>
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
 
   <!-- Add SweetAlert2 JS -->
