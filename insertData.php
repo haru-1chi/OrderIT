@@ -203,7 +203,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?depart=<?= $row['depart_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?depart=<?= $row['depart_id'] ?>&mainPage=1&page=1" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -322,7 +322,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?working=<?= $row['id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a> 
+                                                        <a id="confirmDelete" href="system/delete.php?working=<?= $row['id'] ?>&mainPage=1&page=2" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a> 
                                                     </div>
                                                 </div>
                                             </div>
@@ -458,7 +458,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?problemL=<?= $row['id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?problemL=<?= $row['id'] ?>&mainPage=1&page=3" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -576,7 +576,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?sla=<?= $row['sla_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?sla=<?= $row['sla_id'] ?>&mainPage=1&page=4" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -691,7 +691,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?kpi=<?= $row['kpi_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?kpi=<?= $row['kpi_id'] ?>&mainPage=1&page=5" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -811,7 +811,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?withdraw=<?= $row['withdraw_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?withdraw=<?= $row['withdraw_id'] ?>&mainPage=2&page=1" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -929,7 +929,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?work=<?= $row['work_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?work=<?= $row['work_id'] ?>&mainPage=2&page=2" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1126,7 +1126,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?models=<?= $row['models_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?models=<?= $row['models_id'] ?>&mainPage=2&page=3" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1248,7 +1248,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?offer=<?= $row['offer_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?offer=<?= $row['offer_id'] ?>&mainPage=2&page=4" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1370,7 +1370,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?device=<?= $row['device_id'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?device=<?= $row['device_id'] ?>&mainPage=2&page=5" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1531,7 +1531,7 @@ if (!isset($_SESSION["admin_log"])) {
                                                     </div>
                                                     <div class="modal-footer">
                                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                                                        <a id="confirmDelete" href="system/delete.php?deleteuser=<?= $row['username'] ?>" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
+                                                        <a id="confirmDelete" href="system/delete.php?deleteuser=<?= $row['username'] ?>&mainPage=4&page=1" class="btn btn-danger" style="background-color: #FF5757; border: none;">ลบ</a>
                                                     </div>
                                                 </div>
                                             </div>

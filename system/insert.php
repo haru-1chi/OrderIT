@@ -19,8 +19,7 @@ function backToInsertPage($data = [])
     foreach ($data as $key => $value) {
         $link .= "&" . urldecode($key) . "=" . urldecode($value);
     }
-
-
+    
     // echo $link;
     header($link);
 }

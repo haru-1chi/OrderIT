@@ -2,6 +2,21 @@
 session_start();
 require_once '../config/db.php';
 
+function backToInsertPage($data = [])
+{
+    $mainPageId = $_GET["mainPage"];
+    $pageId = $_GET["page"];
+    $link = "location: ../insertData.php?mainPage=$mainPageId&page=$pageId";
+
+    foreach ($data as $key => $value) {
+        $link .= "&" . urldecode($key) . "=" . urldecode($value);
+    }
+
+    // echo $link;
+    header($link);
+    exit();
+}
+
 if (isset($_GET['device'])) {
     $id = $_GET['device'];
     $sql = "DELETE FROM device WHERE device_id = :id";
@@ -9,7 +24,7 @@ if (isset($_GET['device'])) {
     $stmt->bindParam(":id", $id);
     if ($stmt->execute()) {
         $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
-        header("location: ../insertData.php");
+        backToInsertPage();
     } else {
         $_SESSION['error'] = "พบข้อผิดพลาด";
         header("location: ../insertData.php");
@@ -60,7 +75,7 @@ if (isset($_GET['models'])) {
     $stmt->bindParam(":id", $id);
     if ($stmt->execute()) {
         $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
-        header("location: ../insertData.php");
+        backToInsertPage();
     } else {
         $_SESSION['error'] = "พบข้อผิดพลาด";
         header("location: ../insertData.php");
@@ -73,7 +88,7 @@ if (isset($_GET['work'])) {
     $stmt->bindParam(":id", $id);
     if ($stmt->execute()) {
         $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
-        header("location: ../insertData.php");
+        backToInsertPage();
     } else {
         $_SESSION['error'] = "พบข้อผิดพลาด";
         header("location: ../insertData.php");
@@ -86,7 +101,7 @@ if (isset($_GET['depart'])) {
     $stmt->bindParam(":id", $id);
     if ($stmt->execute()) {
         $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
-        header("location: ../insertData.php");
+        backToInsertPage();
     } else {
         $_SESSION['error'] = "พบข้อผิดพลาด";
         header("location: ../insertData.php");
@@ -99,7 +114,7 @@ if (isset($_GET['withdraw'])) {
     $stmt->bindParam(":id", $id);
     if ($stmt->execute()) {
         $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
-        header("location: ../insertData.php");
+        backToInsertPage();
     } else {
         $_SESSION['error'] = "พบข้อผิดพลาด";
         header("location: ../insertData.php");
@@ -112,7 +127,7 @@ if (isset($_GET['sla'])) {
     $stmt->bindParam(":id", $id);
     if ($stmt->execute()) {
         $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
-        header("location: ../insertData.php");
+        backToInsertPage();
     } else {
         $_SESSION['error'] = "พบข้อผิดพลาด";
         header("location: ../insertData.php");
@@ -125,7 +140,7 @@ if (isset($_GET['kpi'])) {
     $stmt->bindParam(":id", $id);
     if ($stmt->execute()) {
         $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
-        header("location: ../insertData.php");
+        backToInsertPage();
     } else {
         $_SESSION['error'] = "พบข้อผิดพลาด";
         header("location: ../insertData.php");
@@ -138,7 +153,7 @@ if (isset($_GET['offer'])) {
     $stmt->bindParam(":id", $id);
     if ($stmt->execute()) {
         $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
-        header("location: ../insertData.php");
+        backToInsertPage();
     } else {
         $_SESSION['error'] = "พบข้อผิดพลาด";
         header("location: ../insertData.php");
@@ -151,7 +166,7 @@ if (isset($_GET['deleteuser'])) {
     $stmt->bindParam(":id", $id);
     if ($stmt->execute()) {
         $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
-        header("location: ../insertData.php");
+        backToInsertPage();
     } else {
         $_SESSION['error'] = "พบข้อผิดพลาด";
         header("location: ../insertData.php");
@@ -164,7 +179,7 @@ if (isset($_GET['working'])) {
     $stmt->bindParam(":id", $id);
     if ($stmt->execute()) {
         $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
-        header("location: ../insertData.php");
+        backToInsertPage();
     } else {
         $_SESSION['error'] = "พบข้อผิดพลาด";
         header("location: ../insertData.php");
@@ -177,7 +192,7 @@ if (isset($_GET['problemL'])) {
     $stmt->bindParam(":id", $id);
     if ($stmt->execute()) {
         $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
-        header("location: ../insertData.php");
+        backToInsertPage();
     } else {
         $_SESSION['error'] = "พบข้อผิดพลาด";
         header("location: ../insertData.php");
