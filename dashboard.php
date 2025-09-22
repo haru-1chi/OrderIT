@@ -633,6 +633,8 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
                     const fetchTasks = async (type, tableId) => {
                         try {
+                            const orderConfig = (type === "today" || type === "over_due") ? [10, 'desc'] : [0, 'desc'];
+
                             const res = await fetch(`system_1/dashboard_get_tasks.php?type=${type}`);
                             const data = await res.json();
 
@@ -642,9 +644,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                             const table = isInitialized ?
                                 tableElement.DataTable() :
                                 tableElement.DataTable({
-                                    order: [
-                                        [0, 'desc']
-                                    ],
+                                    order: [orderConfig],
                                     destroy: true
                                 });
 

@@ -19,7 +19,8 @@ if ($type === 'unfiltered') {
             WHERE dp.status = 0 
               AND DATE(date_report) = '$dateThai'
               AND dp.work_type IS NOT NULL AND dp.work_type != ''
-              AND dp.priority IS NOT NULL AND dp.priority != ''";
+              AND dp.priority IS NOT NULL AND dp.priority != ''
+              Order by dp.priority desc";
 } elseif ($type === 'in_progress') {
     $sql = "SELECT dp.id, dp.device, dp.report, dp.time_report, dp.take, dt.depart_name, 
                    adm.fname, adm.lname, dp.deviceName
@@ -35,7 +36,8 @@ if ($type === 'unfiltered') {
                     WHERE dp.status = 0 AND DATE(date_report) <> '$dateThai'
                         AND dp.work_type IS NOT NULL AND dp.work_type != ''
               AND dp.priority IS NOT NULL AND dp.priority != ''
-                    ";
+                    Order by
+                    dp.priority desc";
 } elseif ($type === 'calm') {
     $sql = "SELECT dp.*,dt.depart_name, adm.fname, adm.lname
                     FROM data_report as dp
