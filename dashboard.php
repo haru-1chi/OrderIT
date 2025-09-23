@@ -42,20 +42,20 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
             color: #000;
         }
 
-        #dataAll tbody tr td {
+        /* #dataAll tbody tr td {
             background-color: #fff4f5;
             color: #000;
-        }
+        } */
 
         #inTime tbody tr td {
             background-color: #fffbf0;
             color: #000;
         }
 
-        #dataAllNOTTAKE tbody tr td {
+        /* #dataAllNOTTAKE tbody tr td {
             background-color: #fff4f5;
             color: #000;
-        }
+        } */
 
         #clam tbody tr td {
             background-color: #fff4f5;
@@ -97,6 +97,26 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
         .section.active {
             display: block;
             opacity: 1;
+        }
+
+        .priority-4 td {
+            background-color: #fff4f5;
+            color: #000;
+        }
+
+        .priority-3 td {
+            background-color: #fffbf0;
+            color: #000;
+        }
+
+        .priority-2 td {
+            background-color: #f2f7ff;
+            color: #000;
+        }
+
+        .priority-1 td {
+            background-color: #f8f9fa;
+            color: #000;
         }
     </style>
 </head>
@@ -446,6 +466,13 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                         1: "⏰งานประจำวัน",
                     };
 
+                    const PRIORITY_CLASSES = {
+                        4: "background-color: #fff4f5 !important;",
+                        3: "background-color: #fffbf0 !important;",
+                        2: "background-color: #f2f7ff !important;",
+                        1: "background-color: #f8f9fa !important;"
+                    };
+
                     function showSection(sectionId) {
                         const sections = document.querySelectorAll('.section');
                         sections.forEach(section => section.classList.remove('active'));
@@ -657,6 +684,11 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
                             data.forEach(row => {
                                 const tr = document.createElement('tr');
+
+                                if (type === "today" || type === "over_due") {
+                                    tr.classList.add(`priority-${row.priority}`);
+                                }
+
                                 tr.innerHTML = renderRow(row, admin);
                                 tableBody.appendChild(tr);
                             });
