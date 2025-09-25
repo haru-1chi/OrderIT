@@ -570,6 +570,25 @@ ORDER BY nd.id, oi.id
                         <button type="button" id="add-device-number-main" class="btn btn-success mt-2 align-self-end" style="display: none;">+ เพิ่มหมายเลขครุภัณฑ์</button>
                       </div>
                     </div>
+
+                    <div class="d-flex justify-content-end">
+                      <?php
+                      $id_ref = $order['id_ref'] ?? null; // prevent error if not set
+                      if ($id_ref) {
+                      ?>
+                        <button type="button" class="btn btn-primary btn-action"
+                          data-bs-toggle="modal"
+                          data-bs-target="#com<?= $order['id_ref'] ?>">
+                          ดูข้อมูลเลขงาน
+                        </button>
+
+                        <?php include 'view_task.php'; ?>
+
+                      <?php
+                      }
+                      ?>
+
+                    </div>
                   </div>
                 </div>
 
