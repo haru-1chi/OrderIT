@@ -103,22 +103,35 @@ if (!isset($_SESSION["admin_log"])) {
             animation: shrinkExpand 0.3s ease-in-out;
         }
 
+        :root {
+            --border-color: #ced4da;
+            --primary: #0d6efd;
+            --primary-hover: #0b5ed7;
+            --danger: #dc3545;
+            --disabled-bg: #e9ecef;
+            --focus-shadow: rgba(13, 110, 253, 0.25);
+        }
+
         .choices {
-            margin-bottom: 0 !important;
+            width: 100%;
+            margin-bottom: 0;
+            box-sizing: border-box;
         }
 
         .choices__inner {
             border-radius: 0.375rem !important;
             min-height: 33px !important;
-            border: 1px solid #ced4da;
-            padding: 0 !important;
+            border: 1px solid var(--border-color);
+            padding: 0 2rem 0 0 !important;
             background-color: #fff !important;
             font-size: 1rem !important;
             line-height: 1.5;
+            width: 100% !important;
+            box-sizing: border-box;
         }
 
         .choices__inner.is-invalid {
-            border-color: #dc3545 !important;
+            border-color: var(--danger);
         }
 
         .choices__list--single {
@@ -127,17 +140,58 @@ if (!isset($_SESSION["admin_log"])) {
 
         .choices__list--dropdown {
             border-radius: 0.375rem;
-            border: 1px solid #ced4da;
+            border: 1px solid var(--border-color);
+            width: auto !important;
+            min-width: 100%;
+            max-width: max-content;
+        }
+
+        .choices__list--dropdown .choices__item--choice {
+            white-space: nowrap !important;
         }
 
         .choices__item--selectable {
             padding: 0.375rem 0.75rem;
         }
 
+        /* Remove default focus ring from Choices.js */
         .choices.is-focused .choices__inner,
         .choices.is-open .choices__inner {
             border-color: #86b7fe !important;
             box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25) !important;
+        }
+
+        .choices.is-disabled .choices__inner,
+        .choices.is-disabled .choices__input,
+        .choices.is-disabled .choices__item {
+            background-color: var(--disabled-bg) !important;
+            cursor: default !important;
+        }
+
+        .choices__inner .choices__list--single,
+        .choices__inner .choices__list--single .choices__item,
+        .choices__inner .choices__item--selectable,
+        .choices__inner .choices__placeholder {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: clip !important;
+            display: block !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+        }
+
+        .choices__inner .choices__input {
+            min-width: 0 !important;
+        }
+
+        .choices__list--dropdown .choices__item.is-selected {
+            background-color: var(--primary) !important;
+            color: #fff !important;
+        }
+
+        .choices__list--dropdown .choices__item.is-selected.is-highlighted {
+            background-color: var(--primary-hover) !important;
+            color: #fff !important;
         }
     </style>
 </head>
@@ -461,14 +515,17 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 </div>
                                                                 <div class="col-6">
                                                                     <label>หน่วยงาน</label>
-                                                                    <?php
-                                                                    $sql = "SELECT depart_name FROM depart WHERE depart_id = ?";
-                                                                    $stmt = $conn->prepare($sql);
-                                                                    $stmt->execute([$row['department']]);
-                                                                    $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                                                                    ?>
                                                                     <select class="form-select" name="department" id="departId<?= $row['id'] ?>" required>
-                                                                        <option value="<?= $row['department'] ?>" selected><?= $departRow['depart_name'] ?></option>
+                                                                        <?php
+                                                                        $sql = "SELECT * FROM depart";
+                                                                        $stmt = $conn->prepare($sql);
+                                                                        $stmt->execute();
+                                                                        $departRow = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                                                        foreach ($departRow as $depart) {
+                                                                            $selected = $depart['depart_id'] == $row['department'] ? 'selected' : '';
+                                                                            echo "<option value='{$depart['depart_id']}' $selected>{$depart['depart_name']}</option>";
+                                                                        }
+                                                                        ?>
                                                                     </select>
                                                                 </div>
                                                             </div>
@@ -482,7 +539,16 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="col-6">
                                                                     <label for="deviceInput">อุปกรณ์</label>
                                                                     <select class="form-select" id="deviceInput<?= $row['id'] ?>" name="deviceName" required>
-                                                                        <option value="<?= $row['deviceName'] ?>" selected><?= $row['deviceName'] ?></option>
+                                                                        <?php
+                                                                        $sql = "SELECT * FROM device";
+                                                                        $stmt = $conn->prepare($sql);
+                                                                        $stmt->execute();
+                                                                        $deviceRow = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                                                        foreach ($deviceRow as $device) {
+                                                                            $selected = $device['device_name'] == $row['deviceName'] ? 'selected' : '';
+                                                                            echo "<option value='{$device['device_name']}' $selected>{$device['device_name']}</option>";
+                                                                        }
+                                                                        ?>
                                                                     </select>
                                                                 </div>
 
@@ -1148,14 +1214,14 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     </div>
                                                                     <table id="pdf" style="width: 100%;" class="table">
                                                                         <thead class="table-primary">
-                                                                            <tr class="text-center" style="text-align:center;">
-                                                                                <th scope="col">ลำดับ</th>
-                                                                                <th scope="col">รายการ</th>
-                                                                                <th scope="col">คุณสมบัติ</th>
-                                                                                <th scope="col">จำนวน</th>
-                                                                                <th scope="col">ราคา</th>
-                                                                                <th scope="col">รวม</th>
-                                                                                <th scope="col">หน่วย</th>
+                                                                            <tr>
+                                                                                <th scope="col" class="text-center">ลำดับ</th>
+                                                                                <th scope="col" class="text-center">รายการ</th>
+                                                                                <th scope="col" class="text-center">คุณสมบัติ</th>
+                                                                                <th scope="col" class="text-center">จำนวน</th>
+                                                                                <th scope="col" class="text-center">ราคา</th>
+                                                                                <th scope="col" class="text-center">รวม</th>
+                                                                                <th scope="col" class="text-center">หน่วย</th>
                                                                                 <th scope="col"></th>
                                                                             </tr>
                                                                         </thead>
@@ -1165,12 +1231,10 @@ if (!isset($_SESSION["admin_log"])) {
                                                                             $isFirstRow = true;
                                                                             foreach ($orderItems as $item) { //สร้าง case ถ้า orderItems is null
                                                                             ?>
-                                                                                <tr class="text-center">
-                                                                                    <th scope="row"><?= $rowNumber++; ?></th>
-                                                                                    <td>
-                                                                                        <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="update_list[<?= $row['id'] ?>][<?= $item['id'] ?>]" data-row="1">
-                                                                                            <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-                                                                                            <!-- Populate options dynamically -->
+                                                                                <tr class="text-start">
+                                                                                    <th scope="row" class="text-center"><?= $rowNumber++; ?></th>
+                                                                                    <td style="max-width: 170px;">
+                                                                                        <select style="margin: 0 auto;" class="form-select device-select" name="update_list[<?= $row['id'] ?>][<?= $item['id'] ?>]" data-row="1">
                                                                                             <?php
                                                                                             $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
                                                                                             $deviceStmt = $conn->prepare($deviceSql);
@@ -1392,24 +1456,24 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 </div>
                                                                 <table id="pdf" style="width: 100%;" class="table">
                                                                     <thead class="table-primary">
-                                                                        <tr class="text-center" style="text-align:center;">
-                                                                            <th scope="col">ลำดับ</th>
-                                                                            <th scope="col">รายการ</th>
-                                                                            <th scope="col">คุณสมบัติ</th>
-                                                                            <th scope="col">จำนวน</th>
-                                                                            <th scope="col">ราคา</th>
-                                                                            <th scope="col">รวม</th>
-                                                                            <th scope="col">หน่วย</th>
+                                                                        <tr>
+                                                                            <th scope="col" class="text-center">ลำดับ</th>
+                                                                            <th scope="col" class="text-center">รายการ</th>
+                                                                            <th scope="col" class="text-center">คุณสมบัติ</th>
+                                                                            <th scope="col" class="text-center">จำนวน</th>
+                                                                            <th scope="col" class="text-center">ราคา</th>
+                                                                            <th scope="col" class="text-center">รวม</th>
+                                                                            <th scope="col" class="text-center">หน่วย</th>
                                                                             <th scope="col"></th>
                                                                         </tr>
                                                                     </thead>
 
                                                                     <tbody id="table-body-main-<?= $row['id'] ?>">
-                                                                        <tr class="text-center">
-                                                                            <th scope="row">1</th>
-                                                                            <td>
-                                                                                <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="list[<?= $row['id'] ?>][]" data-row="1">
-                                                                                    <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
+                                                                        <tr class="text-start">
+                                                                            <th scope="row" class="text-center">1</th>
+                                                                            <td style="max-width: 170px;">
+                                                                                <select style="margin: 0 auto;" class="form-select device-select" name="list[<?= $row['id'] ?>][]" data-row="1">
+
                                                                                     <!-- Populate options dynamically -->
                                                                                     <?php
                                                                                     $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
@@ -1862,14 +1926,17 @@ ORDER BY id DESC;
                                                                 </div>
                                                                 <div class="col-6">
                                                                     <label>หน่วยงาน</label>
-                                                                    <?php
-                                                                    $sql = "SELECT depart_name FROM depart WHERE depart_id = ?";
-                                                                    $stmt = $conn->prepare($sql);
-                                                                    $stmt->execute([$row['department']]);
-                                                                    $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                                                                    ?>
                                                                     <select class="form-select" name="department" id="departId<?= $row['id'] ?>" required>
-                                                                        <option value="<?= $row['department'] ?>" selected><?= $departRow['depart_name'] ?></option>
+                                                                        <?php
+                                                                        $sql = "SELECT * FROM depart";
+                                                                        $stmt = $conn->prepare($sql);
+                                                                        $stmt->execute();
+                                                                        $departRow = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                                                        foreach ($departRow as $depart) {
+                                                                            $selected = $depart['depart_id'] == $row['department'] ? 'selected' : '';
+                                                                            echo "<option value='{$depart['depart_id']}' $selected>{$depart['depart_name']}</option>";
+                                                                        }
+                                                                        ?>
                                                                     </select>
                                                                 </div>
                                                             </div>
@@ -1883,7 +1950,16 @@ ORDER BY id DESC;
                                                                 <div class="col-6">
                                                                     <label for="deviceInput">อุปกรณ์</label>
                                                                     <select class="form-select" id="deviceInput<?= $row['id'] ?>" name="deviceName" required>
-                                                                        <option value="<?= $row['deviceName'] ?>" selected><?= $row['deviceName'] ?></option>
+                                                                        <?php
+                                                                        $sql = "SELECT * FROM device";
+                                                                        $stmt = $conn->prepare($sql);
+                                                                        $stmt->execute();
+                                                                        $deviceRow = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                                                        foreach ($deviceRow as $device) {
+                                                                            $selected = $device['device_name'] == $row['deviceName'] ? 'selected' : '';
+                                                                            echo "<option value='{$device['device_name']}' $selected>{$device['device_name']}</option>";
+                                                                        }
+                                                                        ?>
                                                                     </select>
                                                                 </div>
 
@@ -2577,14 +2653,14 @@ ORDER BY id DESC;
                                                                     </div>
                                                                     <table id="pdf" style="width: 100%;" class="table">
                                                                         <thead class="table-primary">
-                                                                            <tr class="text-center" style="text-align:center;">
-                                                                                <th scope="col">ลำดับ</th>
-                                                                                <th scope="col">รายการ</th>
-                                                                                <th scope="col">คุณสมบัติ</th>
-                                                                                <th scope="col">จำนวน</th>
-                                                                                <th scope="col">ราคา</th>
-                                                                                <th scope="col">รวม</th>
-                                                                                <th scope="col">หน่วย</th>
+                                                                            <tr>
+                                                                                <th scope="col" class="text-center">ลำดับ</th>
+                                                                                <th scope="col" class="text-center">รายการ</th>
+                                                                                <th scope="col" class="text-center">คุณสมบัติ</th>
+                                                                                <th scope="col" class="text-center">จำนวน</th>
+                                                                                <th scope="col" class="text-center">ราคา</th>
+                                                                                <th scope="col" class="text-center">รวม</th>
+                                                                                <th scope="col" class="text-center">หน่วย</th>
                                                                                 <th scope="col"></th>
                                                                             </tr>
                                                                         </thead>
@@ -2594,12 +2670,10 @@ ORDER BY id DESC;
                                                                             $isFirstRow = true;
                                                                             foreach ($orderItems as $item) { //สร้าง case ถ้า orderItems is null
                                                                             ?>
-                                                                                <tr class="text-center">
-                                                                                    <th scope="row"><?= $rowNumber++; ?></th>
-                                                                                    <td>
-                                                                                        <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="update_list[<?= $row['id'] ?>][<?= $item['id'] ?>]" data-row="1">
-                                                                                            <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-                                                                                            <!-- Populate options dynamically -->
+                                                                                <tr class="text-start">
+                                                                                    <th scope="row" class="text-center"><?= $rowNumber++; ?></th>
+                                                                                    <td style="max-width: 170px;">
+                                                                                        <select style="margin: 0 auto;" class="form-select device-select" name="update_list[<?= $row['id'] ?>][<?= $item['id'] ?>]" data-row="1">
                                                                                             <?php
                                                                                             $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
                                                                                             $deviceStmt = $conn->prepare($deviceSql);
@@ -2820,25 +2894,23 @@ ORDER BY id DESC;
                                                                 </div>
                                                                 <table id="pdf" style="width: 100%;" class="table">
                                                                     <thead class="table-primary">
-                                                                        <tr class="text-center" style="text-align:center;">
-                                                                            <th scope="col">ลำดับ</th>
-                                                                            <th scope="col">รายการ</th>
-                                                                            <th scope="col">คุณสมบัติ</th>
-                                                                            <th scope="col">จำนวน</th>
-                                                                            <th scope="col">ราคา</th>
-                                                                            <th scope="col">รวม</th>
-                                                                            <th scope="col">หน่วย</th>
+                                                                        <tr>
+                                                                            <th scope="col" class="text-center">ลำดับ</th>
+                                                                            <th scope="col" class="text-center">รายการ</th>
+                                                                            <th scope="col" class="text-center">คุณสมบัติ</th>
+                                                                            <th scope="col" class="text-center">จำนวน</th>
+                                                                            <th scope="col" class="text-center">ราคา</th>
+                                                                            <th scope="col" class="text-center">รวม</th>
+                                                                            <th scope="col" class="text-center">หน่วย</th>
                                                                             <th scope="col"></th>
                                                                         </tr>
                                                                     </thead>
 
                                                                     <tbody id="table-body-unComplete-<?= $row['id'] ?>">
-                                                                        <tr class="text-center">
-                                                                            <th scope="row">1</th>
-                                                                            <td>
-                                                                                <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="list[<?= $row['id'] ?>][]" data-row="1">
-                                                                                    <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
-                                                                                    <!-- Populate options dynamically -->
+                                                                        <tr class="text-start">
+                                                                            <th scope="row" class="text-center">1</th>
+                                                                            <td style="max-width: 170px;">
+                                                                                <select style="margin: 0 auto;" class="form-select device-select" name="list[<?= $row['id'] ?>][]" data-row="1">
                                                                                     <?php
                                                                                     $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
                                                                                     $deviceStmt = $conn->prepare($deviceSql);
@@ -2996,125 +3068,12 @@ ORDER BY id DESC;
 <script>
     const now = new Date();
 
-    // Format the time as HH:mm
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-    // Set the current time as the default value for the input fields
     const timeReportInputs = document.querySelectorAll('.time_report');
     timeReportInputs.forEach(input => input.value = currentTime);
 </script>
 <script>
-    // $(function() {
-    //     function setupAutocomplete({
-    //         type,
-    //         inputSelector,
-    //         hiddenInputSelector,
-    //         sourceUrl,
-    //         confirmMessage = "คุณต้องการเพิ่มรายการนี้หรือไม่?",
-    //         resetValue = "",
-    //         defaultHiddenId = ""
-    //     }) {
-    //         let inputChanged = false;
-    //         let alertShown = false; // Flag to track if the alert has been shown already
-
-    //         const $input = $(inputSelector);
-    //         const $hiddenInput = $(hiddenInputSelector);
-
-    //         $input.autocomplete({
-    //                 source: function(request, response) {
-    //                     $.ajax({
-    //                         url: sourceUrl,
-    //                         method: "GET",
-    //                         dataType: "json",
-    //                         data: {
-    //                             term: request.term,
-    //                             type: type
-    //                         },
-    //                         success: function(data) {
-    //                             response(data); // Show suggestions
-    //                         },
-    //                         error: function() {
-    //                             response([]);
-    //                         }
-    //                     });
-    //                 },
-    //                 minLength: 1,
-    //                 autoFocus: true,
-    //                 select: function(event, ui) {
-    //                     if (ui.item && ui.item.value !== "") {
-    //                         $input.val(ui.item.label);
-    //                         $hiddenInput.val(ui.item.value);
-    //                     } else {
-    //                         $input.val('');
-    //                         $hiddenInput.val('');
-    //                     }
-    //                     inputChanged = false;
-    //                     return false;
-    //                 }
-    //             })
-    //             .data("ui-autocomplete")._renderItem = function(ul, item) {
-    //                 return $("<li>")
-    //                     .append("<div>" + item.label + "</div>")
-    //                     .appendTo(ul);
-    //             };
-
-    //         $input.on("input", function() {
-    //             inputChanged = true;
-    //         });
-
-    //         $input.on("blur", function() {
-    //             if (!inputChanged) return;
-
-    //             const enteredValue = $input.val().trim();
-    //             if (!enteredValue) {
-    //                 $hiddenInput.val('');
-    //                 return;
-    //             }
-
-    //             $.ajax({
-    //                 url: sourceUrl,
-    //                 method: "GET",
-    //                 dataType: "json",
-    //                 data: {
-    //                     term: enteredValue,
-    //                     type: type
-    //                 },
-    //                 success: function(data) {
-    //                     const found = data.some(item => item.label === enteredValue);
-    //                     if (!found) {
-    //                         alertShown = true;
-    //                         Swal.fire({
-    //                             icon: 'warning',
-    //                             title: confirmMessage,
-    //                             text: 'หากต้องการเพิ่ม กรุณาติดต่อแอดมิน',
-    //                             confirmButtonText: 'ตกลง'
-    //                         }).then(() => {
-    //                             $input.val(resetValue);
-    //                             $hiddenInput.val(defaultHiddenId);
-    //                             alertShown = false;
-    //                         });
-    //                     }
-    //                 }
-    //             });
-    //             inputChanged = false; // Reset the flag
-    //         });
-    //     }
-
-    //     // Initialize autocomplete for all dynamically generated inputs
-    //     $("input[id^='deviceInput']").each(function() {
-    //         const index = $(this).attr("id").replace("deviceInput", "");
-    //         setupAutocomplete({
-    //             type: "device",
-    //             inputSelector: `#deviceInput${index}`,
-    //             hiddenInputSelector: `#deviceId${index}`,
-    //             sourceUrl: "system_1/autocomplete.php",
-    //             confirmMessage: "ไม่พบหน่วยงานนี้ในระบบ",
-    //             resetValue: "-",
-    //             defaultHiddenId: "105"
-    //         });
-    //     });
-    // });
-
     document.addEventListener('DOMContentLoaded', function() {
         function setupChoicesAutocomplete({
             type,
@@ -3127,7 +3086,6 @@ ORDER BY id DESC;
             selects.forEach(select => {
                 if (select.dataset.choices === "true") return;
 
-                const initialValue = select.value;
                 const choices = new Choices(select, {
                     searchEnabled: true,
                     shouldSort: false,
@@ -3138,45 +3096,16 @@ ORDER BY id DESC;
                     searchResultLimit: -1,
                 });
 
-                select.dataset.choices = "true";
-
-                async function fetchData(term = '') {
-                    try {
-                        const response = await fetch(`${sourceUrl}?term=${encodeURIComponent(term)}&type=${type}`);
-                        const data = await response.json();
-
-                        choices.clearChoices();
-
-                        if (!data.length) {
-                            choices.setChoices([{
-                                value: '',
-                                label: notFoundMessage,
-                                disabled: true
-                            }], 'value', 'label', true);
-                            return;
-                        }
-
-                        const options = data.map(item => ({
-                            value: (type === 'device') ? item.label : item.value,
-                            label: item.label,
-                            selected: item.value == initialValue // ✅ mark the DB value as selected
-                        }));
-
-                        // Add a placeholder option at the top
-                        options.unshift({
-                            value: '',
-                            label: 'กรุณาเลือก...',
-                            selected: !initialValue,
-                            disabled: false
+                select.addEventListener("showDropdown", () => {
+                    const selectedItem = choices.dropdown.element.querySelector(".is-selected");
+                    if (selectedItem) {
+                        selectedItem.scrollIntoView({
+                            block: "nearest"
                         });
-
-                        choices.setChoices(options, 'value', 'label', true);
-                    } catch (error) {
-                        console.error('Error fetching data:', error);
                     }
-                }
-                // Load data initially
-                fetchData();
+                });
+
+                select.dataset.choices = "true";
             });
         }
 
@@ -3223,6 +3152,37 @@ ORDER BY id DESC;
 </script>
 
 <script>
+    function initDeviceChoices() {
+        $('.device-select').each(function() {
+            // Prevent double initialization
+            if (!$(this).data('choices')) {
+                const choice = new Choices(this, {
+                    searchEnabled: true,
+                    shouldSort: false,
+                    placeholder: true,
+                    placeholderValue: 'เลือกรายการอุปกรณ์',
+                    searchPlaceholderValue: 'พิมพ์เพื่อค้นหา...',
+                    itemSelectText: '',
+                    searchResultLimit: -1,
+                });
+                choice.passedElement.element.addEventListener("showDropdown", () => {
+                    const dropdown = choice.dropdown.element;
+                    const selected = dropdown.querySelector(".is-selected");
+                    if (selected) {
+                        selected.scrollIntoView({
+                            block: "nearest"
+                        });
+                    }
+                });
+                $(this).data('choices', choice); // store instance to prevent re-init
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        initDeviceChoices();
+    });
+
     //เพิ่มแถวตาราง
     function calculateSumTotal(tableBodyId) {
         let total = 0;
@@ -3288,13 +3248,12 @@ ORDER BY id DESC;
             const rowIndex = tableBody.querySelectorAll('tr').length + 1;
 
             const newRow = document.createElement('tr');
-            newRow.className = 'text-center';
+            newRow.className = 'text-start';
             newRow.innerHTML = `
-            <th scope="row">${rowIndex}</th>
-            <td>
-                <select style="width: 150px; margin: 0 auto;" class="form-select device-select" 
+            <th scope="row" class="text-center">${rowIndex}</th>
+            <td style="max-width: 170px;">
+                <select style="margin: 0 auto;" class="form-select device-select" 
                         name="list[${modalId}][]" data-row="${rowIndex}">
-                    <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                     <?php
                     foreach ($devices as $device) {
                     ?>
@@ -3314,6 +3273,7 @@ ORDER BY id DESC;
 
             tableBody.appendChild(newRow);
             calculateRowTotal(newRow, `table-body-${isMain ? 'main' : 'unComplete'}-${modalId}`);
+            initDeviceChoices();
         }
     });
     document.addEventListener('click', function(e) {
@@ -3351,6 +3311,7 @@ ORDER BY id DESC;
         });
         rowIndex = rows.length;
     }
+
 
     $(document).on('change', '.device-select', function() {
         const models_id = $(this).val();

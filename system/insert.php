@@ -19,7 +19,7 @@ function backToInsertPage($data = [])
     foreach ($data as $key => $value) {
         $link .= "&" . urldecode($key) . "=" . urldecode($value);
     }
-    
+
     // echo $link;
     header($link);
 }
@@ -606,37 +606,41 @@ if (isset($_POST['addKPI'])) { // เพิ่ม ตัวชี้วัด
 
 function generateNumberWork($conn)
 {
-    // Fetch the latest numberWork from the database
-    $sql = "SELECT numberWork FROM orderdata_new ORDER BY id DESC LIMIT 1";
+    // Step 1: ตรวจสอบปีงบประมาณ
+    $currentDate = new DateTime();
+    $fiscalYearStart = new DateTime($currentDate->format('Y') . '-10-01');
+
+    if ($currentDate >= $fiscalYearStart) {
+        $fiscalYear = $currentDate->format('Y') + 544;
+    } else {
+        $fiscalYear = $currentDate->format('Y') + 543;
+    }
+
+    $fiscalYearShort = substr($fiscalYear, -2);
+
+    $sql = "SELECT numberWork FROM orderdata_new 
+            WHERE numberWork LIKE :fiscalYearShort 
+            ORDER BY id DESC LIMIT 1";
+
     $stmt = $conn->prepare($sql);
-    $stmt->execute();
+    $stmt->execute([':fiscalYearShort' => "%/$fiscalYearShort%"]);
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($result) {
-        $latestNumberWork = $result['numberWork'];
-        $cleanNumberWork = str_replace(' S', '', $latestNumberWork);
-        list($numerator, $denominator) = explode('/', $cleanNumberWork);
+    if ($result && isset($result['numberWork'])) {
+        $cleanNumberWork = preg_replace('/\s*S$/i', '', trim($result['numberWork']));
+
+        if (strpos($cleanNumberWork, '/') !== false) {
+            $newNumerator = intval(explode('/', $cleanNumberWork)[0]) + 1;
+        } else {
+            $newNumerator = 1;
+        }
     } else {
-        // Default if no numberWork exists
-        $numerator = 0;
-        $denominator = 68; // Starting year or any default value
+        $newNumerator = 1;
     }
 
-    $currentDate = new DateTime();
-    $october10 = new DateTime(($currentDate->format('Y') + 1) . '-10-10');
-
-    if ($currentDate > $october10) {
-        // Add 1 to the numerator and increment the denominator for the new year
-        $newNumerator = intval($numerator) + 1;
-        $newDenominator = intval($denominator) + 1;
-    } else {
-        // Increment only the numerator
-        $newNumerator = intval($numerator) + 1;
-        $newDenominator = intval($denominator);
-    }
-
-    return $newNumerator . '/' . $newDenominator;
+    return $newNumerator . '/' . $fiscalYearShort;
 }
+
 
 // ตรวจสอบว่ามีการส่งข้อมูลมาจากฟอร์มหรือไม่
 if (isset($_POST['submitWithdraw'])) {
