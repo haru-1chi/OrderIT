@@ -77,22 +77,35 @@ $fullname = $result['full_name'] ?? '-';
       animation: shrinkExpand 0.3s ease-in-out;
     }
 
+    :root {
+      --border-color: #ced4da;
+      --primary: #0d6efd;
+      --primary-hover: #0b5ed7;
+      --danger: #dc3545;
+      --disabled-bg: #e9ecef;
+      --focus-shadow: rgba(13, 110, 253, 0.25);
+    }
+
     .choices {
-      margin-bottom: 0 !important;
+      width: 100%;
+      margin-bottom: 0;
+      box-sizing: border-box;
     }
 
     .choices__inner {
       border-radius: 0.375rem !important;
       min-height: 33px !important;
-      border: 1px solid #ced4da;
-      padding: 0 !important;
+      border: 1px solid var(--border-color);
+      padding: 0 2rem 0 0 !important;
       background-color: #fff !important;
       font-size: 1rem !important;
       line-height: 1.5;
+      width: 100% !important;
+      box-sizing: border-box;
     }
 
     .choices__inner.is-invalid {
-      border-color: #dc3545 !important;
+      border-color: var(--danger);
     }
 
     .choices__list--single {
@@ -101,7 +114,14 @@ $fullname = $result['full_name'] ?? '-';
 
     .choices__list--dropdown {
       border-radius: 0.375rem;
-      border: 1px solid #ced4da;
+      border: 1px solid var(--border-color);
+      width: auto !important;
+      min-width: 100%;
+      max-width: max-content;
+    }
+
+    .choices__list--dropdown .choices__item--choice {
+      white-space: nowrap !important;
     }
 
     .choices__item--selectable {
@@ -113,6 +133,39 @@ $fullname = $result['full_name'] ?? '-';
     .choices.is-open .choices__inner {
       border-color: #86b7fe !important;
       box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25) !important;
+    }
+
+    .choices.is-disabled .choices__inner,
+    .choices.is-disabled .choices__input,
+    .choices.is-disabled .choices__item {
+      background-color: var(--disabled-bg) !important;
+      cursor: default !important;
+    }
+
+    .choices__inner .choices__list--single,
+    .choices__inner .choices__list--single .choices__item,
+    .choices__inner .choices__item--selectable,
+    .choices__inner .choices__placeholder {
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: clip !important;
+      display: block !important;
+      min-width: 0 !important;
+      max-width: 100% !important;
+    }
+
+    .choices__inner .choices__input {
+      min-width: 0 !important;
+    }
+
+    .choices__list--dropdown .choices__item.is-selected {
+      background-color: var(--primary) !important;
+      color: #fff !important;
+    }
+
+    .choices__list--dropdown .choices__item.is-selected.is-highlighted {
+      background-color: var(--primary-hover) !important;
+      color: #fff !important;
     }
   </style>
 </head>
@@ -997,18 +1050,16 @@ ORDER BY nd.id, oi.id
                   </tr>
                 </thead>
 
-                <tbody id="table-body-main" class="text-center">
+                <tbody id="table-body-main" class="text-start">
                   <?php if (!empty($items)) { ?>
                     <?php foreach ($items as $index => $item): ?>
                       <tr>
                         <td><?= $index + 1 ?></td>
-                        <td>
+                        <td style="max-width: 170px;">
                           <select
                             disabled
-                            style="width: 150px"
                             class="form-select device-select"
                             name="update_list[<?= $order['id'] ?>][<?= $item['item_id'] ?>]">
-                            <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                             <?php
                             $deviceSql = "SELECT * FROM device_models ORDER BY models_name ASC";
                             $deviceStmt = $conn->prepare($deviceSql);
@@ -1052,10 +1103,9 @@ ORDER BY nd.id, oi.id
                   <?php  } else { ?>
                     <tr>
                       <th scope="row">1</th>
-                      <td>
+                      <td style="max-width: 170px;">
                         <select
                           disabled
-                          style="width: 120px"
                           class="form-select device-select"
                           name="list[]">
                           <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
@@ -1316,12 +1366,12 @@ ORDER BY nd.id, oi.id
                   </tr>
                 </thead>
 
-                <tbody id="table-body-modal" class="text-center">
+                <tbody id="table-body-modal" class="text-start">
                   <tr>
                     <th scope="row">1</th>
-                    <td>
+                    <td style="max-width: 170px;">
                       <select
-                        style="width: 150px; margin: 0 auto;"
+                        style="margin: 0 auto;"
                         class="form-select device-select"
                         name="list[]">
                         <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
@@ -1618,10 +1668,10 @@ ORDER BY nd.id, oi.id
                     $isFirstRow = true;
                     foreach ($orderItems as $item) { //สร้าง case ถ้า orderItems is null
                     ?>
-                      <tr class="text-center">
+                      <tr class="text-start">
                         <th scope="row"><?= $rowNumber++; ?></th>
-                        <td>
-                          <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="list[]" data-row="1">
+                        <td style="max-width: 170px;">
+                          <select style="margin: 0 auto;" class="form-select device-select" name="list[]" data-row="1">
                             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
                             <!-- Populate options dynamically -->
                             <?php
@@ -1752,6 +1802,19 @@ ORDER BY nd.id, oi.id
     </div>
   </div>
 
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
+
+  <!-- Add SweetAlert2 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
+
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+
   <script>
     function calculateSumTotal(tableBodyId) {
       let total = 0;
@@ -1839,6 +1902,10 @@ ORDER BY nd.id, oi.id
           }
         });
 
+        choicesInstances.forEach((choice) => {
+          choice.enable(!choice._isDisabled);
+        });
+
         const removeButtons = document.querySelectorAll(".remove-row");
         const addRowButton = document.getElementById("add-row-main");
 
@@ -1890,8 +1957,8 @@ ORDER BY nd.id, oi.id
           const newRow = document.createElement("tr");
           newRow.innerHTML = `
             <td>${rowIndex}</td>
-            <td>
-          <select style="width: 150px; margin: 0 auto;" class="form-select device-select" name="list[]">
+            <td style="max-width: 170px;">
+          <select margin: 0 auto;" class="form-select device-select" name="list[]">
             <option selected value="" disabled>เลือกรายการอุปกรณ์</option>
             ${deviceOptions}
           </select>
@@ -1967,8 +2034,35 @@ ORDER BY nd.id, oi.id
       calculate(); // Initial calculation when the row is added
     }
 
+    const choicesInstances = [];
+
     function bindAutoList() {
       const deviceSelects = document.querySelectorAll(".device-select");
+
+      deviceSelects.forEach(select => {
+        const choice = new Choices(select, {
+          searchEnabled: true,
+          shouldSort: false,
+          placeholder: true,
+          placeholderValue: 'เลือกรายการอุปกรณ์',
+          searchPlaceholderValue: 'พิมพ์เพื่อค้นหา...',
+          itemSelectText: '',
+          searchResultLimit: -1,
+        });
+
+        choice.passedElement.element.addEventListener("showDropdown", () => {
+          const dropdown = choice.dropdown.element;
+          const selected = dropdown.querySelector(".is-selected");
+          if (selected) {
+            selected.scrollIntoView({
+              block: "nearest"
+            });
+          }
+        });
+
+        choicesInstances.push(choice);
+      });
+
       deviceSelects.forEach(function(select) {
         select.removeEventListener("change", handleDeviceChange); // Prevent duplicate binding
         select.addEventListener("change", handleDeviceChange);
@@ -2020,9 +2114,7 @@ ORDER BY nd.id, oi.id
     }
     bindAutoList();
   </script>
-  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
   <script>
     const redirectBaseUrl = "<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>";
 
@@ -2294,127 +2386,7 @@ ORDER BY nd.id, oi.id
     });
   </script>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.css">
-
-  <!-- Add SweetAlert2 JS -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.4.29/dist/sweetalert2.min.js"></script>
-
-  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
   <script>
-    // $(function() {
-    //   function setupAutocomplete({
-    //     type,
-    //     inputSelector,
-    //     hiddenInputSelector,
-    //     sourceUrl,
-    //     confirmMessage = "คุณต้องการเพิ่มรายการนี้หรือไม่?",
-    //     resetValue = "",
-    //     defaultHiddenId = ""
-    //   }) {
-    //     let inputChanged = false;
-    //     let alertShown = false; // Flag to track if the alert has been shown already
-
-    //     const $input = $(inputSelector);
-    //     const $hiddenInput = $(hiddenInputSelector);
-
-    //     $input.autocomplete({
-    //         source: function(request, response) {
-    //           $.ajax({
-    //             url: sourceUrl,
-    //             method: "GET",
-    //             dataType: "json",
-    //             data: {
-    //               term: request.term,
-    //               type: type
-    //             },
-    //             success: function(data) {
-    //               response(data); // Show suggestions
-    //             },
-    //             error: function() {
-    //               response([]);
-    //             }
-    //           });
-    //         },
-    //         minLength: 1,
-    //         autoFocus: true,
-    //         select: function(event, ui) {
-    //           if (ui.item && ui.item.value !== "") {
-    //             $input.val(ui.item.label);
-    //             $hiddenInput.val(ui.item.value);
-    //           } else {
-    //             $input.val('');
-    //             $hiddenInput.val('');
-    //           }
-    //           inputChanged = false;
-    //           return false;
-    //         }
-    //       })
-    //       .data("ui-autocomplete")._renderItem = function(ul, item) {
-    //         return $("<li>")
-    //           .append("<div>" + item.label + "</div>")
-    //           .appendTo(ul);
-    //       };
-
-    //     $input.on("input", function() {
-    //       inputChanged = true;
-    //     });
-
-    //     $input.on("blur", function() {
-    //       if (!inputChanged) return;
-
-    //       const enteredValue = $input.val().trim();
-    //       if (!enteredValue) {
-    //         $hiddenInput.val('');
-    //         return;
-    //       }
-
-    //       $.ajax({
-    //         url: sourceUrl,
-    //         method: "GET",
-    //         dataType: "json",
-    //         data: {
-    //           term: enteredValue,
-    //           type: type
-    //         },
-    //         success: function(data) {
-    //           const found = data.some(item => item.label === enteredValue);
-    //           if (!found) {
-    //             alertShown = true;
-    //             Swal.fire({
-    //               icon: 'warning',
-    //               title: confirmMessage,
-    //               text: 'หากต้องการเพิ่ม กรุณาติดต่อแอดมิน',
-    //               confirmButtonText: 'ตกลง'
-    //             }).then(() => {
-    //               $input.val(resetValue);
-    //               $hiddenInput.val(defaultHiddenId);
-    //               alertShown = false;
-    //             });
-    //           }
-    //         }
-    //       });
-    //       inputChanged = false; // Reset the flag
-    //     });
-    //   }
-    //   $("input[id^='departInput']").each(function() {
-    //     const index = $(this).attr("id").replace("departInput", "");
-    //     setupAutocomplete({
-    //       type: "depart",
-    //       inputSelector: `#departInput${index}`,
-    //       hiddenInputSelector: `#departId${index}`,
-    //       sourceUrl: "system_1/autocomplete.php",
-    //       notFoundMessage: "ไม่พบหน่วยงานนี้ในระบบ",
-    //       resetValue: "-",
-    //       defaultHiddenId: "222"
-    //     });
-    //   });
-    // });
-
     document.addEventListener('DOMContentLoaded', function() {
       function setupChoicesAutocomplete({
         type,
