@@ -1093,14 +1093,17 @@ if (!isset($_SESSION["admin_log"])) {
                                                                     <div class="col-sm-6">
                                                                         <div class="mb-3">
                                                                             <label for="departInput">หน่วยงาน</label>
-                                                                            <?php
-                                                                            $sql = "SELECT depart_name FROM depart WHERE depart_id = ?";
-                                                                            $stmt = $conn->prepare($sql);
-                                                                            $stmt->execute([$rowData['refDepart']]);
-                                                                            $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                                                                            ?>
                                                                             <select class="form-select" name="depart_id" id="departId<?= $row['id'] ?>" required>
-                                                                                <option value="<?= $rowData['refDepart'] ?>" selected><?= $departRow['depart_name'] ?></option>
+                                                                                <?php
+                                                                                $sql = "SELECT * FROM depart";
+                                                                                $stmt = $conn->prepare($sql);
+                                                                                $stmt->execute();
+                                                                                $departRow = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                                                                foreach ($departRow as $depart) {
+                                                                                    $selected = $depart['depart_id'] == $rowData['refDepart'] ? 'selected' : '';
+                                                                                    echo "<option value='{$depart['depart_id']}' $selected>{$depart['depart_name']}</option>";
+                                                                                }
+                                                                                ?>
                                                                             </select>
                                                                         </div>
                                                                     </div>
@@ -1361,14 +1364,17 @@ if (!isset($_SESSION["admin_log"])) {
                                                                 <div class="col-sm-6">
                                                                     <div class="mb-3">
                                                                         <label for="departInput">หน่วยงาน</label>
-                                                                        <?php
-                                                                        $sql = "SELECT depart_name FROM depart WHERE depart_id = ?";
-                                                                        $stmt = $conn->prepare($sql);
-                                                                        $stmt->execute([$row['department']]);
-                                                                        $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                                                                        ?>
                                                                         <select class="form-select" name="depart_id" id="departId<?= $row['id'] ?>" required>
-                                                                            <option value="<?= $row['department'] ?>" selected><?= $departRow['depart_name'] ?></option>
+                                                                            <?php
+                                                                            $sql = "SELECT * FROM depart";
+                                                                            $stmt = $conn->prepare($sql);
+                                                                            $stmt->execute();
+                                                                            $departRow = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                                                            foreach ($departRow as $depart) {
+                                                                                $selected = $depart['depart_id'] == $row['department'] ? 'selected' : '';
+                                                                                echo "<option value='{$depart['depart_id']}' $selected>{$depart['depart_name']}</option>";
+                                                                            }
+                                                                            ?>
                                                                         </select>
                                                                     </div>
                                                                 </div>
@@ -2531,14 +2537,17 @@ ORDER BY id DESC;
                                                                     <div class="col-sm-6">
                                                                         <div class="mb-3">
                                                                             <label for="departInput">หน่วยงาน</label>
-                                                                            <?php
-                                                                            $sql = "SELECT depart_name FROM depart WHERE depart_id = ?";
-                                                                            $stmt = $conn->prepare($sql);
-                                                                            $stmt->execute([$rowData['refDepart']]);
-                                                                            $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                                                                            ?>
                                                                             <select class="form-select" name="depart_id" id="departId<?= $row['id'] ?>" required>
-                                                                                <option value="<?= $rowData['refDepart'] ?>" selected><?= $departRow['depart_name'] ?></option>
+                                                                                <?php
+                                                                                $sql = "SELECT * FROM depart";
+                                                                                $stmt = $conn->prepare($sql);
+                                                                                $stmt->execute();
+                                                                                $departRow = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                                                                foreach ($departRow as $depart) {
+                                                                                    $selected = $depart['depart_id'] == $rowData['refDepart'] ? 'selected' : '';
+                                                                                    echo "<option value='{$depart['depart_id']}' $selected>{$depart['depart_name']}</option>";
+                                                                                }
+                                                                                ?>
                                                                             </select>
                                                                         </div>
                                                                     </div>
@@ -2800,14 +2809,17 @@ ORDER BY id DESC;
                                                                 <div class="col-sm-6">
                                                                     <div class="mb-3">
                                                                         <label for="departInput">หน่วยงาน</label>
-                                                                        <?php
-                                                                        $sql = "SELECT depart_name FROM depart WHERE depart_id = ?";
-                                                                        $stmt = $conn->prepare($sql);
-                                                                        $stmt->execute([$row['department']]);
-                                                                        $departRow = $stmt->fetch(PDO::FETCH_ASSOC);
-                                                                        ?>
                                                                         <select class="form-select" name="depart_id" id="departId<?= $row['id'] ?>" required>
-                                                                            <option value="<?= $row['department'] ?>" selected><?= $departRow['depart_name'] ?></option>
+                                                                            <?php
+                                                                            $sql = "SELECT * FROM depart";
+                                                                            $stmt = $conn->prepare($sql);
+                                                                            $stmt->execute();
+                                                                            $departRow = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                                                            foreach ($departRow as $depart) {
+                                                                                $selected = $depart['depart_id'] == $row['department'] ? 'selected' : '';
+                                                                                echo "<option value='{$depart['depart_id']}' $selected>{$depart['depart_name']}</option>";
+                                                                            }
+                                                                            ?>
                                                                         </select>
                                                                     </div>
                                                                 </div>
