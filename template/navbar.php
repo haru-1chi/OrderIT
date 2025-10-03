@@ -162,6 +162,7 @@ function navbar($report_count = null)
 <?php }
 function bs5()
 { ?>
+    <link rel="shortcut icon" href="image/logo.png" type="image/x-icon">
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
 <?php }
 function SC5()
