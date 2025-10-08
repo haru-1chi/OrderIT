@@ -426,6 +426,11 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                     </div>
                 </div>
                 <hr>
+                <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+                <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+                <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
                 <script>
                     const STATUS_OPTIONS = {
                         0: {
@@ -741,9 +746,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                     }, 30000);
                 </script>
             </div>
-            <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-            <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-            <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
             <script>
                 $(document).ready(function() {
                     setTimeout(function() {
@@ -751,8 +754,7 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                     }, 1000);
                 });
             </script>
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
             <script>
                 document.addEventListener("DOMContentLoaded", function() {
                     const filterDateInput = document.getElementById("filter-date");
