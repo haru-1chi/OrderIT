@@ -32,11 +32,6 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <style>
         body {
             background-color: #F9FDFF;
@@ -431,6 +426,11 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                     </div>
                 </div>
                 <hr>
+                <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+                <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+                <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
                 <script>
                     const STATUS_OPTIONS = {
                         0: {
@@ -705,71 +705,37 @@ $result = $stmt->fetch(PDO::FETCH_ASSOC);
                     };
 
                     // Initial load
-                    // const taskTypes = [{
-                    //         type: "unfiltered",
-                    //         id: "unfiltered"
-                    //     }, {
-                    //         type: "today",
-                    //         id: "dataAll"
-                    //     },
-                    //     {
-                    //         type: "in_progress",
-                    //         id: "inTime"
-                    //     },
-                    //     {
-                    //         type: "over_due",
-                    //         id: "dataAllNOTTAKE"
-                    //     },
-                    //     {
-                    //         type: "calm",
-                    //         id: "wait"
-                    //     },
-                    //     {
-                    //         type: "finish",
-                    //         id: "success"
-                    //     }
-                    // ];
+                    const taskTypes = [{
+                            type: "unfiltered",
+                            id: "unfiltered"
+                        }, {
+                            type: "today",
+                            id: "dataAll"
+                        },
+                        {
+                            type: "in_progress",
+                            id: "inTime"
+                        },
+                        {
+                            type: "over_due",
+                            id: "dataAllNOTTAKE"
+                        },
+                        {
+                            type: "calm",
+                            id: "wait"
+                        },
+                        {
+                            type: "finish",
+                            id: "success"
+                        }
+                    ];
 
-                    // taskTypes.forEach(({
-                    //     type,
-                    //     id
-                    // }) => fetchTasks(type, id));
+                    taskTypes.forEach(({
+                        type,
+                        id
+                    }) => fetchTasks(type, id));
 
-                    // fetchCards('cards');
-
-                    $(document).ready(function() {
-                        const taskTypes = [{
-                                type: "unfiltered",
-                                id: "unfiltered"
-                            },
-                            {
-                                type: "today",
-                                id: "dataAll"
-                            },
-                            {
-                                type: "in_progress",
-                                id: "inTime"
-                            },
-                            {
-                                type: "over_due",
-                                id: "dataAllNOTTAKE"
-                            },
-                            {
-                                type: "calm",
-                                id: "wait"
-                            },
-                            {
-                                type: "finish",
-                                id: "success"
-                            }
-                        ];
-
-                        taskTypes.forEach(({
-                            type,
-                            id
-                        }) => fetchTasks(type, id));
-                        fetchCards('cards');
-                    });
+                    fetchCards('cards');
 
                     // Optionally, refresh data every 30 seconds without reloading the page
                     setInterval(() => {
