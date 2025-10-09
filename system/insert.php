@@ -2427,8 +2427,9 @@ if (isset($_POST['saveWork'])) {
         $stmt->bindParam(":status", $status);
         $stmt->bindParam(":create_by", $create_by);
         $stmt->bindParam(":deviceName", $deviceName);
-        if ($stmt->execute()) {
 
+        if ($stmt->execute()) {
+            $data_report_id = $conn->lastInsertId();
 
             if (!empty($weekdays) || !empty($monthdays)) {
                 $sqlTemplate = "INSERT INTO routine_template(date_create, time_report, number_device, ip_address, report, reporter, department, tel, work_type, priority, deviceName, create_by) 
@@ -2460,6 +2461,15 @@ if (isset($_POST['saveWork'])) {
                 $stmtRepeat->bindParam(":weekdays", $weekdayStr);
                 $stmtRepeat->bindParam(":monthdays", $monthdays);
                 $stmtRepeat->execute();
+
+                $repeat_id = $conn->lastInsertId();
+                $sql = "UPDATE data_report 
+                SET repeat_task_id = :repeat_task_id
+                    WHERE id = :id";
+                $stmt = $conn->prepare($sql);
+                $stmt->bindParam(":repeat_task_id", $repeat_id);
+                $stmt->bindParam(":id", $data_report_id);
+                $stmt->execute();
             }
 
             $_SESSION['success'] = "เพิ่มงานเรียบร้อยแล้ว";
