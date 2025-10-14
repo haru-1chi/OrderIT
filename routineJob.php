@@ -577,24 +577,31 @@ if (!isset($_SESSION["admin_log"])) {
                                                         </div>
                                                     </div>
 
-                                                    <div class="modal-footer">
+                                                    <div class="modal-footer d-flex justify-content-between">
+                                                        <div>
+                                                            <a id="confirmDelete" href="system/delete.php?routine=<?= $row['id'] ?>" class="btn btn-danger">ลบงานประจำวัน</a>
+                                                        </div>
 
-                                                        <input type="checkbox"
-                                                            class="btn-check switchBtn"
-                                                            id="switchBtn<?= $row['id'] ?>"
-                                                            data-id="<?= $row['id'] ?>"
-                                                            name="template_status"
-                                                            value="1"
-                                                            <?= $row['template_status'] == 1 ? 'checked' : '' ?>>
+                                                        <div class="d-flex">
+                                                            <div class="form-check form-switch d-flex align-items-center justify-content-between me-23">
+                                                                <label class="form-check-label me-5" for="switchBtn<?= $row['id'] ?>">
+                                                                    <?= $row['template_status'] == 1 ? 'เปิดการใช้งาน' : 'ปิดการใช้งาน' ?>
+                                                                </label>
 
-                                                        <label class="btn <?= $row['template_status'] == 1 ? 'btn-warning' : 'btn-secondary' ?> switchLabel"
-                                                            for="switchBtn<?= $row['id'] ?>">
-                                                            <?= $row['template_status'] == 1 ? 'เปิดการใช้งาน' : 'ปิดการใช้งาน' ?>
-                                                        </label>
+                                                                <input class="form-check-input switchBtn"
+                                                                    type="checkbox"
+                                                                    role="switch"
+                                                                    id="switchBtn<?= $row['id'] ?>"
+                                                                    data-id="<?= $row['id'] ?>"
+                                                                    name="template_status"
+                                                                    value="1"
+                                                                    <?= $row['template_status'] == 1 ? 'checked' : '' ?>>
+                                                            </div>
 
-                                                        <button type="submit" class="btn btn-primary"
-                                                            onclick="removeHiddenInputOnModalClose('#requisitionModal<?= $row['id'] ?>')"
-                                                            name="updateTemplate">บันทึก</button>
+                                                            <button type="submit" class="ms-2 btn btn-primary"
+                                                                onclick="removeHiddenInputOnModalClose('#requisitionModal<?= $row['id'] ?>')"
+                                                                name="updateTemplate">บันทึก</button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -888,12 +895,8 @@ if (!isset($_SESSION["admin_log"])) {
                 input.addEventListener('change', function() {
                     const label = document.querySelector(`label[for="${this.id}"]`);
                     if (this.checked) {
-                        label.classList.remove('btn-secondary');
-                        label.classList.add('btn-warning');
                         label.textContent = 'เปิดการใช้งาน';
                     } else {
-                        label.classList.remove('btn-warning');
-                        label.classList.add('btn-secondary');
                         label.textContent = 'ปิดการใช้งาน';
                     }
                 });

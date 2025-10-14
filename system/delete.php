@@ -17,6 +17,40 @@ function backToInsertPage($data = [])
     exit();
 }
 
+if (isset($_GET['routine'])) {
+    $id = $_GET['routine'];
+
+    // Begin transaction (optional but safer if both must succeed)
+    $conn->beginTransaction();
+
+    try {
+        // Delete from routine_template
+        $sql1 = "DELETE FROM routine_template WHERE id = :id";
+        $stmt1 = $conn->prepare($sql1);
+        $stmt1->bindParam(":id", $id);
+        $stmt1->execute();
+
+        // Delete from repeat_task
+        $sql2 = "DELETE FROM repeat_task WHERE report_id = :id";
+        $stmt2 = $conn->prepare($sql2);
+        $stmt2->bindParam(":id", $id);
+        $stmt2->execute();
+
+        // Commit both
+        $conn->commit();
+
+        $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
+        header("location: ../routineJob.php");
+        exit;
+    } catch (PDOException $e) {
+        $conn->rollBack();
+        $_SESSION['error'] = "พบข้อผิดพลาด: " . $e->getMessage();
+        header("location: ../routineJob.php");
+        exit;
+    }
+}
+
+
 if (isset($_GET['device'])) {
     $id = $_GET['device'];
     $sql = "DELETE FROM device WHERE device_id = :id";
@@ -25,9 +59,11 @@ if (isset($_GET['device'])) {
     if ($stmt->execute()) {
         $_SESSION['success'] = "ลบข้อมูลสำเร็จ";
         backToInsertPage();
+        exit;
     } else {
         $_SESSION['error'] = "พบข้อผิดพลาด";
         header("location: ../insertData.php");
+        exit;
     }
 }
 
