@@ -495,6 +495,7 @@ if (isset($_POST['problemL'])) {
 if (isset($_POST['updateData'])) {
     $id = $_POST['id'];
     $numberWork = $_POST['numberWork'];
+    $dateWithdraw = $_POST['dateWithdraw'];
     $report = $_POST['report'];
     $reason = $_POST['reason'];
     $note = $_POST['note'];
@@ -593,8 +594,8 @@ if (isset($_POST['updateData'])) {
             }
         }
     }
-
     $sql = "UPDATE orderdata_new SET
+      dateWithdraw = :dateWithdraw,
             report = :report,
             reason = :reason,
             note = :note,
@@ -609,6 +610,7 @@ if (isset($_POST['updateData'])) {
     // เตรียมและ execute statement
 
     $stmt = $conn->prepare($sql);
+    $stmt->bindParam(":dateWithdraw", $dateWithdraw);
     $stmt->bindParam(":report", $report);
     $stmt->bindParam(":reason", $reason);
     $stmt->bindParam(":note", $note);

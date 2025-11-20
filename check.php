@@ -476,7 +476,7 @@ ORDER BY nd.id, oi.id
 
                     <div class="col-3">
                       <label>วันที่ออกใบเบิก</label>
-                      <input type="date" class="form-control"
+                      <input type="date" class="form-control" name="dateWithdraw"
                         value="<?= $order['dateWithdraw'] ?? '' ?>" disabled>
                       <?php renderEditHistory('dateWithdraw', $fieldHistory); ?>
                     </div>
@@ -1466,7 +1466,7 @@ ORDER BY nd.id, oi.id
                 <div class="col-sm-6">
                   <div class="mb-3">
                     <label id="basic-addon1">วันที่ออกใบเบิก</label>
-                    <input required type="date" name="dateWithdraw" value="<?= $rowData['dateWithdraw'] ?>" class="form-control">
+                    <input required type="date" name="dateWithdraw" value="<?php echo date('Y-m-d'); ?>" class="form-control">
                   </div>
                 </div>
 
@@ -1903,7 +1903,7 @@ ORDER BY nd.id, oi.id
         manageColumnHeader.style.display = isDisabled ? "table-cell" : "none"; //ปุ่มเพิ่ม column list table //x เอาออกจาก function นี้
 
         //field อื่นๆ
-        ["report", "reason", "note", "refWithdraw", "refWork", "refDevice", "refOffer", "quotation", "id_ref"].forEach(function(name) {
+        ["dateWithdraw", "report", "reason", "note", "refWithdraw", "refWork", "refDevice", "refOffer", "quotation", "id_ref"].forEach(function(name) {
           const input = document.querySelector(`[name='${name}']`);
           if (input) {
             input.disabled = !input.disabled;
