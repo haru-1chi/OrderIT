@@ -7,10 +7,11 @@ function navbar($report_count = null)
     }
 
 ?>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
         /* เพิ่มสไตล์ CSS เพื่อปรับแต่ง Navbar */
         .navbar {
-            background-color: #365486;
+            background-color: #e96687ff;
             /* สีเขียว */
         }
 
@@ -64,7 +65,7 @@ function navbar($report_count = null)
 
     <nav class="navbar p-3 navbar-expand-lg bg-green text-center">
         <div class="container">
-            <a class="navbar-brand" href="dashboard.php">ระบบบริหารงานซ่อม
+            <a class="navbar-brand" href="dashboard.php"><i class="fa fa-bed" aria-hidden="true"></i>ระบบบริหารงานซ่อม (✨รุ่นทดลอง)
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -126,6 +127,7 @@ function navbar($report_count = null)
                             ยืมคืนอุปกรณ์
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenu2">
+                            <li><a class="dropdown-item" href="../repair/Test_calendar.php">ปฏิทินการยืม</a></li>
                             <li><a class="dropdown-item" href="../repair/borrow.php">ยืม</a></li>
                             <li><a class="dropdown-item" href="../repair/admin.php">สำหรับเจ้าหน้าที่</a></li>
                         </ul>
