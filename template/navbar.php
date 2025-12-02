@@ -7,11 +7,10 @@ function navbar($report_count = null)
     }
 
 ?>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
         /* เพิ่มสไตล์ CSS เพื่อปรับแต่ง Navbar */
         .navbar {
-            background-color: #e96687ff;
+            background-color: #365486;
             /* สีเขียว */
         }
 
@@ -65,7 +64,7 @@ function navbar($report_count = null)
 
     <nav class="navbar p-3 navbar-expand-lg bg-green text-center">
         <div class="container">
-            <a class="navbar-brand" href="dashboard.php"><i class="fa fa-bed" aria-hidden="true"></i>ระบบบริหารงานซ่อม (✨รุ่นทดลอง)
+            <a class="navbar-brand" href="dashboard.php"><i class="fa fa-bed" aria-hidden="true"></i>ระบบบริหารงานซ่อม
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
